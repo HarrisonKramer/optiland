@@ -7,6 +7,8 @@ from optiland import distribution
 from .utils import assert_allclose
 
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 
 @pytest.mark.parametrize("num_points", [10, 25, 106, 512])
@@ -114,8 +116,8 @@ def test_view_distribution(set_test_backend):
     fig, ax = d.view()
     assert fig is not None
     assert ax is not None
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(ax, plt.Axes)
+    assert isinstance(fig, Figure)
+    assert isinstance(ax, Axes)
     plt.close(fig)
 
 

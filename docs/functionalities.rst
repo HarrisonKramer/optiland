@@ -24,10 +24,12 @@ Analysis Tools
   Perform precise ray-based evaluations for both idealized and physically realistic systems.
 - **Polarization Ray Tracing**:
   Model vectorial light propagation, including polarization effects and birefringent materials.
+- **Jones Pupil Analysis**:
+  Visualize spatially resolved Jones matrix elements at the exit pupil to assess polarization properties.
 - **Comprehensive Optical Analysis**:
   Generate spot diagrams, ray aberration fans, OPD maps, distortion plots, and more.
 - **Wavefront Analysis**:
-  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps.
+  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps, with support for both focal (spherical reference) and afocal (planar reference) systems.
 - **PSF and MTF Computation**:
   Evaluate image quality and spatial frequency response in imaging systems.
 - **BSDF and Scattering Models**:
@@ -58,10 +60,10 @@ Material Database
 Visualization
 -------------
 
-- **2D and 3D Visualization**:
-  Plot optical layouts, surface properties, and ray traces using matplotlib (2D) and VTK (3D).
-- **Interactive Debugging Tools**:
-  Inspect and interact with optical systems for rapid prototyping and analysis.
+- **Interactive 2D and 3D Visualization**:
+  Plot optical layouts, surface properties, and ray traces using Matplotlib (2D) and VTK (3D). The 2D plots are fully interactive, providing tooltips with detailed information when you hover over optical components.
+- **Customizable Visualization Themes**:
+  Optiland includes a flexible theme system to control the appearance of 2D plots. You can easily switch between predefined themes (e.g., ``light``, ``dark``) or create your own. For a hands-on example, see the :doc:`gallery/miscellaneous/themes` notebook.
 - **Optiland GUI**:
   A fully functional graphical user interface (GUI) for interactive design, analysis, and visualization of optical systems. See the :ref:`gui_quickstart` for more details on using the GUI.
 

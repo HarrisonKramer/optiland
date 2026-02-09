@@ -5,12 +5,12 @@ Optimization
 
 Optiland supports optimization through different backends.  
 The **NumPy backend** relies on SciPy optimizers, while the **Torch backend**  
-uses PyTorch’s native optimization tools.  
+uses PyTorch's native optimization tools.  
 
 NumPy (SciPy) Optimization
 --------------------------
 
-These examples show how Optiland integrates with SciPy’s optimizers  
+These examples show how Optiland integrates with SciPy's optimizers  
 to improve optical systems using classical numerical methods.  
 
 .. nbgallery::
@@ -20,15 +20,18 @@ to improve optical systems using classical numerical methods.
     optimization/pickups
     optimization/constrained
     optimization/bounded_operands
+    optimization/orthogonal_descent
     optimization/global
     optimization/basin_hopping
     optimization/shgo
+    optimization/custom_scaler
+    optimization/nurbs_freeform_telescope
 
 Torch Optimization
 ------------------
 
 These examples demonstrate optimization using the Torch backend,  
-taking advantage of PyTorch’s autograd and optimizers for differentiable design.  
+taking advantage of PyTorch's autograd and optimizers for differentiable design.  
 
 .. nbgallery::
     optimization/torch_rms_spot_size

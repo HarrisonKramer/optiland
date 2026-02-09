@@ -23,7 +23,7 @@ from optiland.materials import Material as OptilandMaterial
 from optiland.optic import Optic
 from optiland.physical_apertures import RadialAperture
 from optiland.physical_apertures.radial import configure_aperture
-from optiland.surfaces.factories.geometry_factory import GeometryConfig, GeometryFactory
+from optiland.surfaces.factories.geometry_factory import GeometryFactory
 from optiland_gui.undo_redo_manager import UndoRedoManager
 
 
@@ -145,7 +145,7 @@ class OptilandConnector(QObject):
 
     def _create_new_optic_structure(self, optic: Optic):
         """Creates a default 3-surface structure for a new optic."""
-        optic.surface_group.surfaces.clear()
+        optic.surface_group.clear()
         optic.wavelengths.wavelengths.clear()
         optic.add_surface(
             index=0,
@@ -181,7 +181,7 @@ class OptilandConnector(QObject):
         """Ensures a loaded or modified optic has a valid basic structure."""
         if optic.surface_group.num_surfaces < 2:
             # If the system is invalid, reset it to a minimal default
-            optic.surface_group.surfaces.clear()
+            optic.surface_group.clear()
             optic.add_surface(
                 surface_type="standard",
                 radius=float("inf"),
@@ -384,7 +384,7 @@ class OptilandConnector(QObject):
 
     def _get_material_data(self, surface) -> str:
         """Gets the material string for a surface."""
-        if surface.is_reflective:
+        if surface.interaction_model.is_reflective:
             return "Mirror"
         mat = surface.material_post
         if isinstance(mat, IdealMaterial):
@@ -459,54 +459,52 @@ class OptilandConnector(QObject):
             return f"{float(t[0]):.4f}" if t is not None and len(t) > 0 else "N/A"
         return "N/A"
 
-    def _get_biconic_config(self, old_geo) -> GeometryConfig:
-        """Creates a GeometryConfig for a biconic surface."""
-        config = GeometryConfig()
+    def _get_biconic_config(self, old_geo) -> dict:
+        """Creates a config dict for a biconic surface."""
         if hasattr(old_geo, "Rx"):  # Check if converting from another biconic
-            config.radius_x = getattr(old_geo, "Rx", 100.0)
-            config.radius_y = getattr(old_geo, "Ry", 100.0)
-            config.conic_x = getattr(old_geo, "kx", 0.0)
-            config.conic_y = getattr(old_geo, "ky", 0.0)
+            return {
+                "radius_x": getattr(old_geo, "Rx", 100.0),
+                "radius_y": getattr(old_geo, "Ry", 100.0),
+                "conic_x": getattr(old_geo, "kx", 0.0),
+                "conic_y": getattr(old_geo, "ky", 0.0),
+            }
         else:  # Otherwise, use finite defaults to avoid a plane surface
-            config.radius_x = 100.0
-            config.radius_y = 100.0
-        return config
+            return {"radius_x": 100.0, "radius_y": 100.0}
 
-    def _get_toroidal_config(self, old_geo) -> GeometryConfig:
-        """Creates a GeometryConfig for a toroidal surface."""
-        config = GeometryConfig()
+    def _get_toroidal_config(self, old_geo) -> dict:
+        """Creates a config dict for a toroidal surface."""
         if hasattr(old_geo, "R_rot"):
-            config.radius = getattr(old_geo, "R_rot", 100.0)
-            config.radius_y = getattr(old_geo, "R_yz", 100.0)
-            config.conic = getattr(old_geo, "k_yz", 0.0)
-            config.toroidal_coeffs_poly_y = getattr(old_geo, "coeffs_poly_y", [])
+            return {
+                "radius": getattr(old_geo, "R_rot", 100.0),
+                "radius_y": getattr(old_geo, "R_yz", 100.0),
+                "conic": getattr(old_geo, "k_yz", 0.0),
+                "toroidal_coeffs_poly_y": getattr(old_geo, "coeffs_poly_y", []),
+            }
         else:
-            config.radius = 100.0
-            config.radius_y = 100.0
+            return {"radius": 100.0, "radius_y": 100.0}
+
+    def _get_polynomial_config(self, old_geo) -> dict:
+        """Creates a config dict for polynomial-based surfaces."""
+        config = {
+            "radius": getattr(old_geo, "radius", float("inf")),
+            "conic": getattr(old_geo, "k", 0.0),
+            "coefficients": getattr(old_geo, "c", []),
+        }
+        if config["radius"] == float("inf"):
+            config["radius"] = 100.0  # Use a finite default to avoid a plane
         return config
 
-    def _get_polynomial_config(self, old_geo) -> GeometryConfig:
-        """Creates a GeometryConfig for polynomial-based surfaces."""
-        config = GeometryConfig(
-            radius=getattr(old_geo, "radius", float("inf")),
-            conic=getattr(old_geo, "k", 0.0),
-            coefficients=getattr(old_geo, "c", []),
-        )
-        if config.radius == float("inf"):
-            config.radius = 100.0  # Use a finite default to avoid a plane
-        return config
-
-    def _get_chebyshev_config(self, old_geo) -> GeometryConfig:
-        """Creates a GeometryConfig for a Chebyshev surface."""
+    def _get_chebyshev_config(self, old_geo) -> dict:
+        """Creates a config dict for a Chebyshev surface."""
         config = self._get_polynomial_config(old_geo)
-        config.norm_x = getattr(old_geo, "norm_x", 1.0)
-        config.norm_y = getattr(old_geo, "norm_y", 1.0)
+        config["norm_x"] = getattr(old_geo, "norm_x", 1.0)
+        config["norm_y"] = getattr(old_geo, "norm_y", 1.0)
         return config
 
-    def _get_zernike_config(self, old_geo) -> GeometryConfig:
-        """Creates a GeometryConfig for a Zernike surface."""
+    def _get_zernike_config(self, old_geo) -> dict:
+        """Creates a config dict for a Zernike surface."""
         config = self._get_polynomial_config(old_geo)
-        config.norm_radius = getattr(old_geo, "norm_radius", 1.0)
+        config["norm_radius"] = getattr(old_geo, "norm_radius", 1.0)
         return config
 
     def set_surface_type(self, row: int, new_type: str):
@@ -524,10 +522,10 @@ class OptilandConnector(QObject):
             old_geo = surface.geometry
 
             # Base config preserves radius and conic
-            config = GeometryConfig(
-                radius=getattr(old_geo, "radius", float("inf")),
-                conic=getattr(old_geo, "k", 0.0),
-            )
+            config_kwargs = {
+                "radius": getattr(old_geo, "radius", float("inf")),
+                "conic": getattr(old_geo, "k", 0.0),
+            }
 
             # Map surface types to their specific configuration functions
             config_handlers = {
@@ -542,11 +540,11 @@ class OptilandConnector(QObject):
 
             handler = config_handlers.get(new_type)
             if handler:
-                config = handler(old_geo)
+                config_kwargs = handler(old_geo)
 
             # Create the new geometry
             new_geo = GeometryFactory.create(
-                surface_type=new_type, cs=old_geo.cs, config=config
+                surface_type=new_type, cs=old_geo.cs, **config_kwargs
             )
 
             surface.geometry = new_geo

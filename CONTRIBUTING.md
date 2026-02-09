@@ -108,11 +108,7 @@ Use inline comments sparingly and only when necessary to explain complex logic.
 pytest
 ```
 
-- Run tests with coverage before submitting a PR:
-
-```sh
-pytest --cov=optiland --cov-report=xml
-```
+Note: Coverage reporting is automatically handled by the CI pipeline when you submit a pull request.
 
 ## Reporting Issues
 

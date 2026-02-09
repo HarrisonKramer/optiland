@@ -63,6 +63,15 @@ class BaseGeometry(ABC):
         # pragma: no cover
 
     @abstractmethod
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        # pragma: no cover
+
+    @abstractmethod
     def surface_normal(self, rays):
         """Find the surface normal of the geometry at the given ray positions.
 

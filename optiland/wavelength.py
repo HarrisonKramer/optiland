@@ -12,25 +12,37 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
+
+if TYPE_CHECKING:
+    from optiland._types import ScalarOrArray
 
 
 class Wavelength:
     """Represents a wavelength value with support for unit conversion.
 
-    Args:
-        value (float): The value of the wavelength.
-        is_primary (bool): Indicates whether the wavelength is a primary
-            wavelength.
-        unit (str): The unit of the wavelength value. Defaults to 'um'.
-        weight (float): The weight of the wavelength. Defaults to 1.0.
-
     Methods:
         _convert_to_um(): Converts the wavelength value to microns.
-
     """
 
-    def __init__(self, value, is_primary=True, unit="um", weight: float = 1.0):
+    def __init__(
+        self,
+        value: ScalarOrArray,
+        is_primary: bool = True,
+        unit: str = "um",
+        weight: float = 1.0,
+    ):
+        """Initializes a Wavelength instance
+
+        Args:
+            value (float): The value of the wavelength.
+            is_primary (bool): Indicates whether the wavelength is a primary
+                wavelength.
+            unit (str): The unit of the wavelength value. Defaults to 'um'.
+            weight (float): The weight of the wavelength. Defaults to 1.0.
+        """
         self._value = value
         self.is_primary = is_primary
         self.weight = weight
@@ -38,27 +50,27 @@ class Wavelength:
         self._value_in_um = self._convert_to_um()
 
     @property
-    def value(self):
+    def value(self) -> float:
         """float: the value of the wavelength"""
         return self._value_in_um
 
     @property
-    def unit(self):
+    def unit(self) -> str:
         """str: the unit of the wavelength"""
         return "um"
 
     @unit.setter
-    def unit(self, new_unit):
+    def unit(self, new_unit: str):
         """Sets the unit of the wavelength.
 
         Args:
-            new_unit (str): The new unit to set for the wavelength.
+            new_unit: The new unit to set for the wavelength.
 
         """
         self._unit = new_unit.lower()
         self._value_in_um = self._convert_to_um()
 
-    def _convert_to_um(self):
+    def _convert_to_um(self) -> float:
         """Converts the wavelength value to micrometers (um) based on the
         current unit.
 
@@ -77,11 +89,11 @@ class Wavelength:
             return self._value * conversion_factor
         raise ValueError("Unsupported unit for conversion to microns.")
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Get a dictionary representation of the wavelength.
 
         Returns:
-            dict: A dictionary representation of the wavelength.
+            A dictionary representation of the wavelength.
 
         """
         return {
@@ -92,14 +104,14 @@ class Wavelength:
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict) -> Wavelength:
         """Create a Wavelength instance from a dictionary representation.
 
         Args:
-            data (dict): A dictionary containing the wavelength data.
+            data: A dictionary containing the wavelength data.
 
         Returns:
-            Wavelength: A new Wavelength instance created from the data.
+            A new Wavelength instance created from the data.
 
         """
         required_keys = {"value", "is_primary", "unit"}
@@ -135,41 +147,54 @@ class WavelengthGroup:
     """
 
     def __init__(self):
-        self.wavelengths = []
+        self.wavelengths: list[Wavelength] = []
 
     @property
-    def weights(self):
-        """tuple: the weights of the wavelengths"""
+    def weights(self) -> tuple[float, ...]:
+        """The weights of the wavelengths"""
         return tuple(wave.weight for wave in self.wavelengths)
 
     @property
-    def num_wavelengths(self):
-        """int: the number of wavelengths"""
+    def num_wavelengths(self) -> int:
+        """The number of wavelengths"""
         return len(self.wavelengths)
 
     @property
-    def primary_index(self):
-        """int: the index of the primary wavelength"""
-        for index, wavelength in enumerate(self.wavelengths):
-            if wavelength.is_primary:
-                return index
+    def primary_index(self) -> int:
+        """The index of the primary wavelength
+
+        raises:
+            StopIteration: If no primary wavelength is found
+        """
+        return next(i for i, w in enumerate(self.wavelengths) if w.is_primary)
+
+    @primary_index.setter
+    def primary_index(self, index: int):
+        """set the wavelength indexed by `index` as primary"""
+        if not 0 <= index < len(self.wavelengths):
+            raise ValueError("Index out of range")
+        for idx, wavelength in enumerate(self.wavelengths):
+            wavelength.is_primary = idx == index
 
     @property
-    def primary_wavelength(self):
-        """float: the primary wavelength"""
+    def primary_wavelength(self) -> Wavelength:
+        """The primary wavelength"""
         return self.wavelengths[self.primary_index]
 
-    def add_wavelength(self, value, is_primary=True, unit="um", weight=1.0):
+    def add_wavelength(
+        self,
+        value: float,
+        is_primary: bool = True,
+        unit: str = "um",
+        weight: float = 1.0,
+    ):
         """Adds a new wavelength to the list of wavelengths.
 
         Args:
-            value (float): The value of the wavelength.
-            is_primary (bool, optional): Indicates if the wavelength is
-                primary. Default is True.
-            unit (str, optional): The unit of the wavelength. Default is 'um'.
-            weight (float, optional): The weight of the wavelength.
-                Default is 1.0.
-
+            value: The value of the wavelength.
+            is_primary: Indicates if the wavelength is primary. Default is True.
+            unit: The unit of the wavelength. Default is 'um'.
+            weight: The weight of the wavelength. Default is 1.0.
         """
         if is_primary:
             for wavelength in self.wavelengths:
@@ -180,45 +205,44 @@ class WavelengthGroup:
 
         self.wavelengths.append(Wavelength(value, is_primary, unit, weight))
 
-    def get_wavelength(self, wavelength_number):
+    def get_wavelength(self, wavelength_number: int) -> float:
         """Get the value of a specific wavelength.
 
         Args:
-            wavelength_number (int): The index of the desired wavelength.
+            wavelength_number: The index of the desired wavelength.
 
         Returns:
-            float: The value of the specified wavelength.
-
+            The value of the specified wavelength.
         """
         return self.wavelengths[wavelength_number].value
 
-    def get_wavelengths(self):
+    def get_wavelengths(self) -> list[float]:
         """Returns a list of wavelength values.
 
         Returns:
-            list: A list of wavelength values.
+            A list of wavelength values.
 
         """
         return [wave.value for wave in self.wavelengths]
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Get a dictionary representation of the wavelength group.
 
         Returns:
-            dict: A dictionary representation of the wavelength group.
+            A dictionary representation of the wavelength group.
 
         """
         return {"wavelengths": [wave.to_dict() for wave in self.wavelengths]}
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data) -> WavelengthGroup:
         """Create a WavelengthGroup instance from a dictionary representation.
 
         Args:
-            data (dict): A dictionary containing the wavelength group data.
+            data: A dictionary containing the wavelength group data.
 
         Returns:
-            WavelengthGroup: A new WavelengthGroup instance created from the
+            A new WavelengthGroup instance created from the
                 data.
 
         """
@@ -233,34 +257,32 @@ class WavelengthGroup:
 
 
 def add_wavelengths(
-    wavelength_group,
-    min_value,
-    max_value,
-    num_wavelengths,
-    unit="um",
+    wavelength_group: WavelengthGroup,
+    min_value: float,
+    max_value: float,
+    num_wavelengths: int,
+    unit: str = "um",
     *,
-    sampling="chebyshev",
-    scale="log",
+    sampling: str = "chebyshev",
+    scale: str = "log",
 ):
     """Add new wavelengths corresponding to the geometrically-spaced Chebyshev nodes
 
     Args:
-        min_value (float): Minimum wavelength value.
-        max_value (float): Maximum wavelength value.
-        num_wavelengths (int) : The number of wavelengths to be added.
+        min_value: Minimum wavelength value.
+        max_value: Maximum wavelength value.
+        num_wavelengths: The number of wavelengths to be added.
             Has to be an odd integer.
-        unit (str, optional): The unit of the wavelength. Default is 'um'.
-        sampling (str, optional): The sampling algorithm used. Defaults to 'chebyshev'.
+        unit: The unit of the wavelength. Default is 'um'.
+        sampling: The sampling algorithm used. Defaults to 'chebyshev'.
             Currently supported options are:
                 'chebyshev' - chebyshev nodes of the first type
                 'uniform' - uniformly spaced nodes across the specified range
-        scale (str, optional): space in which the nodes are sampled. Defaults to 'log'.
+        scale: space in which the nodes are sampled. Defaults to 'log'.
             Currently supported options are:
                 'log' - nodes are sampled in the logarithms of wavelength.
                 'frequency' - nodes sampled in the frequency domain.
                 'wavelength' - nodes sampled in the frequency domain. Not recommended.
-
-
     """
     if (
         not isinstance(num_wavelengths, int)

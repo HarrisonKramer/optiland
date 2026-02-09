@@ -4,13 +4,18 @@ import csv
 import warnings
 from importlib import resources
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import yaml
+from matplotlib.axes import Axes
 from scipy.cluster.vq import kmeans2
 
 import optiland.backend as be
 from optiland.materials.material import Material
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 
 def glasses_selection(
@@ -37,7 +42,8 @@ def glasses_selection(
     """
 
     csv_path = resources.files("optiland.database").joinpath("catalog_nk.csv")
-    catalogs = [c.lower() for c in catalogs]
+    if catalogs is not None:
+        catalogs = [c.lower() for c in catalogs]
     glasses = set()
 
     with open(csv_path, encoding="utf-8") as file:
@@ -150,7 +156,9 @@ def downsample_glass_map(glass_dict: dict, num_glasses_to_keep: int) -> dict:
     labels = be.array(labels)
     for cluster_index in range(num_glasses_to_keep):
         # Get indices of glasses in this cluster
-        cluster_indices = be.where(labels == cluster_index)[0]
+        mask = labels == cluster_index
+        indices = be.arange_indices(be.size(labels))
+        cluster_indices = indices[mask]
 
         # Extract cluster points
         cluster_points = be.array(glass_data[cluster_indices])
@@ -374,11 +382,11 @@ def find_closest_glass(nd_vd: tuple, catalog: list[str], plot_map: bool = False)
 
 def plot_nk(
     material: Material,
-    wavelength_range: tuple = None,
-    ax: plt.Axes | tuple[plt.Axes, plt.Axes] = None,
+    wavelength_range: tuple[float, float] | None = None,
+    ax: Axes | tuple[Axes, Axes] | None = None,
     n_sample: int = 800,
     share_yscale: bool = False,
-) -> tuple[plt.Figure, list[plt.Axes]]:
+) -> tuple[Figure, tuple[Axes, Axes]]:
     """
     Plot the refractive index (n) and extinction coefficient (k) of a material
     versus wavelength.
@@ -395,7 +403,7 @@ def plot_nk(
         share_yscale (bool): Whether to share the y-axis scale between n and k plots.
 
     Returns:
-        tuple[plt.Figure, list[plt.Axes]]: The figure and axes objects ([ax_n, ax_k])
+        A tuple containing the figure and a list of two axes objects
 
     Example:
     >>> mat = Material("BK7", reference="SCHOTT")
@@ -407,6 +415,11 @@ def plot_nk(
     min_wl = material.material_data.get("min_wavelength")
     max_wl = material.material_data.get("max_wavelength")
 
+    if min_wl is None or max_wl is None:
+        raise ValueError(
+            "Failed to fetch minimum and maximum wavelength from material."
+        )
+
     # Check if the specified wavelength_range is valid
     if wavelength_range is None:
         wavelength_range = (min_wl, max_wl)
@@ -417,12 +430,10 @@ def plot_nk(
         fig, ax_n = plt.subplots()
         ax_k = ax_n.twinx()
     elif (
-        isinstance(ax, tuple)
-        and len(ax) == 2
-        and all(isinstance(a, plt.Axes) for a in ax)
+        isinstance(ax, tuple) and len(ax) == 2 and all(isinstance(a, Axes) for a in ax)
     ):
         ax_n, ax_k = ax
-    elif isinstance(ax, plt.Axes):
+    elif isinstance(ax, Axes):
         ax_n = ax
         ax_k = ax.twinx()
     else:
@@ -432,6 +443,8 @@ def plot_nk(
         )
 
     # Check if the specified wavelength_range is valid
+    if wavelength_range is None:
+        raise ValueError("Wavelength range not initialized")
     if min_wl > wavelength_range[0] or max_wl < wavelength_range[1]:
         warnings.warn(
             "Specified wavelength_range is outside the material's available range. "
@@ -458,7 +471,7 @@ def plot_nk(
 
     ax_n.plot(wl, n, label="n", color="k")
     ax_k.plot(wl, k, label="k", color="k", linestyle=":")
-    ax_n.set_xlabel("$\lambda$ (nm)")
+    ax_n.set_xlabel(r"$\lambda$ (nm)")
     ax_n.set_ylabel("$n$", color="k")
     ax_n.tick_params(axis="y", labelcolor="k")
     ax_k.set_ylabel("$k$", color="k")
@@ -485,4 +498,4 @@ def plot_nk(
     lines2, labels2 = ax_k.get_legend_handles_labels()
     ax_n.legend(lines + lines2, labels + labels2)
 
-    return fig, [ax_n, ax_k]
+    return fig, (ax_n, ax_k)

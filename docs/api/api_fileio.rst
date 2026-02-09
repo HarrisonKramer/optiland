@@ -7,6 +7,6 @@ This section covers Optiland functionality related to reading and writing variou
    :toctree: fileio/
    :caption: File IO Modules
 
-   fileio.converters
-   fileio.optiland_handler
-   fileio.zemax_handler
+   optiland.fileio.converters
+   optiland.fileio.optiland_handler
+   optiland.fileio.zemax_handler

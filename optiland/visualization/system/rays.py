@@ -11,6 +11,8 @@ import numpy as np
 import vtk
 
 import optiland.backend as be
+from optiland.utils import resolve_fields, resolve_wavelengths
+from optiland.visualization.system.ray_bundle import RayBundle
 from optiland.visualization.system.utils import transform
 
 
@@ -54,6 +56,9 @@ class Rays2D:
         num_rays=3,
         distribution="line_y",
         reference=None,
+        theme=None,
+        projection="YZ",
+        hide_vignetted=False,
     ):
         """Plots the rays for the given fields and wavelengths.
 
@@ -74,21 +79,32 @@ class Rays2D:
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
                 Ignored if extended source is attached.
+            theme (Theme, optional): The theme to apply. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
+        fields = resolve_fields(self.optic, fields)
+        wavelengths = resolve_wavelengths(self.optic, wavelengths)
+
+        artists = {}
+
         # Check if an extended source is attached
         if hasattr(self.optic, "source") and self.optic.source is not None:
             # Use extended source for ray tracing
             self._trace_extended_source(num_rays if num_rays > 3 else 100)
-            self._plot_lines(ax, 0)  # Use single color for all source rays
+            artists.update(
+                self._plot_lines(
+                    ax,
+                    0,  # Single color for all source rays
+                    (0.0, 0.0),  # Dummy field for extended source
+                    theme=theme,
+                    projection=projection,
+                    hide_vignetted=hide_vignetted,
+                )
+            )
         else:
             # Use traditional field/wavelength approach
-            if fields == "all":
-                fields = self.optic.fields.get_field_coords()
-
-            if wavelengths == "primary":
-                wavelengths = [self.optic.wavelengths.primary_wavelength.value]
-
             for i, field in enumerate(fields):
                 for j, wavelength in enumerate(wavelengths):
                     # if only one field, use different colors for each wavelength
@@ -100,12 +116,32 @@ class Rays2D:
                     else:
                         # trace rays and plot lines
                         self._trace(field, wavelength, num_rays, distribution)
-                        self._plot_lines(ax, color_idx)
+                        artists.update(
+                            self._plot_lines(
+                                ax,
+                                color_idx,
+                                field,
+                                theme=theme,
+                                projection=projection,
+                                hide_vignetted=hide_vignetted,
+                            )
+                        )
 
                     # trace reference rays and plot lines
                     if reference is not None:
                         self._trace_reference(field, wavelength, reference)
-                        self._plot_lines(ax, color_idx, linewidth=1.5)
+                        artists.update(
+                            self._plot_lines(
+                                ax,
+                                color_idx,
+                                field,
+                                linewidth=1.5,
+                                theme=theme,
+                                projection=projection,
+                                hide_vignetted=hide_vignetted,
+                            )
+                        )
+        return artists
 
     def _trace_extended_source(self, num_rays):
         """Traces rays from an extended source through the optical system.
@@ -206,7 +242,16 @@ class Rays2D:
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
-    def _plot_lines(self, ax, color_idx, linewidth=1):
+    def _plot_lines(
+        self,
+        ax,
+        color_idx,
+        field,
+        linewidth=1,
+        theme=None,
+        projection="YZ",
+        hide_vignetted=False,
+    ):
         """Plots multiple lines on the given axis.
 
         This method iterates through the rays stored in the object's attributes
@@ -218,11 +263,19 @@ class Rays2D:
             ax (matplotlib.axes.Axes): The axis on which to plot the lines.
             color_idx (int): The index used to determine the color of the
                 lines.
+            field (tuple): The field coordinates for the ray.
+            linewidth (float): The width of the line.
+            theme (Theme, optional): The theme to apply. Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
+
 
         Returns:
             None
 
         """
+        artists = {}
+        bundle_id = f"bundle_{color_idx}"
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])
@@ -230,14 +283,32 @@ class Rays2D:
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
 
+            if hide_vignetted and np.any(ik == 0):
+                continue
+
             # remove rays outside aperture
             xk[ik == 0] = np.nan
             zk[ik == 0] = np.nan
             yk[ik == 0] = np.nan
 
-            self._plot_single_line(ax, xk, yk, zk, color_idx, linewidth)
+            artist, ray_bundle = self._plot_single_line(
+                ax,
+                xk,
+                yk,
+                zk,
+                color_idx,
+                field,
+                linewidth,
+                theme=theme,
+                projection=projection,
+            )
+            ray_bundle.bundle_id = bundle_id
+            artists[artist] = ray_bundle
+        return artists
 
-    def _plot_single_line(self, ax, x, y, z, color_idx, linewidth=1):
+    def _plot_single_line(
+        self, ax, x, y, z, color_idx, field, linewidth=1, theme=None, projection="YZ"
+    ):
         """Plots a single line on the given axes.
 
         Args:
@@ -246,14 +317,29 @@ class Rays2D:
             y (array-like): The y-coordinates of the line.
             z (array-like): The z-coordinates of the line.
             color_idx (int): The index for the color to use for the line.
+            field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line. Default is 1.
+            theme (Theme, optional): The theme to apply. Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         Returns:
             None
 
         """
-        color = f"C{color_idx}"
-        ax.plot(z, y, color, linewidth=linewidth)
+        if theme:
+            ray_cycle = theme.parameters.get("ray_cycle")
+            color = ray_cycle[color_idx % len(ray_cycle)]
+        else:
+            color = f"C{color_idx}"
+
+        if projection == "XY":
+            (line,) = ax.plot(x, y, color=color, linewidth=linewidth)
+        elif projection == "XZ":
+            (line,) = ax.plot(z, x, color=color, linewidth=linewidth)
+        else:  # YZ
+            (line,) = ax.plot(z, y, color=color, linewidth=linewidth)
+        return line, RayBundle(x, y, z, field)
 
 
 class Rays3D(Rays2D):
@@ -268,6 +354,68 @@ class Rays3D(Rays2D):
         optic: The optical system to be visualized.
 
     """
+
+    def plot(
+        self,
+        ax,
+        fields="all",
+        wavelengths="primary",
+        num_rays=3,
+        distribution="line_y",
+        reference=None,
+        theme=None,
+        hide_vignetted=False,
+    ):
+        """Plots the rays for the given fields and wavelengths.
+
+        Args:
+            ax: The matplotlib axis to plot on.
+            fields: The fields at which to trace the rays. Default is 'all'.
+            wavelengths: The wavelengths at which to trace the rays.
+                Default is 'primary'.
+            num_rays: The number of rays to trace for each field and
+                wavelength. Default is 3.
+            distribution: The distribution of the rays. Default is 'line_y'.
+            reference (str, optional): The reference rays to plot. Options
+                include "chief" and "marginal". Defaults to None.
+            theme (Theme, optional): The theme to apply. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
+
+        """
+        fields = resolve_fields(self.optic, fields)
+        wavelengths = resolve_wavelengths(self.optic, wavelengths)
+
+        for i, field in enumerate(fields):
+            for j, wavelength in enumerate(wavelengths):
+                # if only one field, use different colors for each wavelength
+                color_idx = i if len(fields) > 1 else j
+
+                if distribution is None:
+                    # trace only for surface extents
+                    self._trace(field, wavelength, num_rays, "line_y")
+                else:
+                    # trace rays and plot lines
+                    self._trace(field, wavelength, num_rays, distribution)
+                    self._plot_lines(
+                        ax,
+                        color_idx,
+                        field,
+                        theme=theme,
+                        hide_vignetted=hide_vignetted,
+                    )
+
+                # trace reference rays and plot lines
+                if reference is not None:
+                    self._trace_reference(field, wavelength, reference)
+                    self._plot_lines(
+                        ax,
+                        color_idx,
+                        field,
+                        linewidth=1.5,
+                        theme=theme,
+                        hide_vignetted=hide_vignetted,
+                    )
 
     def __init__(self, optic):
         super().__init__(optic)
@@ -286,7 +434,31 @@ class Rays3D(Rays2D):
             (0.090, 0.745, 0.812),
         ]
 
-    def _plot_single_line(self, renderer, x, y, z, color_idx, linewidth=1):
+    def _plot_lines(
+        self, ax, color_idx, field, linewidth=1, theme=None, hide_vignetted=False
+    ):
+        # loop through rays
+        for k in range(self.z.shape[1]):
+            xk = be.to_numpy(self.x[:, k])
+            yk = be.to_numpy(self.y[:, k])
+            zk = be.to_numpy(self.z[:, k])
+            ik = be.to_numpy(self.i[:, k])
+
+            if hide_vignetted and np.any(ik == 0):
+                continue
+
+            # remove rays outside aperture
+            xk[ik == 0] = np.nan
+            zk[ik == 0] = np.nan
+            yk[ik == 0] = np.nan
+
+            self._plot_single_line(
+                ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
+            )
+
+    def _plot_single_line(
+        self, renderer, x, y, z, color_idx, field, linewidth=1, theme=None
+    ):
         """Plots a single line in 3D space using VTK with the specified
         coordinates and color index.
 
@@ -297,10 +469,19 @@ class Rays3D(Rays2D):
             z (list of float): The z-coordinates of the line.
             color_idx (int): The index of the color to use from the
                 _rgb_colors list.
+            field (tuple): The field coordinates for the ray.
             linewidth (float): The width of the line. Default is 1.
+            theme (Theme, optional): The theme to apply. Defaults to None.
 
         """
-        color = self._rgb_colors[color_idx % 10]
+        if theme:
+            from matplotlib.colors import to_rgb
+
+            ray_cycle = theme.parameters.get("ray_cycle")
+            color = to_rgb(ray_cycle[color_idx % len(ray_cycle)])
+        else:
+            color = self._rgb_colors[color_idx % 10]
+
         for k in range(1, len(x)):
             p0 = [x[k - 1], y[k - 1], z[k - 1]]
             p1 = [x[k], y[k], z[k]]

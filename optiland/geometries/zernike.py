@@ -130,6 +130,16 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
     def __str__(self) -> str:
         return "Zernike Polynomial"
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.norm_radius = self.norm_radius * scale_factor
+        self.coefficients = self.coefficients * scale_factor
+
     def sag(self, x: NDArray, y: NDArray) -> NDArray:  # type: ignore
         """Calculate the sag of the Zernike polynomial surface at the given
         coordinates.

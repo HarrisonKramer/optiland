@@ -92,13 +92,24 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         if coefficients is None:
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.c = be.atleast_2d(coefficients)
+        self.coefficients = be.atleast_2d(coefficients)
         self.norm_x = be.array(norm_x)
         self.norm_y = be.array(norm_y)
         self.is_symmetric = False
 
     def __str__(self):
         return "Chebyshev Polynomial"
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.norm_x = self.norm_x * scale_factor
+        self.norm_y = self.norm_y * scale_factor
+        self.coefficients = self.coefficients * scale_factor
 
     def sag(self, x=0, y=0):
         """Calculates the sag of the Chebyshev polynomial surface at the given
@@ -120,11 +131,11 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         r2 = x**2 + y**2
         z = r2 / (self.radius * (1 + be.sqrt(1 - (1 + self.k) * r2 / self.radius**2)))
 
-        non_zero_indices = be.argwhere(self.c != 0)
+        non_zero_indices = be.argwhere(self.coefficients != 0)
         for i, j in non_zero_indices:
-            z = z + self.c[i, j] * self._chebyshev(i, x_norm) * self._chebyshev(
-                j, y_norm
-            )
+            z = z + self.coefficients[i, j] * self._chebyshev(
+                i, x_norm
+            ) * self._chebyshev(j, y_norm)
 
         return z
 
@@ -151,16 +162,16 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         dzdx = x / denom
         dzdy = y / denom
 
-        non_zero_indices = be.argwhere(self.c != 0)
+        non_zero_indices = be.argwhere(self.coefficients != 0)
         for i, j in non_zero_indices:
             dzdx = dzdx + (
                 self._chebyshev_derivative(i, x_norm)
-                * self.c[i, j]
+                * self.coefficients[i, j]
                 * self._chebyshev(j, y_norm)
             )
             dzdy = dzdy + (
                 self._chebyshev_derivative(j, y_norm)
-                * self.c[i, j]
+                * self.coefficients[i, j]
                 * self._chebyshev(i, x_norm)
             )
 
@@ -226,7 +237,7 @@ class ChebyshevPolynomialGeometry(NewtonRaphsonGeometry):
         geometry_dict = super().to_dict()
         geometry_dict.update(
             {
-                "coefficients": self.c.tolist(),
+                "coefficients": self.coefficients.tolist(),
                 "norm_x": self.norm_x,
                 "norm_y": self.norm_y,
             },

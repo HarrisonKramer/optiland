@@ -1,20 +1,26 @@
 """Specialized variable handlers for Forbes polynomial coefficients.
 
 This module provides handlers for Forbes polynomial coefficients,
-distinguishing between rotationally symmetric (Q-bfs) and freeform (Q-2D)
-surfaces.
+distinguishing between rotationally symmetric (slope-orthogonal Q) and
+freeform (Q-2D) surfaces.
 
 Manuel Fragata Mendes, August 2025
 """
 
 from __future__ import annotations
 
-from optiland.geometries.forbes.geometry import ForbesQ2dGeometry, ForbesQbfsGeometry
+import warnings
+
+from optiland.geometries.forbes.geometry import (
+    ForbesQ2dGeometry,
+    ForbesQNormalSlopeGeometry,
+)
+from optiland.optimization.scaling.identity import IdentityScaler
 from optiland.optimization.variable.base import VariableBehavior
 
 
-class ForbesQbfsCoeffVariable(VariableBehavior):
-    """Represents a variable for a Forbes Q-bfs coefficient.
+class ForbesQNormalSlopeCoeffVariable(VariableBehavior):
+    """Represents a variable for a Forbes Q (slope-orthogonal) coefficient.
 
     This variable targets a coefficient for a specific radial order `n`.
 
@@ -22,68 +28,51 @@ class ForbesQbfsCoeffVariable(VariableBehavior):
         coeff_number (int): The radial order 'n' of the coefficient.
     """
 
-    def __init__(
-        self, optic, surface_number, coeff_number, apply_scaling=False, **kwargs
-    ):
-        """Initializes the ForbesQbfsCoeffVariable.
+    def __init__(self, optic, surface_number, coeff_number, scaler=None, **kwargs):
+        """Initializes the ForbesQNormalSlopeCoeffVariable.
 
         Args:
             optic: The optical system.
             surface_number (int): The surface number to which the coefficient belongs.
             coeff_number (int): The radial order 'n' of the coefficient.
-            apply_scaling (bool, optional): Whether to apply scaling. Defaults to False.
+            scaler (Scaler, optional): The scaler to use. Defaults to IdentityScaler().
             **kwargs: Additional keyword arguments.
         """
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.coeff_number = coeff_number  # the radial order 'n'
 
     def get_value(self):
-        """Gets the value of the nth Q-bfs coefficient.
+        """Gets the value of the nth Q (slope-orthogonal) coefficient.
 
         Returns:
             float: The value of the coefficient.
 
         Raises:
-            TypeError: If the geometry is not a ForbesQbfsGeometry.
+            TypeError: If the geometry is not a ForbesQNormalSlopeGeometry.
         """
         surf = self._surfaces.surfaces[self.surface_number]
         geom = surf.geometry
-        if not isinstance(geom, ForbesQbfsGeometry):
-            raise TypeError("This variable is only for ForbesQbfsGeometry.")
+        if not isinstance(geom, ForbesQNormalSlopeGeometry):
+            raise TypeError("This variable is only for ForbesQNormalSlopeGeometry.")
 
-        value = geom.radial_terms.get(self.coeff_number, 0.0)
-
-        if self.apply_scaling:
-            return self.scale(value)
-        return value
+        return geom.radial_terms.get(self.coeff_number, 0.0)
 
     def update_value(self, new_value):
-        """Updates the value of the nth Q-bfs coefficient.
+        """Updates the value of the nth Q (slope-orthogonal) coefficient.
 
         Args:
             new_value (float): The new value for the coefficient.
         """
-        if self.apply_scaling:
-            new_value = self.inverse_scale(new_value)
-
         surf = self.optic.surface_group.surfaces[self.surface_number]
         geom = surf.geometry
 
         geom.radial_terms[self.coeff_number] = new_value
         geom._prepare_coeffs()
 
-    def scale(self, value):
-        scaling_factor = 1.0
-        return value * scaling_factor
-
-    def inverse_scale(self, scaled_value):
-        scaling_factor = 1.0
-        return scaled_value / scaling_factor
-
     def __str__(self):
-        return (
-            f"Forbes Q-bfs Coeff n={self.coeff_number}, Surface {self.surface_number}"
-        )
+        return f"Forbes Q Coeff n={self.coeff_number}, Surface {self.surface_number}"
 
 
 class ForbesQ2dCoeffVariable(VariableBehavior):
@@ -100,9 +89,7 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         coeff_tuple (tuple): The identifier for the coefficient.
     """
 
-    def __init__(
-        self, optic, surface_number, coeff_tuple, apply_scaling=False, **kwargs
-    ):
+    def __init__(self, optic, surface_number, coeff_tuple, scaler=None, **kwargs):
         """Initializes the ForbesQ2dCoeffVariable.
 
         Args:
@@ -111,13 +98,15 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
             coeff_tuple (tuple): The identifier for the coefficient, following the
                 Zemax convention: `('a', m, n)` for a cosine term a_n^m, or
                 `('b', m, n)` for a sine term b_n^m.
-            apply_scaling (bool, optional): Whether to apply scaling. Defaults to False.
+            scaler (Scaler, optional): The scaler to use. Defaults to IdentityScaler().
             **kwargs: Additional keyword arguments.
 
         Raises:
             ValueError: If `coeff_tuple` is not in the correct format.
         """
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.attribute = "freeform_coeffs"
 
         # Parse the Zemax-style key for correct string representation and validation
@@ -172,4 +161,26 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         return (
             f"Forbes Q-2D Coeff (n={self.n}, m={self.m}, {self.term_type}), "
             f"Surface {self.surface_number}"
+        )
+
+
+class ForbesQbfsCoeffVariable(ForbesQNormalSlopeCoeffVariable):
+    """Deprecated alias for ForbesQNormalSlopeCoeffVariable.
+
+    .. deprecated::
+        Use :class:`ForbesQNormalSlopeCoeffVariable` instead.
+    """
+
+    def __init__(self, optic, surface_number, coeff_number, scaler=None, **kwargs):
+        warnings.warn(
+            "ForbesQbfsCoeffVariable is deprecated; use "
+            "ForbesQNormalSlopeCoeffVariable instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(optic, surface_number, coeff_number, scaler, **kwargs)
+
+    def __str__(self):
+        return (
+            f"Forbes Q-bfs Coeff n={self.coeff_number}, Surface {self.surface_number}"
         )

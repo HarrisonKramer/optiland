@@ -11,8 +11,14 @@ from optiland.rays import RealRays
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 
-# Ensure the backend is set to numpy for all tests in this module
-be.set_backend("numpy")
+
+@pytest.fixture(autouse=True)
+def set_numpy_backend():
+    """Ensure the numpy backend is used for all tests in this module and restore after."""
+    original_backend = be.get_backend()
+    be.set_backend("numpy")
+    yield
+    be.set_backend(original_backend)
 
 
 @pytest.fixture(scope="module")
@@ -86,12 +92,15 @@ class TestHuygensPSF:
         assert psf_instance.pixel_pitch > 0, "Pixel pitch must be positive"
 
     @patch("optiland.backend.get_backend", return_value="cupy")
-    def test_huygens_psf_backend_check(self, cooke_triplet_optic):
+    def test_huygens_psf_unsupported_backend_check(
+        self, mock_get_backend, cooke_triplet_optic
+    ):
         """
-        Tests that HuygensPSF raises ValueError if backend is not numpy.
-        This test relies on mocking the backend check.
+        Tests that HuygensPSF raises ValueError for an unsupported backend.
         """
-        with pytest.raises(ValueError, match="HuygensPSF only supports numpy backend."):
+        with pytest.raises(
+            ValueError, match="Unsupported backend for HuygensPSF: cupy"
+        ):
             HuygensPSF(
                 optic=cooke_triplet_optic,
                 field=(0, 0),

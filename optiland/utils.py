@@ -8,6 +8,9 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+import re
+from typing import Any
+
 import optiland.backend as be
 
 
@@ -28,7 +31,7 @@ def get_working_FNO(optic, field, wavelength):
         4. Compute the angle between each marginal ray and the chief ray.
         4. Calculate the average of the squared numerical apertures from all traced
             marginal rays.
-        5. Compute the working F-number as 1 / (2 * sqrt(average_NA_squared)).
+        5. Compute the working F-number as 1 / (2 * be.sqrt(average_NA_squared)).
         6. Cap the calculated F/# at 10,000 if it exceeds this value.
 
     Returns:
@@ -62,3 +65,144 @@ def get_working_FNO(optic, field, wavelength):
         raise ValueError("Working F/# could not be calculated due to raytrace errors.")
 
     return fno
+
+
+def resolve_wavelengths(optic, wavelengths):
+    """Resolves wavelength input into a list of wavelength values.
+
+    Args:
+        optic (Optic): The optic object.
+        wavelengths (str or list): The wavelengths to resolve.
+            Can be 'all', 'primary', or a list of wavelength values.
+
+    Returns:
+        list: A list of wavelength values.
+    """
+    if isinstance(wavelengths, str):
+        if wavelengths == "all":
+            return optic.wavelengths.get_wavelengths()
+        elif wavelengths == "primary":
+            return [optic.primary_wavelength]
+        else:
+            raise ValueError("Invalid wavelength string. Must be 'all' or 'primary'.")
+    elif isinstance(wavelengths, list):
+        return wavelengths
+    else:
+        raise TypeError("Wavelengths must be a string ('all', 'primary') or a list.")
+
+
+def resolve_fields(optic, fields):
+    """Resolves field input into a list of field coordinates.
+
+    Args:
+        optic (Optic): The optic object.
+        fields (str or list): The fields to resolve.
+            Can be 'all' or a list of field coordinates.
+
+    Returns:
+        list: A list of field coordinates.
+    """
+    if isinstance(fields, str):
+        if fields == "all":
+            return optic.fields.get_field_coords()
+        else:
+            raise ValueError("Invalid field string. Must be 'all'.")
+    elif isinstance(fields, list):
+        return fields
+    else:
+        raise TypeError("Fields must be a string ('all') or a list.")
+
+
+def resolve_wavelength(optic, wavelength):
+    """Resolves a single wavelength input into a float value.
+
+    Args:
+        optic (Optic): The optic object.
+        wavelength (str or float or int): The wavelength to resolve.
+            Can be 'primary' or a numerical value.
+
+    Returns:
+        float: A single wavelength value.
+    """
+    if isinstance(wavelength, str):
+        if wavelength == "primary":
+            return optic.primary_wavelength
+        else:
+            raise ValueError(
+                "Invalid wavelength string. For a single wavelength, it must be "
+                "'primary'."
+            )
+    elif isinstance(wavelength, int | float):
+        return float(wavelength)
+    else:
+        raise TypeError("Wavelength must be a string ('primary') or a number.")
+
+
+def get_attr_by_path(obj: Any, path: str) -> Any:
+    """Retrieve an attribute of an object using a dot-separated path.
+    Supports list indexing, e.g., 'surfaces[1].geometry.radius'.
+
+    Args:
+        obj: The object to retrieve the attribute from.
+        path: The dot-separated path to the attribute.
+
+    Returns:
+        The value of the attribute.
+    """
+
+    def _get_item(current_obj, key):
+        # Check for list indexing: name[index]
+        match = re.match(r"(\w+)\[(\d+)\]", key)
+        if match:
+            attr_name, index = match.groups()
+            current_obj = getattr(current_obj, attr_name)
+            return current_obj[int(index)]
+        else:
+            return getattr(current_obj, key)
+
+    parts = path.split(".")
+    for part in parts:
+        obj = _get_item(obj, part)
+    return obj
+
+
+def set_attr_by_path(obj: Any, path: str, value: Any) -> None:
+    """Set an attribute of an object using a dot-separated path.
+    Supports list indexing, e.g., 'surfaces[1].geometry.radius'.
+
+    Args:
+        obj: The object to set the attribute on.
+        path: The dot-separated path to the attribute.
+        value: The value to set.
+    """
+
+    def _get_item_or_list(current_obj, key):
+        # Helper to traverse, but stop before setting the final attribute
+        # If key is name[index], we get the list item.
+        match = re.match(r"(\w+)\[(\d+)\]", key)
+        if match:
+            attr_name, index = match.groups()
+            container = getattr(current_obj, attr_name)
+            return container[int(index)]
+        else:
+            return getattr(current_obj, key)
+
+    parts = path.split(".")
+    final_attr = parts[-1]
+    parent_path = parts[:-1]
+
+    # Navigate to the parent object
+    current_obj = obj
+    for part in parent_path:
+        current_obj = _get_item_or_list(current_obj, part)
+
+    # Set the value on the final attribute
+    # Note: final_attr usually shouldn't have [index] because we set attributes,
+    # but if it does (e.g. setting an item in a list directly), handle it.
+    match = re.match(r"(\w+)\[(\d+)\]", final_attr)
+    if match:
+        attr_name, index = match.groups()
+        container = getattr(current_obj, attr_name)
+        container[int(index)] = value
+    else:
+        setattr(current_obj, final_attr, value)

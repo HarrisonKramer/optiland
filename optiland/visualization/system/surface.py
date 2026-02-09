@@ -42,25 +42,40 @@ class Surface2D:
         else:
             self.extent = ray_extent
 
-    def plot(self, ax):
+    def plot(self, ax, theme=None, projection="YZ"):
         """Plots the surface on the given matplotlib axis.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axis on which the
                 surface will be plotted.
+            theme (Theme, optional): The theme to use for plotting.
+                Defaults to None.
+            projection (str, optional): The projection plane. Must be 'XY',
+                'XZ', or 'YZ'. Defaults to 'YZ'.
 
         """
-        x, y, z = self._compute_sag()
+        x, y, z = self._compute_sag(projection)
 
         # convert to global coordinates and return
-        _, y, z = transform(x, y, z, self.surf, is_global=False)
+        x, y, z = transform(x, y, z, self.surf, is_global=False)
 
+        x = be.to_numpy(x)
         y = be.to_numpy(y)
         z = be.to_numpy(z)
 
-        ax.plot(z, y, "gray")
+        color = "gray"
+        if theme:
+            color = theme.parameters.get("axes.edgecolor", color)
 
-    def _compute_sag(self):
+        if projection == "XY":
+            (line,) = ax.plot(x, y, color=color, label=f"Surface {self.surf.comment}")
+        elif projection == "XZ":
+            (line,) = ax.plot(z, x, color=color, label=f"Surface {self.surf.comment}")
+        else:  # YZ
+            (line,) = ax.plot(z, y, color=color, label=f"Surface {self.surf.comment}")
+        return {line: self}
+
+    def _compute_sag(self, projection="YZ"):
         """Computes the sag of the surface in local coordinates and handles
         clipping due to physical apertures.
 
@@ -68,18 +83,37 @@ class Surface2D:
             tuple: A tuple containing arrays of x, y, and z coordinates.
 
         """
-        # local coordinates
-        x = be.zeros(128)
-        y = be.linspace(-self.extent, self.extent, 128)
+        if projection == "XY":
+            # local coordinates for XY circular aperture view
+            theta = be.linspace(0, 2 * be.pi, 128)
+            x = self.extent * be.cos(theta)
+            y = self.extent * be.sin(theta)
+            z = self.surf.geometry.sag(x, y)
+            # No aperture clipping needed here as we are plotting the boundary
+            return x, y, z
+
+        # local coordinates for XZ or YZ cross-section
+        if projection == "XZ":
+            y = be.zeros(128)
+            x = be.linspace(-self.extent, self.extent, 128)
+        else:  # YZ
+            x = be.zeros(128)
+            y = be.linspace(-self.extent, self.extent, 128)
         z = self.surf.geometry.sag(x, y)
 
-        # handle physical apertures
+        # handle physical apertures for line cross-sections
         if self.surf.aperture:
-            y = be.copy(y)  # required to maintain gradient for torch backend
-            intensity = be.ones_like(x)
+            if projection == "XZ":
+                x = be.copy(x)
+            else:  # YZ
+                y = be.copy(y)  # required to maintain gradient for torch backend
+            intensity = be.ones_like(x)  # works for both cases
             rays = RealRays(x, y, x, x, x, x, intensity, x)
             self.surf.aperture.clip(rays)
-            y[rays.i == 0] = be.nan
+            if projection == "XZ":
+                x[rays.i == 0] = be.nan
+            else:  # YZ
+                y[rays.i == 0] = be.nan
 
         return x, y, z
 
@@ -104,19 +138,21 @@ class Surface3D(Surface2D):
     def __init__(self, surface, extent):
         super().__init__(surface, extent)
 
-    def plot(self, renderer):
+    def plot(self, renderer, theme=None, *args, **kwargs):
         """Plots the surface on the given renderer.
 
         Args:
             renderer (vtkRenderer): The renderer to which the surface actor
                 will be added.
+            theme (Theme, optional): The theme to use for plotting.
+                Defaults to None.
 
         """
-        actor = self.get_surface()
-        self._configure_material(actor)
+        actor = self.get_surface(theme=theme)
+        self._configure_material(actor, theme=theme)
         renderer.AddActor(actor)
 
-    def get_surface(self):
+    def get_surface(self, theme=None):
         """Retrieves the surface actor based on the symmetry of the surface
         geometry.
 
@@ -137,7 +173,7 @@ class Surface3D(Surface2D):
             actor = self._get_symmetric_surface()
         else:
             actor = self._get_asymmetric_surface()
-        actor = self._configure_material(actor)
+        actor = self._configure_material(actor, theme=theme)
         return actor
 
     def _get_symmetric_surface(self):
@@ -224,7 +260,7 @@ class Surface3D(Surface2D):
 
         return actor
 
-    def _configure_material(self, actor):
+    def _configure_material(self, actor, theme=None):
         """Configures the material properties of a given actor.
 
         This method sets the color, ambient, diffuse, specular, and specular
@@ -232,12 +268,21 @@ class Surface3D(Surface2D):
 
         Args:
             actor: The actor whose material properties are to be configured.
+            theme (Theme, optional): The theme to use for plotting.
+                Defaults to None.
 
         Returns:
             The actor with updated material properties.
 
         """
-        actor.GetProperty().SetColor(1, 1, 1)
+        color = (1, 1, 1)
+        if theme:
+            from matplotlib.colors import to_rgb
+
+            color_hex = theme.parameters.get("lens.color", "#FFFFFF")
+            color = to_rgb(color_hex)
+
+        actor.GetProperty().SetColor(color)
         actor.GetProperty().SetAmbient(0.5)
         actor.GetProperty().SetDiffuse(0.05)
         actor.GetProperty().SetSpecular(1.0)

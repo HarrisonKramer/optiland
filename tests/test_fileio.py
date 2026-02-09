@@ -5,6 +5,7 @@ from unittest.mock import mock_open, patch
 import pytest
 
 from optiland.fileio.optiland_handler import load_obj_from_json, save_obj_to_json
+from optiland.fileio import save_optiland_file, load_optiland_file
 from optiland.fileio.zemax_handler import (
     ZemaxDataModel,
     ZemaxDataParser,
@@ -14,6 +15,8 @@ from optiland.fileio.zemax_handler import (
 from optiland.materials import Material
 from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
+import optiland.backend as be
+from .utils import assert_allclose
 
 
 @pytest.fixture
@@ -119,6 +122,14 @@ class TestZemaxDataParser:
         self.parser._read_surf_type(["TYPE", "STANDARD"])
         assert self.parser._current_surf_data["type"] == "standard"
 
+    def test_read_floating_stop(self):
+        self.parser._read_floating_stop(["FLOA"])
+        assert self.parser.data_model.aperture["floating_stop"] is True
+
+    def test_read_diameter(self):
+        self.parser._read_diameter(["DIAM", "8.5", "1", "0", "0", "1", '""'])
+        assert self.parser._current_surf_data["diameter"] == 8.5
+
 
 class TestEndToEnd:
     def test_load_zemax_file(self, zemax_file):
@@ -130,6 +141,30 @@ class TestEndToEnd:
         filename = os.path.join(current_dir, "zemax_files/lens2.zmx")
         optic = load_zemax_file(filename)
         assert isinstance(optic, Optic)
+
+    def test_load_floa_aperture(self):
+        """Test loading a Zemax file with FLOA (floating stop) aperture."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(current_dir, "zemax_files/lens_floa.zmx")
+        optic = load_zemax_file(filename)
+        assert isinstance(optic, Optic)
+        assert optic.aperture.ap_type == "float_by_stop_size"
+        assert optic.aperture.value == 8.5
+
+    def test_load_toroidal_surface(self):
+        """Test loading a Zemax file with a TOROIDAL surface."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        filename = os.path.join(current_dir, "zemax_files/thorlabs_lj1598l1.zmx")
+        optic = load_zemax_file(filename)
+        assert isinstance(optic, Optic)
+        # Check surfaces
+        surf1 = optic.surface_group.surfaces[1]
+        surf2 = optic.surface_group.surfaces[2]
+        # Check radii
+        assert_allclose(surf1.geometry.R_yz, 1 / 0.4950495049504951)
+        assert_allclose(surf1.geometry.R_rot, be.inf)
+        assert_allclose(surf2.geometry.R_yz, be.inf)
+        assert_allclose(surf2.geometry.R_rot, be.inf)
 
 
 def test_save_load_json_obj():
@@ -159,3 +194,97 @@ def test_save_load_optiland_file():
         save_optiland_file(lens, temp_file.name)
         lens2 = load_optiland_file(temp_file.name)
     assert lens.to_dict() == lens2.to_dict()
+
+
+def test_load_legacy_optiland_file_with_field_type():
+    """Test loading an Optiland file with the legacy `field_type` key."""
+    import json
+    from optiland.fields import AngleField
+    from optiland.fileio import load_optiland_file
+
+    # 1. Create a modern optic and get its dictionary representation
+    lens = HeliarLens()
+    lens.set_field_type("angle")
+    modern_dict = lens.to_dict()
+
+    # 2. Create a legacy dictionary from the modern one
+    legacy_dict = lens.to_dict()
+    legacy_dict["fields"]["field_type"] = "angle"
+    del legacy_dict["fields"]["field_definition"]
+
+    # 3. Save the legacy dictionary to a temporary file
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".json"
+    ) as temp_file:
+        json.dump(legacy_dict, temp_file)
+        filepath = temp_file.name
+
+    # 4. Load the legacy file
+    loaded_lens = load_optiland_file(filepath)
+
+    # 5. Assert that the loaded lens is correct
+    assert isinstance(loaded_lens.field_definition, AngleField)
+    assert modern_dict == loaded_lens.to_dict()
+
+    os.remove(filepath)
+
+
+def test_remove_surface_after_load(set_test_backend, tmp_path):
+    """
+    Test that removing a surface after loading from a file works correctly.
+    This reproduces a bug where surface thicknesses were not being deserialized,
+    leading to incorrect surface positions after removal.
+    """
+    # 1. Create a lens and save it
+    lens = Optic(name="TestLens")
+    lens.add_surface(index=0, thickness=be.inf, material="Air")
+    lens.add_surface(
+        index=1,
+        surface_type="standard",
+        material="Air",
+        thickness=10,
+        radius=150,
+    )
+    lens.add_surface(
+        index=2,
+        surface_type="standard",
+        material="N-BK7",
+        thickness=10,
+        radius=150,
+        is_stop=True,
+    )
+    lens.add_surface(
+        index=3,
+        surface_type="standard",
+        material="Air",
+        thickness=20,
+        radius=be.inf,
+    )
+    lens.add_surface(index=4)
+    lens.set_aperture("float_by_stop_size", 25)
+
+    filepath = tmp_path / "lens.json"
+    save_optiland_file(lens, filepath)
+
+    # 2. Load the lens from the file
+    loaded_lens = load_optiland_file(filepath)
+
+    # 3. Remove the second surface (the air spacer)
+    loaded_lens.surface_group.remove_surface(1)
+
+    # 4. Assert that the positions of the remaining surfaces are correct
+    # Original surfaces: 0 (obj), 1 (air), 2 (n-bk7), 3 (air), 4 (img)
+    # Positions before removal: inf, 0, 10, 20, 40
+    # Thicknesses: inf, 10, 10, 20, 0
+    # After removing surf 1:
+    # New surfaces: 0 (obj), 1 (n-bk7), 2 (air), 3 (img)
+    # New surf 1 (orig 2) z -> 0.0. Its thickness is 10.
+    # New surf 2 (orig 3) z -> 0.0 + 10 = 10.0. Its thickness is 20.
+    # New surf 3 (orig 4) z -> 10.0 + 20 = 30.0. Its thickness is 0.
+    positions = loaded_lens.surface_group.positions.flatten()
+
+    # The object surface's position (index 0) is be.inf and not relevant to the bug.
+    # We check the positions of the subsequent surfaces.
+    expected_positions_after_object = be.array([0.0, 10.0, 30.0])
+
+    assert_allclose(positions[1:], expected_positions_after_object)

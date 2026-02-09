@@ -17,11 +17,14 @@ import numpy as np
 from matplotlib.collections import LineCollection
 
 import optiland.backend as be
+from optiland.utils import resolve_wavelength
 
 from .base import BaseAnalysis
 
 if TYPE_CHECKING:
+    from matplotlib.axes import Axes
     from matplotlib.colors import Colormap
+    from matplotlib.figure import Figure
 
 
 def _plot_angle_vs_height(
@@ -29,7 +32,7 @@ def _plot_angle_vs_height(
     axis: int,
     optic_name: str,
     plot_style: str,
-    ax: plt.Axes,
+    ax: Axes,
     title: str,
     color_label: str,
     cmap: str | Colormap,
@@ -127,22 +130,8 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         self.axis = axis
         self.num_points = num_points
 
-        if isinstance(wavelength, str):
-            if wavelength == "primary":
-                processed_wavelength = "primary"
-            else:
-                raise ValueError(
-                    "Invalid wavelength string for Angle vs. Height Analysis, only "
-                    "'primary' is supported as a string."
-                )
-        elif isinstance(wavelength, float | int):
-            processed_wavelength = [float(wavelength)]
-        else:
-            raise TypeError(
-                "wavelength argument must be 'primary' or a number (in microns)"
-            )
-
-        super().__init__(optic, wavelengths=processed_wavelength)
+        # The resolved wavelength is passed as a list to the parent constructor
+        super().__init__(optic, wavelengths=[resolve_wavelength(optic, wavelength)])
 
     @abc.abstractmethod
     def _get_trace_coordinates(self, scan_range):
@@ -224,12 +213,12 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
+        fig_to_plot_on: Figure = None,
         figsize: tuple[float, float] = (8, 5.5),
         title: str = None,
         cmap: str | Colormap = "viridis",
         line_style: str = "-",
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[plt.Figure, Axes]:
         """Displays a plot of the incident angle vs. image height analysis.
 
         Args:

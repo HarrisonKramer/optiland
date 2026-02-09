@@ -10,12 +10,19 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 import importlib
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+    from torch import Tensor
+
+    from optiland._types import ScalarOrArrayT
+
 
 # Conversion functions for backends
-def torch_to_numpy(obj):
+def torch_to_numpy(obj: Tensor) -> NDArray:
     if importlib.util.find_spec("torch"):
         import torch
 
@@ -27,7 +34,7 @@ def torch_to_numpy(obj):
 CONVERTERS = [torch_to_numpy]
 
 
-def to_numpy(obj):
+def to_numpy(obj: ScalarOrArrayT) -> NDArray:
     """Converts input scalar or array to NumPy array, regardless of backend."""
     if isinstance(obj, np.ndarray):
         return obj
@@ -64,3 +71,19 @@ def to_numpy(obj):
         except TypeError:
             continue
     raise TypeError(f"Unsupported object type: {type(obj)}")
+
+
+def is_torch_tensor(obj) -> bool:
+    """Checks if an object is a PyTorch tensor.
+
+    Args:
+        obj: The object to check.
+
+    Returns:
+        bool: True if the object is a PyTorch tensor, False otherwise.
+    """
+    if importlib.util.find_spec("torch"):
+        import torch
+
+        return isinstance(obj, torch.Tensor)
+    return False

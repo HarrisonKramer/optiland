@@ -9,12 +9,17 @@ Manuel Fragata Mendes, June 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
+from optiland.analysis.base import BaseAnalysis
 
-from .base import BaseAnalysis
+if TYPE_CHECKING:
+    from optiland._types import BEArray, DistributionType, ScalarOrArray
+    from optiland.optic import Optic
 
 
 class RadiantIntensity(BaseAnalysis):
@@ -58,7 +63,7 @@ class RadiantIntensity(BaseAnalysis):
 
     def __init__(
         self,
-        optic,
+        optic: Optic,
         num_angular_bins_X: int = 101,
         num_angular_bins_Y: int = 101,
         angle_X_min: float = -15.0,
@@ -70,7 +75,7 @@ class RadiantIntensity(BaseAnalysis):
         fields="all",
         wavelengths="all",
         num_rays: int = 100000,
-        distribution: str = "random",
+        distribution: DistributionType = "random",
         user_initial_rays=None,
         source=None,
     ):
@@ -115,7 +120,7 @@ class RadiantIntensity(BaseAnalysis):
 
         self.reference_surface_index = int(reference_surface_index)
         self.num_rays = num_rays
-        self.distribution_name = distribution
+        self.distribution_name: DistributionType = distribution
 
         super().__init__(optic, wavelengths)
 
@@ -130,7 +135,9 @@ class RadiantIntensity(BaseAnalysis):
             analysis_data.append(field_block)
         return analysis_data
 
-    def _generate_field_wavelength_data(self, field_coord, wavelength):
+    def _generate_field_wavelength_data(
+        self, field_coord: tuple[ScalarOrArray, ScalarOrArray], wavelength: float
+    ) -> tuple[BEArray, BEArray, BEArray, BEArray, BEArray]:
         if self.user_initial_rays is None:
             self.optic.trace(
                 *field_coord,

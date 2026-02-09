@@ -9,9 +9,15 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.rays import PolarizedRays, RayGenerator
+
+if TYPE_CHECKING:
+    from optiland._types import DistributionType
+    from optiland.distribution import BaseDistribution
 
 
 class RealRayTracer:
@@ -28,7 +34,14 @@ class RealRayTracer:
         self.optic = optic
         self.ray_generator = RayGenerator(optic)
 
-    def trace(self, Hx, Hy, wavelength, num_rays=100, distribution="hexapolar"):
+    def trace(
+        self,
+        Hx,
+        Hy,
+        wavelength,
+        num_rays: int | None = 100,
+        distribution: DistributionType | BaseDistribution | None = "hexapolar",
+    ):
         """Trace a distribution of rays through the optical system.
 
         Args:
@@ -68,6 +81,13 @@ class RealRayTracer:
         )
         self.optic.surface_group.trace(rays)
 
+        # Propagate to the image surface
+        if self.optic.image_surface:
+            last_surface = self.optic.surface_group.surfaces[-1]
+            last_surface.material_post.propagation_model.propagate(
+                rays, last_surface.thickness
+            )
+
         if isinstance(rays, PolarizedRays):
             rays.update_intensity(self.optic.polarization_state)
 
@@ -99,7 +119,13 @@ class RealRayTracer:
         Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        rays = self.optic.surface_group.trace(rays)
+        self.optic.surface_group.trace(rays)
+
+        # Propagate to the image surface
+        last_surface = self.optic.surface_group.surfaces[-1]
+        last_surface.material_post.propagation_model.propagate(
+            rays, last_surface.thickness
+        )
 
         # update intensity
         self.optic.surface_group.intensity[-1, :] = rays.i

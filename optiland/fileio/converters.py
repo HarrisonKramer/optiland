@@ -62,7 +62,6 @@ class ZemaxToOpticConverter:
         if not has_cb:
             for idx, surf_data in self.data["surfaces"].items():
                 self._configure_surface(idx, surf_data)
-            self.optic.add_surface(index=len(self.data["surfaces"]))
             return
 
         # in case there are "Coordinate Break" surfaces
@@ -99,40 +98,53 @@ class ZemaxToOpticConverter:
             translation, _ = self.current_cs.get_effective_transform()
             rx_, ry_, rz_ = self.current_cs.get_effective_rotation_euler()
             coeffs = self._configure_surface_coefficients(surf)
-            thickness = surf.get("thickness", 0.0)
 
-            # special care now, we ramify. for object surface,
-            # if DISZ == inf, then keep infinity
+            # Prepare surface parameters
+            surface_params = {
+                "index": surf_idx,
+                "surface_type": surf["type"],
+                "conic": surf.get("conic"),
+                "is_stop": surf.get("is_stop", False),
+                "material": surf.get("material"),
+                "coefficients": coeffs,
+            }
+
+            if surf["type"] == "toroidal":
+                # Zemax CURV (data["radius"]) is the Y-Radius
+                surface_params["radius_y"] = surf["radius"]
+                surface_params["toroidal_coeffs_poly_y"] = coeffs
+
+                # Zemax PARM 1 (data["param_1"]) is the X-Radius
+                radius_x = surf.get("param_1", 0.0)
+                if radius_x == 0.0:
+                    radius_x = be.inf
+                surface_params["radius_x"] = radius_x
+            else:
+                # For all other surfaces, use the standard radius.
+                surface_params["radius"] = surf["radius"]
+
+            # Handle thickness and coordinate system parameters
+            thickness = surf.get("thickness", 0.0)
             if be.isinf(float(thickness)):
-                self.optic.add_surface(
-                    index=surf_idx,
-                    surface_type=surf["type"],
-                    radius=surf.get("radius"),
-                    conic=surf.get("conic"),
-                    thickness=thickness,
-                    is_stop=surf.get("is_stop", False),
-                    material=surf.get("material"),
-                    coefficients=coeffs,
-                    rx=float(rx_),
-                    ry=float(ry_),
-                    rz=float(rz_),
+                # For surfaces at infinity, set thickness and orientation
+                surface_params["thickness"] = thickness
+                surface_params.update(
+                    {"rx": float(rx_), "ry": float(ry_), "rz": float(rz_)}
                 )
-            else:  # normal surface, we pass no thickness argument
-                self.optic.add_surface(
-                    index=surf_idx,
-                    surface_type=surf["type"],
-                    radius=surf.get("radius"),
-                    conic=surf.get("conic"),
-                    is_stop=surf.get("is_stop", False),
-                    material=surf.get("material"),
-                    coefficients=coeffs,
-                    x=float(translation[0]),
-                    y=float(translation[1]),
-                    z=float(translation[2]),
-                    rx=float(rx_),
-                    ry=float(ry_),
-                    rz=float(rz_),
+            else:
+                # For normally positioned surfaces, set position and orientation
+                surface_params.update(
+                    {
+                        "x": float(translation[0]),
+                        "y": float(translation[1]),
+                        "z": float(translation[2]),
+                        "rx": float(rx_),
+                        "ry": float(ry_),
+                        "rz": float(rz_),
+                    }
                 )
+
+            self.optic.add_surface(**surface_params)
             surf_idx = surf_idx + 1
 
             # we need to advance the cs by the surface thickness
@@ -164,27 +176,47 @@ class ZemaxToOpticConverter:
             data (dict): The data for the surface.
         """
         coefficients = self._configure_surface_coefficients(data)
-        extra_params = {}
+
+        # Prepare surface parameters, starting with common ones
+        # Use correct coefficients key for toroidal surfaces
+        # shared surface parameters
+        surface_params = {
+            "index": index,
+            "surface_type": data["type"],
+            "conic": data.get("conic"),
+            "thickness": data.get("thickness"),
+            "is_stop": data.get("is_stop", False),
+            "material": data.get("material"),
+            "aperture": data.get("aperture"),
+        }
+
+        # only the coefficient key differs for toroidal surfaces
+        if data["type"] == "toroidal":
+            surface_params["toroidal_coeffs_poly_y"] = coefficients
+        else:
+            surface_params["coefficients"] = coefficients
+
         if data["type"] == "coordinate_break":
             # map the zmx PARM values to the actual decenters and rotations
-            extra_params["dx"] = data.get("param_0", 0.0)
-            extra_params["dy"] = data.get("param_1", 0.0)
+            surface_params["dx"] = data.get("param_0", 0.0)
+            surface_params["dy"] = data.get("param_1", 0.0)
             # convert degrees to radians
-            extra_params["rx"] = be.deg2rad(be.array(data.get("param_2", 0.0)))
-            extra_params["ry"] = be.deg2rad(be.array(data.get("param_3", 0.0)))
-            extra_params["rz"] = be.deg2rad(be.array(data.get("param_4", 0.0)))
-            extra_params["order_flag"] = data.get("param_5", 0.0)
-        self.optic.add_surface(
-            index=index,
-            surface_type=data["type"],
-            radius=data["radius"],
-            conic=data["conic"],
-            thickness=data["thickness"],
-            is_stop=data["is_stop"],
-            material=data["material"],
-            coefficients=coefficients,
-            **extra_params,
-        )
+            surface_params["rx"] = be.deg2rad(be.array(data.get("param_2", 0.0)))
+            surface_params["ry"] = be.deg2rad(be.array(data.get("param_3", 0.0)))
+            surface_params["rz"] = be.deg2rad(be.array(data.get("param_4", 0.0)))
+            surface_params["order_flag"] = data.get("param_5", 0.0)
+
+        if data["type"] == "toroidal":
+            radius_x = data.get("param_1", 0.0)
+            if radius_x == 0.0:
+                radius_x = be.inf
+            surface_params["radius_y"] = data["radius"]
+            surface_params["radius_x"] = radius_x
+        else:
+            # For all other surfaces, use the standard radius.
+            surface_params["radius"] = data["radius"]
+
+        self.optic.add_surface(**surface_params)
 
     def _configure_surface_coefficients(self, data: dict):
         """Configures the aspheric coefficients for a surface.
@@ -201,20 +233,47 @@ class ZemaxToOpticConverter:
             ValueError: If the surface type is unsupported for coefficients.
         """
         surf_type = data["type"]
-        if surf_type == "standard" or surf_type == "coordinate_break":
+        if surf_type in ["standard", "coordinate_break"]:
             return None
-        if surf_type in ["even_asphere", "odd_asphere"]:
+
+        if surf_type in ["even_asphere", "odd_asphere", "toroidal"]:
             coefficients = []
-            for k in range(8):
-                coefficients.append(data[f"param_{k}"])
+            # For toroidal surfaces, coeffs start from param_2
+            start_index = 2 if surf_type == "toroidal" else 0
+            for k in range(start_index, 8):
+                coefficients.append(data.get(f"param_{k}", 0.0))
             return coefficients
-        raise ValueError("Unsupported surface type.")
+        raise ValueError(f"Unsupported Zemax surface type: {surf_type}")
 
     def _configure_aperture(self):
         """Configures the aperture for the optic."""
         aperture_data = self.data["aperture"]
-        ap_type, value = next(iter(aperture_data.items()))
-        self.optic.set_aperture(aperture_type=ap_type, value=value)
+
+        # Handle floating stop aperture type
+        if aperture_data.get("floating_stop"):
+            # Find the stop surface and get its diameter
+            stop_diameter = None
+            for surf_data in self.data["surfaces"].values():
+                if surf_data.get("is_stop") and "diameter" in surf_data:
+                    stop_diameter = surf_data["diameter"]
+                    break
+
+            if stop_diameter is None:
+                raise ValueError(
+                    "Floating stop aperture specified but no stop diameter found"
+                )
+
+            self.optic.set_aperture(
+                aperture_type="float_by_stop_size", value=stop_diameter
+            )
+        else:
+            # Get the first non-floating_stop aperture type
+            for key, value in aperture_data.items():
+                if key != "floating_stop":
+                    self.optic.set_aperture(aperture_type=key, value=value)
+                    break
+            else:
+                raise ValueError("No valid aperture type found in aperture_data.")
 
     def _configure_fields(self):
         """Configure the fields for the optic."""

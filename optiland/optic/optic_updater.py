@@ -74,6 +74,14 @@ class OpticUpdater:
                 thickness to be modified.
 
         """
+        if surface_number == 0:
+            # First surface thickness sets the object distance.
+            # We treat this specially to avoid issues with infinite values.
+            self.optic.surface_group.surfaces[0].thickness = value
+            self.optic.surface_group.surfaces[0].geometry.cs.z = be.array(-value)
+            # No need to shift other surfaces as they are relative to S1 at z=0
+            return
+
         positions = self.optic.surface_group.positions
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
         positions = be.copy(positions)  # required to avoid in-place modification
@@ -109,8 +117,6 @@ class OpticUpdater:
         """
         surface = self.optic.surface_group.surfaces[surface_number]
         surface.material_post = material
-        surface_post = self.optic.surface_group.surfaces[surface_number + 1]
-        surface_post.material_pre = material
 
     def set_norm_radius(self, value, surface_number):
         """Set the normalization radius on a surface.
@@ -141,7 +147,7 @@ class OpticUpdater:
 
         """
         surface = self.optic.surface_group.surfaces[surface_number]
-        surface.geometry.c[aspher_coeff_idx] = value
+        surface.geometry.coefficients[aspher_coeff_idx] = value
 
     def set_polarization(self, polarization: PolarizationState | str):
         """Set the polarization state of the optic.
@@ -168,22 +174,24 @@ class OpticUpdater:
 
         """
         num_surfaces = self.optic.surface_group.num_surfaces
-        radii = self.optic.surface_group.radii
         thicknesses = [
             self.optic.surface_group.get_thickness(surf_idx)[0]
             for surf_idx in range(num_surfaces - 1)
         ]
 
-        # Scale radii & thicknesses
+        # Scale radii, geometries, and thicknesses
         for surf_idx in range(num_surfaces):
-            if not be.isinf(radii[surf_idx]):
-                self.set_radius(radii[surf_idx] * scale_factor, surf_idx)
+            surface = self.optic.surface_group.surfaces[surf_idx]
+            surface.geometry.scale(scale_factor)
 
             if surf_idx != num_surfaces - 1 and not be.isinf(thicknesses[surf_idx]):
                 self.set_thickness(thicknesses[surf_idx] * scale_factor, surf_idx)
 
         # Scale aperture, if aperture type is EPD
-        if self.optic.aperture.ap_type in ["EPD", "float_by_stop_size"]:
+        if self.optic.aperture and self.optic.aperture.ap_type in [
+            "EPD",
+            "float_by_stop_size",
+        ]:
             self.optic.aperture.value = self.optic.aperture.value * scale_factor
 
         # Scale physical apertures
@@ -222,6 +230,13 @@ class OpticUpdater:
             surface.geometry.norm_x = surface.semi_aperture * 1.25
         if hasattr(surface.geometry, "norm_y"):
             surface.geometry.norm_y = surface.semi_aperture * 1.25
+        if (
+            hasattr(surface.geometry, "is_fitted")
+            and surface.geometry.is_fitted is True
+        ):
+            surface.geometry.nurbs_norm_x = surface.semi_aperture * 1.25
+            surface.geometry.nurbs_norm_y = surface.semi_aperture * 1.25
+            surface.geometry.fit_surface()
 
         other_types = ["zernike"]
         if surface.surface_type in other_types:
@@ -257,8 +272,11 @@ class OpticUpdater:
         """
         ya, ua = self.optic.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])
-        self.optic.surface_group.surfaces[-1].geometry.cs.z = (
-            self.optic.surface_group.surfaces[-1].geometry.cs.z - offset
+        surfaces = self.optic.surface_group.surfaces
+        self.optic.surface_group.surfaces[-1].geometry.cs.z -= offset
+        surfaces[-2].thickness = (
+            self.optic.surface_group.surfaces[-1].geometry.cs.z
+            - surfaces[-2].geometry.cs.z
         )
 
     def flip(self):
@@ -272,16 +290,10 @@ class OpticUpdater:
                 "Optic flip requires at least 3 surfaces (obj, element, img)"
             )
 
-        # 1. Capture original global Z-coordinates
-        original_z_coords = [
-            float(be.to_numpy(surf.geometry.cs.z))
-            for surf in self.optic.surface_group.surfaces
-        ]
+        # 1. Call SurfaceGroup.flip()
+        self.optic.surface_group.flip()
 
-        # 2. Call SurfaceGroup.flip()
-        self.optic.surface_group.flip(original_vertex_gcs_z_coords=original_z_coords)
-
-        # 3. Define remapping function for indices
+        # 2. Define remapping function for indices
         num_surfaces = self.optic.surface_group.num_surfaces
 
         def remap_index_func(old_idx):  # pragma: no cover
@@ -291,11 +303,11 @@ class OpticUpdater:
                 return num_surfaces - 1 - old_idx
             return old_idx  # Should not happen if indices are valid
 
-        # 4. Handle Pickups
+        # 3. Handle Pickups
         if self.optic.pickups and len(self.optic.pickups.pickups) > 0:
             self.optic.pickups.remap_surface_indices(remap_index_func)
 
-        # 5. Handle Solves
+        # 4. Handle Solves
         if (
             hasattr(self.optic, "solves")
             and self.optic.solves
@@ -304,21 +316,45 @@ class OpticUpdater:
         ):
             self.optic.solves.remap_surface_indices(remap_index_func)
 
-        # 6. Update Optic instance
+        # 5. Update Optic instance
         self.update()
 
-    def set_apodization(self, apodization_instance: BaseApodization = None):
+    def set_apodization(
+        self, apodization: BaseApodization | str | dict = None, **kwargs
+    ):
         """Sets the apodization for the optical system.
 
+        This method supports setting the apodization in multiple ways:
+        1. By providing an instance of a `BaseApodization` subclass.
+        2. By providing a string identifier (e.g., "GaussianApodization")
+           and keyword arguments for its parameters.
+        3. By providing a dictionary that can be passed to `from_dict`.
+        4. By passing `None` to remove any existing apodization.
+
         Args:
-            apodization_instance (Apodization, optional): The apodization
-                object to apply. If None, no apodization is applied.
-                Defaults to None.
+            apodization (BaseApodization | str | dict, optional): The
+                apodization to apply. Defaults to None.
+            **kwargs: Additional keyword arguments used to initialize the
+                apodization class when `apodization` is a string.
+
+        Raises:
+            TypeError: If the provided `apodization` is not a supported type.
+            ValueError: If the string identifier is not found in the registry.
         """
-        if apodization_instance is not None and not isinstance(
-            apodization_instance, BaseApodization
-        ):
+        if apodization is None:
+            self.optic.apodization = None
+        elif isinstance(apodization, BaseApodization):
+            self.optic.apodization = apodization
+        elif isinstance(apodization, str):
+            if apodization in BaseApodization._registry:
+                apodization_class = BaseApodization._registry[apodization]
+                self.optic.apodization = apodization_class(**kwargs)
+            else:
+                raise ValueError(f"Unknown apodization type: {apodization}")
+        elif isinstance(apodization, dict):
+            self.optic.apodization = BaseApodization.from_dict(apodization)
+        else:
             raise TypeError(
-                "apodization_instance must be None or of type BaseApodization."
+                "apodization must be a string, a dict, a BaseApodization "
+                "instance, or None."
             )
-        self.optic.apodization = apodization_instance

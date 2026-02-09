@@ -19,11 +19,19 @@ from typing import TYPE_CHECKING, Any, Literal
 from optiland.aberrations import Aberrations
 from optiland.aperture import Aperture
 from optiland.apodization import BaseApodization
-from optiland.fields import Field, FieldGroup
+from optiland.fields import (
+    AngleField,
+    BaseFieldDefinition,
+    Field,
+    FieldGroup,
+    ObjectHeightField,
+    ParaxialImageHeightField,
+    RealImageHeightField,
+)
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
-from optiland.rays import PolarizationState, RayGenerator
+from optiland.rays import PolarizationState
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
@@ -38,12 +46,14 @@ from optiland.wavelength import WavelengthGroup
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
-    from numpy.typing import ArrayLike
 
     from optiland._types import (
+        ApertureType,
+        BEArray,
         DistributionType,
         FieldType,
         ReferenceRay,
+        ScalarOrArray,
         SurfaceParameters,
         SurfaceType,
         Unpack,
@@ -51,6 +61,7 @@ if TYPE_CHECKING:
     )
     from optiland.distribution import BaseDistribution
     from optiland.materials.base import BaseMaterial
+    from optiland.rays import RealRays
     from optiland.sources.base import BaseSource
     from optiland.surfaces.standard_surface import Surface
 
@@ -74,8 +85,8 @@ class Optic:
     Attributes:
         name (str | None): An optional name for the optical system.
         aperture (Aperture | None): The aperture of the optical system.
-        field_type (FieldType | None): The type of field used in the optical
-            system, e.g., 'angle' or 'object_height'.
+        field_definition (BaseFieldDefinition | None): The definition of the field used
+            in the optical system, e.g., AngleField or ObjectHeightField.
         surface_group (SurfaceGroup): The group of surfaces that constitute
             the optical system.
         fields (FieldGroup): The group of fields defined for the system.
@@ -106,7 +117,7 @@ class Optic:
         Initializes an Optic instance.
 
         Args:
-            name (str, optional): An optional name for the optical system.
+            name: An optional name for the optical system.
                 Defaults to None.
         """
         self.name = name
@@ -115,7 +126,7 @@ class Optic:
     def _initialize_attributes(self):
         """Initialize the attributes of the optical system."""
         self.aperture: Aperture | None = None
-        self.field_type: FieldType | None = None
+        self.field_definition: BaseFieldDefinition | None = None
 
         self.surface_group: SurfaceGroup = SurfaceGroup()
         self.fields: FieldGroup = FieldGroup()
@@ -124,6 +135,11 @@ class Optic:
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
+        self.ray_aiming_config = {
+            "mode": "paraxial",
+            "max_iter": 10,
+            "tol": 1e-6,
+        }
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 
@@ -241,20 +257,34 @@ class Optic:
             **kwargs,
         )
 
+    def remove_surface(
+        self,
+        index: int,
+    ):
+        """Removes a surface from the optic.
+
+        Args:
+            index (int, optional): The index of the surface to remove.
+
+        """
+        self.surface_group.remove_surface(
+            index=index,
+        )
+
     def add_field(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
         """Add a field to the optical system.
 
         Args:
-            y (float): The y-coordinate of the field.
-            x (float, optional): The x-coordinate of the field.
+            y: The y-coordinate of the field.
+            x: The x-coordinate of the field.
                 Defaults to 0.0.
-            vx (float, optional): The x-component of the field's vignetting
+            vx: The x-component of the field's vignetting
                 factor. Defaults to 0.0.
-            vy (float, optional): The y-component of the field's vignetting
+            vy: The y-component of the field's vignetting
                 factor. Defaults to 0.0.
 
         """
-        new_field = Field(self.field_type, x, y, vx, vy)
+        new_field = Field(x, y, vx, vy)
         self.fields.add_field(new_field)
 
     def add_wavelength(
@@ -280,12 +310,12 @@ class Optic:
             value=value, is_primary=is_primary, unit=unit, weight=weight
         )
 
-    def set_aperture(self, aperture_type: str, value: float):
+    def set_aperture(self, aperture_type: ApertureType, value: float):
         """Set the aperture of the optical system.
 
         Args:
-            aperture_type (str): The type of the aperture. Must be one of 'EPD',
-                'imageFNO', or 'objectNA'.
+            aperture_type (ApertureType): The type of the aperture. Must be one of
+                'EPD', 'imageFNO', or 'objectNA'.
             value (float): The value of the aperture.
 
         """
@@ -295,15 +325,22 @@ class Optic:
         """Set the type of field used in the optical system.
 
         Args:
-            field_type (FieldType): The type of field, e.g., 'angle' or
-                'object_height'.
+            field_type (FieldType): The type of field, e.g., 'angle',
+                'object_height', or 'paraxial_image_height'.
 
         Raises:
             ValueError: If the field type is invalid.
         """
-        if field_type not in ["angle", "object_height"]:
-            raise ValueError('Invalid field type. Must be "angle" or "object_height".')
-        self.field_type = field_type
+        if field_type == "angle":
+            self.field_definition = AngleField()
+        elif field_type == "object_height":
+            self.field_definition = ObjectHeightField()
+        elif field_type == "paraxial_image_height":
+            self.field_definition = ParaxialImageHeightField()
+        elif field_type == "real_image_height":
+            self.field_definition = RealImageHeightField()
+        else:
+            raise ValueError(f"Invalid field type: {field_type}.")
 
     def set_radius(self, value: float, surface_number: int):
         """Set the radius of curvature of a surface.
@@ -389,13 +426,25 @@ class Optic:
         """
         self._updater.set_polarization(polarization)
 
-    def set_apodization(self, apodization: BaseApodization):
-        """Set the apodization of the optical system.
+    def set_apodization(
+        self, apodization: BaseApodization | str | dict = None, **kwargs
+    ):
+        """Sets the apodization for the optical system.
+
+        This method supports setting the apodization in multiple ways:
+        1. By providing an instance of a `BaseApodization` subclass.
+        2. By providing a string identifier (e.g., "GaussianApodization")
+           and keyword arguments for its parameters.
+        3. By providing a dictionary that can be passed to `from_dict`.
+        4. By passing `None` to remove any existing apodization.
 
         Args:
-            apodization (BaseApodization): The apodization object to set.
+            apodization (BaseApodization | str | dict, optional): The
+                apodization to apply. Defaults to None.
+            **kwargs: Additional keyword arguments used to initialize the
+                apodization class when `apodization` is a string.
         """
-        self._updater.set_apodization(apodization)
+        self._updater.set_apodization(apodization, **kwargs)
 
     def scale_system(self, scale_factor: float):
         """Scales the optical system by a given scale factor.
@@ -413,6 +462,24 @@ class Optic:
     def update_normalization(self, surface: Surface) -> None:
         """Update the normalization radius of surfaces."""
         self._updater.update_normalization(surface)
+
+    def set_ray_aiming(
+        self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs
+    ):
+        """Configure the ray aiming strategy.
+
+        Args:
+            mode: The aiming mode ("paraxial", "iterative", "robust").
+            max_iter: Maximum iterations for iterative solvers.
+            tol: Convergence tolerance for iterative solvers.
+            **kwargs: Additional configuration parameters.
+        """
+        self.ray_aiming_config = {
+            "mode": mode,
+            "max_iter": max_iter,
+            "tol": tol,
+            **kwargs,
+        }
 
     def update(self) -> None:
         """Update the surface properties (pickups, solves, paraxial properties)."""
@@ -440,12 +507,16 @@ class Optic:
         fields: list[tuple[float, float]] | Literal["all"] = "all",
         wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 3,
-        distribution: DistributionType = "line_y",
+        distribution: DistributionType | None = None,
+        show_apertures: bool = True,
+        hide_vignetted: bool = False,
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
         title: str | None = None,
         reference: ReferenceRay | None = None,
+        projection: Literal["XY", "XZ", "YZ"] = "YZ",
+        ax: Axes | None = None,
     ) -> tuple[Figure, Axes]:
         """Draw a 2D representation of the optical system.
 
@@ -463,9 +534,13 @@ class Optic:
                 Defaults to 'primary'. Used only when no extended source is attached.
             num_rays (int, optional): The number of rays to trace for each
                 field and wavelength, or total rays for extended source. Defaults to 3.
-            distribution (DistributionType, optional): The distribution of
-                rays to trace. Defaults to 'line_y'. Used only when no extended
-                source is attached.
+            distribution (str | None, optional): The distribution of rays.
+                Defaults to None, which selects a default based on projection.
+                Used only when no extended source is attached.
+            show_apertures (bool, optional): If True, overlays aperture graphics
+                on the system view. Defaults to True.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
@@ -477,6 +552,10 @@ class Optic:
             reference (ReferenceRay | None, optional): The reference rays to
                 plot, e.g., 'chief' or 'marginal'. Defaults to None. Used only
                 when no extended source is attached.
+            projection (Literal["XY", "XZ", "YZ"], optional): The projection
+                plane. Defaults to "YZ".
+            ax (matplotlib.axes.Axes, optional): The axes to plot on.
+                If None, a new figure and axes are created. Defaults to None.
 
         Returns:
             tuple[Figure, Axes]: A tuple containing the matplotlib Figure and
@@ -484,17 +563,20 @@ class Optic:
 
         """
         viewer = OpticViewer(self)
-
-        fig, ax = viewer.view(
+        fig, ax, _ = viewer.view(
             fields,
             wavelengths,
             num_rays,
             distribution=distribution,
+            show_apertures=show_apertures,
+            hide_vignetted=hide_vignetted,
             figsize=figsize,
             xlim=xlim,
             ylim=ylim,
             title=title,
             reference=reference,
+            projection=projection,
+            ax=ax,
         )
         return fig, ax
 
@@ -507,6 +589,7 @@ class Optic:
         figsize: tuple[float, float] = (1200, 800),
         dark_mode: bool = False,
         reference: ReferenceRay | None = None,
+        hide_vignetted: bool = False,
     ):
         """Draw a 3D representation of the optical system.
 
@@ -526,6 +609,8 @@ class Optic:
                 plot. Defaults to False.
             reference (ReferenceRay | None, optional): The reference rays to
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         viewer = OpticViewer3D(self)
@@ -537,6 +622,7 @@ class Optic:
             figsize=figsize,
             dark_mode=dark_mode,
             reference=reference,
+            hide_vignetted=hide_vignetted,
         )
 
     def info(self):
@@ -544,7 +630,7 @@ class Optic:
         viewer = LensInfoViewer(self)
         viewer.view()
 
-    def n(self, wavelength: float | Literal["primary"] = "primary"):
+    def n(self, wavelength: float | Literal["primary"] = "primary") -> BEArray:
         """Get the refractive indices of materials at a given wavelength.
 
         This method calculates the refractive indices for each space between
@@ -567,21 +653,21 @@ class Optic:
 
     def trace(
         self,
-        Hx: ArrayLike | float,
-        Hy: ArrayLike | float,
+        Hx: ScalarOrArray,
+        Hy: ScalarOrArray,
         wavelength: float,
-        num_rays: int = 100,
-        distribution: DistributionType | BaseDistribution = "hexapolar",
-    ):
+        num_rays: int | None = 100,
+        distribution: DistributionType | BaseDistribution | None = "hexapolar",
+    ) -> RealRays:
         """Trace a distribution of rays through the optical system.
 
         Args:
-            Hx (ArrayLike | float): The normalized x field coordinate(s).
-            Hy (ArrayLike | float): The normalized y field coordinate(s).
+            Hx: The normalized x field coordinate(s).
+            Hy: The normalized y field coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
-            num_rays (int, optional): The number of rays to trace.
+            num_rays: The number of rays to trace.
                 Defaults to 100.
-            distribution (DistributionType | BaseDistribution, optional):
+            distribution:
                 The distribution of rays. Can be a string identifier (e.g.,
                 'hexapolar', 'uniform') or a `BaseDistribution` object.
                 Defaults to 'hexapolar'.
@@ -594,19 +680,19 @@ class Optic:
 
     def trace_generic(
         self,
-        Hx: ArrayLike | float,
-        Hy: ArrayLike | float,
-        Px: ArrayLike | float,
-        Py: ArrayLike | float,
+        Hx: ScalarOrArray,
+        Hy: ScalarOrArray,
+        Px: ScalarOrArray,
+        Py: ScalarOrArray,
         wavelength: float,
     ):
         """Trace generic rays through the optical system.
 
         Args:
-            Hx (ArrayLike | float): The normalized x field coordinate(s).
-            Hy (ArrayLike | float): The normalized y field coordinate(s).
-            Px (ArrayLike | float): The normalized x pupil coordinate(s).
-            Py (ArrayLike | float): The normalized y pupil coordinate(s).
+            Hx: The normalized x field coordinate(s).
+            Hy: The normalized y field coordinate(s).
+            Px: The normalized x pupil coordinate(s).
+            Py: The normalized y pupil coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
 
         Returns:
@@ -796,25 +882,40 @@ class Optic:
             ax.plot(z_path, y_path, "b-", alpha=0.3, linewidth=0.5)
 
     def plot_surface_sag(
-        self, surface_index: int, y_cross_section=0, x_cross_section=0
+        self,
+        surface_index: int,
+        y_cross_section: float = 0,
+        x_cross_section: float = 0,
+        fig_to_plot_on: Figure | None = None,
+        max_extent: float | None = None,
+        num_points_grid: int = 50,
+        buffer_factor: float = 1.1,
     ):
         """Analyzes and visualizes the sag of a given lens surface.
 
         Args:
-            surface_index (int): The index of the surface to analyze.
-            y_cross_section (float, optional): The y-coordinate for the
+            surface_index: The index of the surface to analyze.
+            y_cross_section: The y-coordinate for the
                 x-sag plot. Defaults to 0.
-            x_cross_section (float, optional): The x-coordinate for the
+            x_cross_section: The x-coordinate for the
                 y-sag plot. Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
-        viewer.view(surface_index, y_cross_section, x_cross_section)
+        viewer.view(
+            surface_index=surface_index,
+            y_cross_section=y_cross_section,
+            x_cross_section=x_cross_section,
+            fig_to_plot_on=fig_to_plot_on,
+            max_extent=max_extent,
+            num_points_grid=num_points_grid,
+            buffer_factor=buffer_factor,
+        )
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Convert the optical system to a dictionary.
 
         Returns:
-            dict: The dictionary representation of the optical system.
+            The dictionary representation of the optical system.
 
         """
         data = {
@@ -829,19 +930,21 @@ class Optic:
         }
 
         data["wavelengths"]["polarization"] = self.polarization
-        data["fields"]["field_type"] = self.field_type
+        data["fields"]["field_definition"] = (
+            self.field_definition.to_dict() if self.field_definition else None
+        )
         data["fields"]["object_space_telecentric"] = self.obj_space_telecentric
         return data
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]):
+    def from_dict(cls, data: dict[str, Any]) -> Optic:
         """Create an optical system from a dictionary.
 
         Args:
-            data (dict): The dictionary representation of the optical system.
+            data: The dictionary representation of the optical system.
 
         Returns:
-            Optic: The optical system.
+            The optical system.
 
         """
         optic = cls()
@@ -858,11 +961,18 @@ class Optic:
         optic.solves = SolveManager.from_dict(optic, data["solves"])
 
         optic.polarization = data["wavelengths"]["polarization"]
-        optic.field_type = data["fields"]["field_type"]
+        if data["fields"].get("field_definition"):
+            optic.field_definition = BaseFieldDefinition.from_dict(
+                data["fields"]["field_definition"]
+            )
+        elif data["fields"].get("field_type"):
+            optic.set_field_type(data["fields"]["field_type"])
+        else:
+            optic.field_definition = None
         optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
 
         optic.paraxial = Paraxial(optic)
         optic.aberrations = Aberrations(optic)
-        optic.ray_generator = RayGenerator(optic)
+        optic.ray_tracer = RealRayTracer(optic)
 
         return optic

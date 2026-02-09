@@ -23,10 +23,18 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import contextlib
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import torch
 import torch.nn.functional as F
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Generator, Sequence
+
+    from numpy.typing import ArrayLike
+    from torch import Generator as TorchGenerator
+    from torch import Tensor
 
 _lib = torch  # Alias for torch library
 
@@ -58,21 +66,21 @@ class GradMode:
 
 class _Config:
     def __init__(self):
-        self.device = "cpu"
+        self.device: Literal["cpu", "cuda"] = "cpu"
         self.precision = torch.float32
         self.grad_mode = GradMode()
 
-    def set_device(self, device: str) -> None:
+    def set_device(self, device: Literal["cpu", "cuda"]) -> None:
         if device not in ("cpu", "cuda"):
             raise ValueError("Device must be 'cpu' or 'cuda'.")
         if device == "cuda" and not torch.cuda.is_available():
             raise ValueError("CUDA is not available.")
         self.device = device
 
-    def get_device(self) -> str:
+    def get_device(self) -> Literal["cpu", "cuda"]:
         return self.device
 
-    def set_precision(self, precision: str) -> None:
+    def set_precision(self, precision: Literal["float32", "float64"]) -> None:
         if precision == "float32":
             self.precision = torch.float32
         elif precision == "float64":
@@ -88,15 +96,15 @@ _config = _Config()
 
 
 # Public API for configuration
-def set_device(device: str) -> None:
+def set_device(device: Literal["cpu", "cuda"]) -> None:
     return _config.set_device(device)
 
 
-def get_device() -> str:
+def get_device() -> Literal["cpu", "cuda"]:
     return _config.get_device()
 
 
-def set_precision(precision: str) -> None:
+def set_precision(precision: Literal["float32", "float64"]) -> None:
     return _config.set_precision(precision)
 
 
@@ -104,14 +112,25 @@ def get_precision() -> torch.dtype:
     return _config.get_precision()
 
 
+def get_complex_precision() -> torch.dtype:
+    """Returns the complex dtype corresponding to the current precision."""
+    prec = get_precision()
+    if prec == torch.float32:
+        return torch.complex64
+    elif prec == torch.float64:
+        return torch.complex128
+    else:
+        raise ValueError("Unsupported precision for complex dtype.")
+
+
 # Global gradient control
-grad_mode = _config.grad_mode
+grad_mode: GradMode = _config.grad_mode
 
 
 # --------------------------
 # Array Creation
 # --------------------------
-def array(x):
+def array(x: ArrayLike) -> Tensor:
     """Create a tensor with current device, precision, and grad settings."""
     if isinstance(x, torch.Tensor):
         return x
@@ -129,7 +148,7 @@ def array(x):
     )
 
 
-def zeros(shape):
+def zeros(shape: Sequence[int]) -> Tensor:
     return torch.zeros(
         shape,
         device=get_device(),
@@ -138,7 +157,7 @@ def zeros(shape):
     )
 
 
-def ones(shape):
+def ones(shape: Sequence[int]) -> Tensor:
     return torch.ones(
         shape,
         device=get_device(),
@@ -147,17 +166,26 @@ def ones(shape):
     )
 
 
-def full(shape, fill_value):
+def full(shape: Sequence[int], fill_value: float | Tensor) -> Tensor:
+    val = fill_value.item() if isinstance(fill_value, torch.Tensor) else fill_value
+
+    # Ensure shape is a tuple
+    if not isinstance(shape, list | tuple):
+        try:
+            shape = (int(shape),)
+        except Exception:
+            shape = (shape,)
+
     return torch.full(
         shape,
-        fill_value,
+        val,
         device=get_device(),
         dtype=get_precision(),
         requires_grad=grad_mode.requires_grad,
     )
 
 
-def linspace(start, stop, num=50):
+def linspace(start: float, stop: float, num: int = 50) -> Tensor:
     return torch.linspace(
         start,
         stop,
@@ -168,12 +196,18 @@ def linspace(start, stop, num=50):
     )
 
 
-def arange(*args, step=1):
+def arange(*args: float | Tensor, step: float | Tensor = 1) -> Tensor:
     if len(args) == 1:
         start = 0
         end = args[0]
     elif len(args) == 2:
         start, end = args
+    elif len(args) == 3:
+        start, end, step = args
+    else:
+        raise TypeError(
+            f"arange expected 1, 2, or 3 positional arguments, got {len(args)}"
+        )
 
     if isinstance(start, torch.Tensor):
         start = start.item()
@@ -192,7 +226,22 @@ def arange(*args, step=1):
     )
 
 
-def zeros_like(x):
+def arange_indices(start, stop=None, step=1) -> Tensor:
+    """Create a tensor of indices (int64/long)."""
+    if stop is None:
+        stop = start
+        start = 0
+    return torch.arange(
+        start,
+        stop,
+        step,
+        device=get_device(),
+        dtype=torch.long,
+        requires_grad=False,
+    )
+
+
+def zeros_like(x: ArrayLike) -> Tensor:
     return torch.zeros_like(
         array(x),
         device=get_device(),
@@ -201,7 +250,7 @@ def zeros_like(x):
     )
 
 
-def ones_like(x):
+def ones_like(x: ArrayLike) -> Tensor:
     return torch.ones_like(
         array(x),
         device=get_device(),
@@ -210,7 +259,7 @@ def ones_like(x):
     )
 
 
-def full_like(x, fill_value):
+def full_like(x: ArrayLike, fill_value: float | Tensor) -> Tensor:
     x_t = array(x)
     val = fill_value.item() if isinstance(fill_value, torch.Tensor) else fill_value
     return torch.full_like(
@@ -222,41 +271,65 @@ def full_like(x, fill_value):
     )
 
 
-def load(filename: str):
+def load(filename: str) -> Tensor:
     data = np.load(filename)
     return array(data)
+
+
+def to_tensor(
+    data: ArrayLike, device: str | torch.device | None = None
+) -> torch.Tensor:
+    """Converts data to a PyTorch tensor with the backend's precision.
+
+    Args:
+        data (ArrayLike): The data to convert.
+        device (str or torch.device, optional): The device to move the tensor to.
+            Defaults to None.
+
+    Returns:
+        torch.Tensor: The converted tensor.
+    """
+    current_device = device or get_device()
+    current_precision = get_precision()
+
+    if not isinstance(data, torch.Tensor):
+        # If not a tensor, create one with the correct dtype and device
+        return torch.tensor(data, device=current_device, dtype=current_precision)
+    else:
+        # If it is a tensor, move it and cast to correct dtype
+        return data.to(device=current_device, dtype=current_precision)
 
 
 # --------------------------
 # Array Utilities
 # --------------------------
-def cast(x):
+def cast(x: ArrayLike) -> Tensor:
     if not isinstance(x, torch.Tensor):
         return torch.tensor(x, device=get_device(), dtype=get_precision())
     return x.to(device=get_device(), dtype=get_precision())
 
 
-def copy(x):
+def copy(x: Tensor) -> Tensor:
     return x.clone()
 
 
-def is_array_like(x):
+def is_array_like(x: Any) -> bool:
     return isinstance(x, torch.Tensor | np.ndarray | list | tuple)
 
 
-def size(x):
+def size(x: Tensor) -> int:
     return torch.numel(x)
 
 
-def newaxis():
+def newaxis() -> None:
     return None
 
 
-def array_equal(a, b):
+def array_equal(a: Tensor, b: Tensor) -> bool:
     return torch.equal(a, b)
 
 
-def shape(tensor):
+def shape(tensor: Tensor) -> tuple[int, ...]:
     """Returns the shape of a tensor."""
     return tensor.shape
 
@@ -264,56 +337,81 @@ def shape(tensor):
 # --------------------------
 # Shape and Indexing
 # --------------------------
-def reshape(x, shape):
+def reshape(x: Tensor, shape: Sequence[int]) -> Tensor:
     return x.view(shape)
 
 
-def stack(xs, axis=0):
+def stack(xs: Sequence[ArrayLike], axis: int = 0) -> Tensor:
     return torch.stack([cast(x) for x in xs], dim=axis)
 
 
-def broadcast_to(x, shape):
+def broadcast_to(x: Tensor, shape: Sequence[int]) -> Tensor:
     return x.expand(shape)
 
 
-def repeat(x, repeats):
+def repeat(x: Tensor, repeats: int) -> Tensor:
     return torch.repeat_interleave(x, repeats)
 
 
-def flip(x):
+def flip(x: Tensor) -> Tensor:
     return torch.flip(x, dims=(0,))
 
 
-def meshgrid(*arrays):
+def meshgrid(*arrays: Tensor) -> tuple[Tensor, ...]:
     return torch.meshgrid(*arrays, indexing="xy")
 
 
-def roll(x, shift, axis=None):
+def roll(
+    x: Tensor, shift: int | Sequence[int], axis: int | tuple[int, ...] = ()
+) -> Tensor:
     return torch.roll(x, shifts=shift, dims=axis)
 
 
-def unsqueeze_last(x):
+def unsqueeze_last(x: Tensor) -> Tensor:
     return x.unsqueeze(-1)
 
 
-def tile(x, dims):
-    return torch.tile(x, dims if isinstance(dims, tuple | list) else (dims,))
+def tile(x: Tensor, dims: int | list[int] | tuple[int, ...]) -> Tensor:
+    return torch.tile(x, dims if isinstance(dims, list | tuple) else (dims,))
 
 
-def isscalar(x):
+def transpose(x: Tensor, axes: Sequence[int] | None = None) -> Tensor:
+    """
+    Transposes the input tensor.
+
+    Args:
+        x (Tensor): Input tensor.
+        axes (Sequence[int], optional): The dimensions to swap/permute.
+            If None, reverses the dimensions (like np.transpose).
+            If a tuple/list, calls x.permute(axes).
+
+    Returns:
+        Tensor: Transposed tensor.
+    """
+    if axes is None:
+        return x.t() if x.dim() == 2 else x.permute(*range(x.dim())[::-1])
+    return x.permute(axes)
+
+
+def isscalar(x: ArrayLike | Tensor) -> bool:
     return torch.is_tensor(x) and x.dim() == 0
 
 
 # --------------------------
 # Random Number Generation
 # --------------------------
-def default_rng(seed=None):
+def default_rng(seed: int | None = None) -> TorchGenerator:
     if seed is None:
         seed = torch.initial_seed()
     return torch.Generator(device=get_device()).manual_seed(seed)
 
 
-def random_uniform(low=0.0, high=1.0, size=None, generator=None):
+def random_uniform(
+    low: float = 0.0,
+    high: float = 1.0,
+    size: int | None = None,
+    generator: TorchGenerator | None = None,
+) -> Tensor:
     size = size or 1
     gen_args = {"generator": generator} if generator else {}
     return torch.empty(size, device=get_device(), dtype=get_precision()).uniform_(
@@ -321,8 +419,29 @@ def random_uniform(low=0.0, high=1.0, size=None, generator=None):
     )
 
 
-def random_normal(loc=0.0, scale=1.0, size=None, generator=None):
-    size = size or 1
+def rand(*size: int) -> Tensor:
+    """
+    Returns a tensor filled with random numbers from a uniform distribution
+    on the interval [0, 1).
+    If no size is provided, returns a single random number as a 1-element tensor.
+    """
+    if not size:
+        size = (1,)
+    return torch.rand(
+        size,
+        device=get_device(),
+        dtype=get_precision(),
+        requires_grad=grad_mode.requires_grad,
+    )
+
+
+def random_normal(
+    loc: float = 0.0,
+    scale: float = 1.0,
+    size: Sequence[int] | None = None,
+    generator: TorchGenerator | None = None,
+) -> Tensor:
+    size = size or (1,)
     gen_args = {"generator": generator} if generator else {}
     return (
         torch.randn(size, device=get_device(), dtype=get_precision(), **gen_args)
@@ -373,36 +492,44 @@ def erfinv(x):
 # --------------------------
 # Mathematical Operations
 # --------------------------
-def sqrt(x):
+def sqrt(x: ArrayLike) -> Tensor:
     return torch.sqrt(array(x))
 
 
-def sin(x):
+def sin(x: ArrayLike) -> Tensor:
     return torch.sin(array(x))
 
 
-def cos(x):
+def power(x: ArrayLike, y: ArrayLike) -> Tensor:
+    return torch.pow(array(x), array(y))
+
+
+def cos(x: ArrayLike) -> Tensor:
     return torch.cos(array(x))
 
 
-def exp(x):
+def exp(x: ArrayLike) -> Tensor:
     return torch.exp(array(x))
 
 
-def log2(x):
+def log2(x: ArrayLike) -> Tensor:
     return torch.log2(array(x))
 
 
-def abs(x):
+def abs(x: ArrayLike) -> Tensor:
     return torch.abs(array(x))
 
 
-def radians(x):
+def hypot(x: ArrayLike, y: ArrayLike) -> Tensor:
+    return torch.hypot(array(x), array(y))
+
+
+def radians(x: ArrayLike) -> Tensor:
     t = array(x)
     return torch.deg2rad(t)
 
 
-def degrees(x):
+def degrees(x: ArrayLike) -> Tensor:
     t = array(x)
     return torch.rad2deg(t)
 
@@ -411,23 +538,25 @@ deg2rad = radians
 rad2deg = degrees
 
 
-def max(x):
+def max(x: ArrayLike) -> int | float:
     if isinstance(x, torch.Tensor):
         return x.detach().cpu().max().item()
     return np.max(x)
 
 
-def min(x):
+def min(x: ArrayLike) -> int | float:
     if isinstance(x, torch.Tensor):
         return x.detach().cpu().min().item()
     return np.min(x)
 
 
-def maximum(a, b):
+def maximum(a: ArrayLike, b: ArrayLike) -> Tensor:
     return torch.maximum(array(a), array(b))
 
 
-def nanmax(input_tensor, axis=None, keepdim=False):
+def nanmax(
+    input_tensor: Tensor, axis: int | None = None, keepdim: bool = False
+) -> Tensor:
     nan_mask = torch.isnan(input_tensor)
     replaced = input_tensor.clone()
     replaced[nan_mask] = float("-inf")
@@ -438,7 +567,13 @@ def nanmax(input_tensor, axis=None, keepdim=False):
     return result
 
 
-def mean(x, axis=None, keepdims=False):
+def where(condition: bool | Tensor, x: Tensor | float, y: Tensor | float) -> Tensor:
+    if isinstance(condition, bool):
+        return x if condition else y
+    return torch.where(condition, x, y)
+
+
+def mean(x: ArrayLike, axis: int | None = None, keepdims: bool = False) -> Tensor:
     x = array(x)
     mask = ~torch.isnan(x)
     cnt = mask.sum(dim=axis, keepdim=keepdims).to(x.dtype)
@@ -449,18 +584,27 @@ def mean(x, axis=None, keepdims=False):
     )
 
 
-def all(x):
+def all(x: bool | ArrayLike) -> bool:
     if isinstance(x, bool):
         return x
     t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
-    return torch.all(t).item()
+    return bool(torch.all(t).item())
 
 
-def factorial(n):
+def any(x: bool | ArrayLike) -> bool:
+    if isinstance(x, bool):
+        return x
+    t = torch.as_tensor(x, dtype=_config.precision, device=_config.device)
+    return bool(torch.any(t).item())
+
+
+def factorial(n: ArrayLike) -> Tensor:
     return torch.lgamma(array(n + 1)).exp()
 
 
-def histogram2d(x, y, bins, weights=None):
+def histogram2d(
+    x: Tensor, y: Tensor, bins: Sequence[Tensor], weights: Tensor | None = None
+) -> tuple[Tensor, Tensor, Tensor]:
     if not isinstance(bins, (list | tuple)) or len(bins) != 2:
         raise ValueError("`bins` must be a list or tuple of two edge tensors.")
 
@@ -504,7 +648,9 @@ def histogram2d(x, y, bins, weights=None):
     return hist, x_edges, y_edges
 
 
-def get_bilinear_weights(coords, bin_edges):
+def get_bilinear_weights(
+    coords: Tensor, bin_edges: Sequence[Tensor]
+) -> tuple[Tensor, Tensor]:
     """
     Calculates differentiable bilinear interpolation weights.
     This version operates on pixel centers to avoid boundary indexing errors.
@@ -556,7 +702,7 @@ def get_bilinear_weights(coords, bin_edges):
     return all_indices, all_weights
 
 
-def copy_to(source, destination):
+def copy_to(source: Tensor, destination: Tensor) -> None:
     """
     Performs an in-place copy from source to destination tensor.
     This version safely handles tensors that require gradients by
@@ -571,29 +717,48 @@ def copy_to(source, destination):
 # --------------------------
 # Linear Algebra
 # --------------------------
-def matmul(a, b):
+def matmul(a: Tensor, b: Tensor) -> Tensor:
     dtype = torch.promote_types(a.dtype, b.dtype)
     return torch.matmul(a.to(dtype), b.to(dtype))
 
 
-def batched_chain_matmul3(a, b, c):
+def batched_chain_matmul3(a: Tensor, b: Tensor, c: Tensor) -> Tensor:
     dtype = torch.promote_types(torch.promote_types(a.dtype, b.dtype), c.dtype)
     return torch.matmul(torch.matmul(a.to(dtype), b.to(dtype)), c.to(dtype))
 
 
-def cross(a, b):
-    return torch.linalg.cross(a, b)
+def cross(
+    a: Tensor,
+    b: Tensor,
+    axisa: int = -1,
+    axisb: int = -1,
+    axisc: int = -1,
+    axis: int | None = None,
+) -> Tensor:
+    """A NumPy-compatible cross product for PyTorch."""
+    if axis is not None:
+        axisa, axisb, axisc = (axis,) * 3
+
+    # Move the specified axes to the end for `torch.linalg.cross`
+    a_moved = torch.movedim(a, axisa, -1)
+    b_moved = torch.movedim(b, axisb, -1)
+
+    # Compute the cross product along the last dimension
+    c = torch.linalg.cross(a_moved, b_moved, dim=-1)
+
+    # Move the result axis to the specified position
+    return torch.movedim(c, -1, axisc)
 
 
-def matrix_vector_multiply_and_squeeze(p, E):
+def matrix_vector_multiply_and_squeeze(p: Tensor, E: Tensor) -> Tensor:
     return torch.matmul(p, E.unsqueeze(2)).squeeze(2)
 
 
-def to_complex(x):
+def to_complex(x: Tensor) -> Tensor:
     return x.to(torch.complex128)
 
 
-def mult_p_E(p, E):
+def mult_p_E(p: Tensor, E: Tensor) -> Tensor:
     p_c = p.to(torch.complex128)
     try:
         E_c = E.to(torch.complex128)
@@ -602,10 +767,26 @@ def mult_p_E(p, E):
     return torch.squeeze(torch.matmul(p_c, E_c.unsqueeze(2)), dim=2)
 
 
+def lstsq(a: Tensor, b: Tensor) -> Tensor:
+    """
+    Computes the least-squares solution to a linear matrix equation.
+
+    Args:
+        a (Tensor): Left-hand side matrix (M, N).
+        b (Tensor): Right-hand side matrix (M,) or (M, K).
+
+    Returns:
+        Tensor: Least-squares solution (N,) or (N, K).
+    """
+    # torch.linalg.lstsq returns a named tuple
+    # (solution, residuals, rank, singular_values)
+    return torch.linalg.lstsq(a, b).solution
+
+
 # --------------------------
 # Interpolation
 # --------------------------
-def interp(x, xp, fp):
+def interp(x: ArrayLike, xp: ArrayLike, fp: ArrayLike) -> Tensor:
     x = torch.as_tensor(x, dtype=get_precision(), device=get_device())
     xp = torch.as_tensor(xp, dtype=get_precision(), device=get_device())
     fp = torch.as_tensor(fp, dtype=get_precision(), device=get_device())
@@ -623,7 +804,9 @@ def interp(x, xp, fp):
     return interpolated
 
 
-def nearest_nd_interpolator(points, values, Hx, Hy):
+def nearest_nd_interpolator(
+    points: Tensor, values: Tensor, Hx: Tensor, Hy: Tensor
+) -> Tensor:
     if Hx is None or Hy is None:
         raise ValueError("Hx and Hy must be provided")
     Hx, Hy = array(Hx), array(Hy)
@@ -639,20 +822,28 @@ def nearest_nd_interpolator(points, values, Hx, Hy):
 # --------------------------
 # Polynomial Operations
 # --------------------------
-def polyfit(x, y, degree):
-    X = torch.stack([x**i for i in range(degree + 1)], dim=1)
-    coeffs, _ = torch.lstsq(y.unsqueeze(1), X)
+def polyfit(x: Tensor, y: Tensor, degree: int) -> Tensor:
+    # X matrix with columns for x^degree, x^(degree-1), ..., x^0
+    X = torch.stack([x**i for i in range(degree, -1, -1)], dim=1)
+    # Solve X * coeffs = y
+    result = torch.linalg.lstsq(X, y.unsqueeze(1))
+    coeffs = result.solution
     return coeffs[: degree + 1].squeeze()
 
 
-def polyval(coeffs, x):
+def polyval(coeffs: Sequence[float], x: float | Tensor) -> float | Tensor:
     return sum(c * x**i for i, c in enumerate(reversed(coeffs)))
 
 
 # --------------------------
 # Padding
 # --------------------------
-def pad(tensor, pad_width, mode="constant", constant_values=0):
+def pad(
+    tensor: Tensor,
+    pad_width: tuple[tuple[int, int], tuple[int, int]],
+    mode: Literal["constant"] = "constant",
+    constant_values: float | None = 0,
+):
     if mode != "constant":
         raise NotImplementedError("Only constant mode supported")
     (pt, pb), (pl, pr) = pad_width
@@ -662,8 +853,8 @@ def pad(tensor, pad_width, mode="constant", constant_values=0):
 # --------------------------
 # Vectorization
 # --------------------------
-def vectorize(pyfunc):
-    def wrapped(x):
+def vectorize(pyfunc: Callable[..., Any]) -> Callable[[Tensor], Tensor]:
+    def wrapped(x: Tensor) -> Tensor:
         flat = x.reshape(-1)
         mapped = [pyfunc(xi) for xi in flat]
         out = torch.stack(
@@ -684,12 +875,12 @@ def vectorize(pyfunc):
 # --------------------------
 # Conversion and Utilities
 # --------------------------
-def atleast_1d(x):
+def atleast_1d(x: ArrayLike) -> Tensor:
     t = torch.as_tensor(x, dtype=get_precision())
     return t.unsqueeze(0) if t.ndim == 0 else t
 
 
-def atleast_2d(x):
+def atleast_2d(x: ArrayLike) -> Tensor:
     t = torch.as_tensor(x, dtype=get_precision())
     if t.ndim == 0:
         return t.unsqueeze(0).unsqueeze(0)
@@ -698,34 +889,92 @@ def atleast_2d(x):
     return t
 
 
-def as_array_1d(data):
+def as_array_1d(data: ArrayLike) -> Tensor:
     if isinstance(data, int | float):
         return array([data])
     if isinstance(data, list | tuple):
         return array(data)
     if is_array_like(data):
-        return data.reshape(-1)
+        return array(data).reshape(-1)
     raise ValueError("Unsupported type for as_array_1d")
 
 
-def eye(n):
+def eye(n: int) -> Tensor:
     return torch.eye(n, device=get_device(), dtype=get_precision())
 
 
 # --------------------------
-# Error State Context
+# Signal Processing
 # --------------------------
+def fftconvolve(
+    in1: Tensor, in2: Tensor, mode: Literal["full", "valid", "same"] = "full"
+) -> Tensor:
+    """
+    PyTorch implementation of FFT-based convolution.
+
+    Args:
+        in1 (Tensor): First input (N-d).
+        in2 (Tensor): Second input (N-d).
+        mode (str): 'full', 'valid', or 'same'.
+
+    Returns:
+        Tensor: Convolved tensor.
+    """
+    # Cast to same type/device
+    in1 = array(in1)
+    in2 = array(in2)
+
+    ndim = in1.ndim
+    if in2.ndim != ndim:
+        raise ValueError("Inputs must have the same dimensionality.")
+
+    # Calculate output shape for full convolution
+    s1 = in1.shape
+    s2 = in2.shape
+    shape = [s1[i] + s2[i] - 1 for i in range(ndim)]
+
+    # Perform FFT
+    IN1 = torch.fft.fftn(in1, s=shape)
+    IN2 = torch.fft.fftn(in2, s=shape)
+
+    # Multiply
+    RET = IN1 * IN2
+
+    # Inverse FFT
+    ret = torch.fft.ifftn(RET, s=shape).real
+
+    # Crop based on mode
+    if mode == "full":
+        return ret
+    elif mode == "same":
+        # Center crop
+        crop_slices = []
+        for i in range(ndim):
+            start = (s2[i] - 1) // 2
+            end = start + s1[i]
+            crop_slices.append(slice(start, end))
+        return ret[tuple(crop_slices)]
+    elif mode == "valid":
+        # Valid crop
+        crop_slices = []
+        for i in range(ndim):
+            start = s2[i] - 1
+            end = s1[i]
+            crop_slices.append(slice(start, end))
+        return ret[tuple(crop_slices)]
+
+    raise ValueError(f"Unknown mode: {mode}")
+
+
 @contextlib.contextmanager
-def errstate(**kwargs):
+def errstate(**kwargs: Any) -> Generator[Any, Any, Any]:
     yield
 
 
 # --------------------------
 # Miscellaneous Utilities
 # --------------------------
-def path_contains_points(
-    vertices: torch.Tensor, points: torch.Tensor
-) -> torch.BoolTensor:
+def path_contains_points(vertices: Tensor, points: Tensor) -> torch.BoolTensor:
     """
     Vectorized ray‐crossing algorithm.
     vertices: (N,2) tensor of polygon verts in order (closed implicitly: last→first).
@@ -756,6 +1005,15 @@ def path_contains_points(
     return inside
 
 
+def grid_sample(
+    input, grid, mode="bilinear", padding_mode="zeros", align_corners=False
+):
+    """Wrapper for torch.nn.functional.grid_sample."""
+    return F.grid_sample(
+        input, grid, mode=mode, padding_mode=padding_mode, align_corners=align_corners
+    )
+
+
 # --------------------------
 # Exported Symbols
 # --------------------------
@@ -766,6 +1024,7 @@ __all__ = [
     "set_precision",
     "get_precision",
     "grad_mode",
+    "to_tensor",
     # Creation
     "array",
     "zeros",
@@ -787,6 +1046,7 @@ __all__ = [
     # Shape
     "reshape",
     "stack",
+    "transpose",
     "broadcast_to",
     "repeat",
     "flip",
@@ -814,6 +1074,8 @@ __all__ = [
     "maximum",
     "mean",
     "all",
+    "any",
+    "where",
     "histogram2d",
     "get_bilinear_weights",
     "erfinv",
@@ -841,4 +1103,7 @@ __all__ = [
     "eye",
     # Error State
     "errstate",
+    # Simulation
+    "fftconvolve",
+    "grid_sample",
 ]

@@ -2,6 +2,8 @@ from unittest.mock import patch, MagicMock
 
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 import numpy as np
 import pytest
 
@@ -116,8 +118,8 @@ class TestCookeTripetSpotDiagram:
 
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
     def test_view_spot_diagram(self, set_test_backend, cooke_triplet):
@@ -125,8 +127,8 @@ class TestCookeTripetSpotDiagram:
         fig, axes = spot.view()
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
     def test_view_spot_diagram_larger_fig(self, set_test_backend, cooke_triplet):
@@ -134,8 +136,8 @@ class TestCookeTripetSpotDiagram:
         fig, axes = spot.view(figsize=(20, 10))
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
 
@@ -145,8 +147,8 @@ class TestTripletSpotDiagram:
         fig, axes = spot.view()
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
     def test_view_spot_diagram_larger_fig(self, set_test_backend, triplet_four_fields):
@@ -154,8 +156,8 @@ class TestTripletSpotDiagram:
         fig, axes = spot.view(figsize=(20, 10))
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
 
@@ -181,8 +183,8 @@ class TestCookeTripletEncircledEnergy:
         fig, ax = encircled_energy.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_encircled_energy_larger_fig(self, set_test_backend, cooke_triplet):
@@ -190,8 +192,8 @@ class TestCookeTripletEncircledEnergy:
         fig, ax = encircled_energy.view(figsize=(20, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_encircled_energy_larger_fig(self, set_test_backend, cooke_triplet):
@@ -199,8 +201,8 @@ class TestCookeTripletEncircledEnergy:
         fig, ax = encircled_energy.view(figsize=(20, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
@@ -414,8 +416,8 @@ class TestCookeTripletRayFan:
         fig, axes = ray_fan.view()
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
     def test_view_ray_fan_larger_fig(self, set_test_backend, cooke_triplet):
@@ -423,8 +425,8 @@ class TestCookeTripletRayFan:
         fig, axes = ray_fan.view(figsize=(20, 10))
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
 
@@ -434,8 +436,8 @@ class TestTelescopeTripletYYbar:
         fig, ax = yybar.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_yybar_larger_fig(self, set_test_backend, telescope_objective):
@@ -443,8 +445,8 @@ class TestTelescopeTripletYYbar:
         fig, ax = yybar.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
@@ -482,8 +484,8 @@ class TestTelescopeTripletDistortion:
         fig, ax = dist.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_distortion_larger_fig(self, set_test_backend, telescope_objective):
@@ -491,8 +493,8 @@ class TestTelescopeTripletDistortion:
         fig, ax = dist.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_distortion_larger_fig(self, set_test_backend, telescope_objective):
@@ -500,8 +502,8 @@ class TestTelescopeTripletDistortion:
         fig, ax = dist.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_distortion_larger_fig(self, set_test_backend, telescope_objective):
@@ -509,8 +511,8 @@ class TestTelescopeTripletDistortion:
         fig, ax = dist.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
@@ -567,8 +569,8 @@ class TestTelescopeTripletGridDistortion:
         fig, ax = dist.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_grid_distortion_larger_fig(
@@ -578,8 +580,8 @@ class TestTelescopeTripletGridDistortion:
         fig, ax = dist.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
@@ -637,8 +639,8 @@ class TestTelescopeTripletFieldCurvature:
         fig, ax = field_curvature.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_field_curvature_generate_data(self, set_test_backend, telescope_objective):
@@ -698,8 +700,8 @@ class TestSpotVsField:
         fig, ax = spot_vs_field.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_spot_vs_field_larger_fig(self, set_test_backend, telescope_objective):
@@ -707,8 +709,8 @@ class TestSpotVsField:
         fig, ax = spot_vs_field.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
@@ -740,8 +742,8 @@ class TestWavefrontErrorVsField:
         fig, ax = wavefront_error_vs_field.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_wave_larger_fig(self, set_test_backend, telescope_objective):
@@ -751,8 +753,8 @@ class TestWavefrontErrorVsField:
         fig, ax = wavefront_error_vs_field.view(figsize=(12.4, 10))
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
@@ -784,7 +786,7 @@ class TestPupilAberration:
         assert fig is not None
         assert axes is not None
         assert len(axes) == 3
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         plt.close(fig)
 
 
@@ -935,7 +937,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr_uniform.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
 
@@ -995,7 +997,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr_analysis.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1049,7 +1051,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr_apodized.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
 
@@ -1103,7 +1105,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr_perfect.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1143,7 +1145,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr_apodized.view(cross_section=("cross-x", res_val[0] // 2))
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1151,7 +1153,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr_apodized.view(cross_section=("cross-y", None))
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1161,7 +1163,7 @@ class TestIncoherentIrradiance:
         )
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1219,7 +1221,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1232,7 +1234,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(cmap="viridis", normalize=False)
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1241,7 +1243,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(cross_section=("cross-x", 0), normalize=True, cmap="magma")
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
 
         plt.close(fig)
@@ -1260,7 +1262,7 @@ class TestIncoherentIrradiance:
         )  # Index out of bounds
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
@@ -1273,7 +1275,7 @@ class TestIncoherentIrradiance:
         )  # Index out of bounds
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
@@ -1284,7 +1286,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(cross_section="invalid")
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
@@ -1294,7 +1296,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(cross_section=("cross-x",))
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
@@ -1304,7 +1306,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(cross_section=(123, "cross-y"))
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
         mock_print.assert_any_call(
@@ -1349,7 +1351,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(normalize=False)  # Test the vmin=vmax branch in plotting
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
 
@@ -1358,7 +1360,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(normalize=False)
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
 
@@ -1367,7 +1369,7 @@ class TestIncoherentIrradiance:
         fig, axes = irr.view(normalize=True)
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
         plt.close(fig)
 
@@ -1404,7 +1406,6 @@ class TestIncoherentIrradiance:
         be.grad_mode.enable()
         # Create a simple system with a parameter that requires gradients
         optic_sys = Optic()
-        optic_sys.add_surface(index=0, thickness=be.inf)
         # Make RADIUS a tensor that requires gradients, as changing it will
         # affect the final irradiance.
         radius_tensor = be.array(20.0)
@@ -1480,7 +1481,7 @@ def test_view_normalize_true_peak_zero(set_test_backend, test_system_irradiance_
     fig, axes = irr.view(normalize=True)  # Should handle peak_val = 0
     assert fig is not None
     assert axes is not None
-    assert isinstance(fig, plt.Figure)
+    assert isinstance(fig, Figure)
     assert len(axes) > 0
     plt.close(fig)
 
@@ -1731,9 +1732,9 @@ class TestThroughFocusSpotDiagram:
         fig, axes = tf_spot.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
     def test_view_with_all_zero_intensities(self, tf_spot):
@@ -1746,9 +1747,9 @@ class TestThroughFocusSpotDiagram:
 
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert len(axes) > 0
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
 
@@ -1961,7 +1962,7 @@ class TestRadiantIntensity:
         fig, axes = radiant_intensity.view()
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert isinstance(axes, np.ndarray)
         plt.close(fig)
 
@@ -1975,7 +1976,7 @@ class TestRadiantIntensity:
         fig, axes = radiant_intensity.view(cross_section=("cross-x", None))
         assert fig is not None
         assert axes is not None
-        assert isinstance(fig, plt.Figure)
+        assert isinstance(fig, Figure)
         assert isinstance(axes, np.ndarray)
         plt.close(fig)
 
@@ -2005,7 +2006,6 @@ class TestRadiantIntensity:
         be.grad_mode.enable()
 
         optic_sys = Optic()
-        optic_sys.add_surface(index=0, thickness=be.inf)
 
         radius_tensor = be.array(20.0)
         radius_tensor.requires_grad = True
@@ -2115,8 +2115,8 @@ class TestCookeTripletBestFitRayFan:
         fig, axes = ray_fan.view()
         assert fig is not None
         assert len(axes) > 0
-        assert isinstance(fig, plt.Figure)
-        assert all(isinstance(ax, plt.Axes) for ax in axes)
+        assert isinstance(fig, Figure)
+        assert all(isinstance(ax, Axes) for ax in axes)
         plt.close(fig)
 
     def test_remove_distortion_with_invalid_central_ray(self, set_test_backend):

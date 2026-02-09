@@ -12,12 +12,17 @@ that require a numerical solution to find the intersection point with a ray.
    :caption: Geometry Modules
 
    geometries.base
+   geometries.biconic
    geometries.chebyshev
    geometries.even_asphere
+   geometries.forbes
    geometries.odd_asphere
    geometries.newton_raphson
+   geometries.nurbs
    geometries.plane
+   geometries.plane_grating
    geometries.polynomial
    geometries.standard
+   geometries.standard_grating
    geometries.toroidal
    geometries.zernike

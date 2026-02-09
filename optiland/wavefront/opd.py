@@ -6,13 +6,32 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, TypedDict, cast
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import griddata
 
 import optiland.backend as be
+from optiland.utils import resolve_wavelength
 
 from .wavefront import Wavefront
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from mpl_toolkits.mplot3d import Axes3D
+    from numpy.typing import NDArray
+
+    from optiland._types import DistributionType, PlotProjection
+    from optiland.optic.optic import Optic
+    from optiland.wavefront.strategy import WavefrontStrategyType
+
+
+class OPDData(TypedDict):
+    x: NDArray
+    y: NDArray
+    z: NDArray
 
 
 class OPD(Wavefront):
@@ -21,12 +40,15 @@ class OPD(Wavefront):
     Args:
         optic (Optic): The optic object.
         field (tuple): The field at which to calculate the OPD.
-        wavelength (float): The wavelength of the wavefront.
+        wavelength (str | float): The wavelength of the wavefront. Can be 'primary'
+            or a float value.
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            "chief_ray", "centroid", and "best_fit".
             Defaults to "chief_ray".
+        afocal (bool): If True, uses a planar reference geometry for afocal systems.
+            If False, uses a spherical reference geometry. Defaults to False.
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.
@@ -50,19 +72,20 @@ class OPD(Wavefront):
 
     def __init__(
         self,
-        optic,
-        field,
-        wavelength,
-        num_rays=15,
-        distribution="hexapolar",
-        strategy="chief_ray",
-        remove_tilt=False,
+        optic: Optic,
+        field: tuple[float, float],
+        wavelength: str | float,
+        num_rays: int = 15,
+        distribution: DistributionType = "hexapolar",
+        strategy: WavefrontStrategyType = "chief_ray",
+        remove_tilt: bool = False,
         **kwargs,
-    ):
+    ) -> None:
+        resolved_wavelength = resolve_wavelength(optic, wavelength)
         super().__init__(
             optic,
             fields=[field],
-            wavelengths=[wavelength],
+            wavelengths=[resolved_wavelength],
             num_rays=num_rays,
             distribution=distribution,
             strategy=strategy,
@@ -72,11 +95,11 @@ class OPD(Wavefront):
 
     def view(
         self,
-        fig_to_plot_on: plt.Figure = None,
-        projection: str = "2d",
+        fig_to_plot_on: Figure | None = None,
+        projection: PlotProjection = "2d",
         num_points: int = 256,
         figsize: tuple[float, float] = (7, 5.5),
-    ) -> tuple[plt.Figure, plt.Axes]:
+    ) -> tuple[Figure, Axes]:
         """Visualizes the OPD wavefront.
 
         Args:
@@ -93,7 +116,7 @@ class OPD(Wavefront):
         """
         is_gui_embedding = fig_to_plot_on is not None
         if is_gui_embedding:
-            current_fig = fig_to_plot_on
+            current_fig = cast("Figure", fig_to_plot_on)
             current_fig.clear()
             ax = (
                 current_fig.add_subplot(111)
@@ -119,7 +142,7 @@ class OPD(Wavefront):
             current_fig.canvas.draw_idle()
         return current_fig, ax
 
-    def rms(self):
+    def rms(self) -> be.ndarray:
         """Calculates the root mean square (RMS) of the OPD wavefront.
 
         Returns:
@@ -135,7 +158,7 @@ class OPD(Wavefront):
         opd = data.opd[mask]
         return be.sqrt(be.mean(opd**2))
 
-    def _plot_2d(self, ax: plt.Axes, data: dict[str, np.ndarray]) -> None:
+    def _plot_2d(self, ax: Axes, data: dict[str, NDArray]) -> None:
         """Plots the 2D visualization of the OPD wavefront.
 
         Args:
@@ -145,7 +168,7 @@ class OPD(Wavefront):
 
         """
         im = ax.imshow(
-            np.flipud(data["z"]), extent=[-1, 1, -1, 1]
+            np.flipud(data["z"]), extent=(-1, 1, -1, 1)
         )  # np.flipud is fine here as data['z'] is already numpy
 
         ax.set_xlabel("Pupil X")
@@ -156,9 +179,7 @@ class OPD(Wavefront):
         cbar.ax.get_yaxis().labelpad = 15
         cbar.ax.set_ylabel("OPD (waves)", rotation=270)
 
-    def _plot_3d(
-        self, fig: plt.Figure, ax: plt.Axes, data: dict[str, np.ndarray]
-    ) -> None:
+    def _plot_3d(self, fig: Figure, ax: Axes3D, data: dict[str, NDArray]) -> None:
         """Plots the 3D visualization of the OPD wavefront.
 
         Args:
@@ -167,7 +188,6 @@ class OPD(Wavefront):
             figsize (tuple, optional): The figure size. Defaults to (7, 5.5).
 
         """
-
         surf = ax.plot_surface(
             data["x"],
             data["y"],
@@ -186,7 +206,7 @@ class OPD(Wavefront):
         fig.colorbar(surf, ax=ax, shrink=0.5, aspect=10, pad=0.15)
         fig.tight_layout()
 
-    def generate_opd_map(self, num_points=256):
+    def generate_opd_map(self, num_points: int = 256) -> OPDData:
         """Generates the OPD map data.
 
         Args:
@@ -221,5 +241,5 @@ class OPD(Wavefront):
 
         z_interp = griddata(points, values, (x_interp, y_interp), method="cubic")
 
-        data = dict(x=x_interp, y=y_interp, z=z_interp)
+        data = OPDData(x=x_interp, y=y_interp, z=z_interp)
         return data

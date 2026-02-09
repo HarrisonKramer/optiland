@@ -4,7 +4,7 @@ import optiland.backend as be
 
 from optiland.apodization import UniformApodization, GaussianApodization
 from optiland.aperture import Aperture
-from optiland.fields import FieldGroup
+from optiland.fields import FieldGroup, AngleField
 from optiland.optic import Optic
 from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
@@ -67,7 +67,7 @@ class TestOptic:
 
     def test_initialization(self, set_test_backend):
         assert self.optic.aperture is None
-        assert self.optic.field_type is None
+        assert self.optic.field_definition is None
         assert isinstance(self.optic.surface_group, SurfaceGroup)
         assert isinstance(self.optic.fields, FieldGroup)
         assert isinstance(self.optic.wavelengths, WavelengthGroup)
@@ -103,7 +103,7 @@ class TestOptic:
 
     def test_set_field_type(self, set_test_backend):
         self.optic.set_field_type("angle")
-        assert self.optic.field_type == "angle"
+        assert isinstance(self.optic.field_definition, AngleField)
 
     def test_set_comment(self, set_test_backend):
         self.optic.add_surface(
@@ -222,7 +222,7 @@ class TestOptic:
             coefficients=[0.0, 0.0, 0.0],
         )
         self.optic.set_asphere_coeff(0.1, 0, 2)
-        assert self.optic.surface_group.surfaces[0].geometry.c[2] == 0.1
+        assert self.optic.surface_group.surfaces[0].geometry.coefficients[2] == 0.1
 
     def test_set_polarization(self, set_test_backend):
         self.optic.set_polarization("ignore")
@@ -237,7 +237,7 @@ class TestOptic:
         assert self.optic.apodization == gaussian_apod, "Apodization not set correctly"
 
         # Test setting with a non-Apodization type
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             self.optic.set_apodization("not_an_apodization_object")
 
     def test_set_invalid_polarization(self, set_test_backend):
@@ -311,7 +311,7 @@ class TestOptic:
         )
         self.optic.reset()
         assert self.optic.aperture is None
-        assert self.optic.field_type is None
+        assert self.optic.field_definition is None
         assert len(self.optic.surface_group.surfaces) == 0
         assert len(self.optic.fields.fields) == 0
         assert len(self.optic.wavelengths.wavelengths) == 0
@@ -522,7 +522,14 @@ class TestOptic:
         lens.flip()
         assert lens.pickups.pickups[0].source_surface_idx == 2
         assert lens.pickups.pickups[0].target_surface_idx == 1
-
+    
+    def test_remove_surface(self, set_test_backend):
+        lens = singlet_infinite_object()
+        
+        num_surfaces_before = len(lens.surface_group.surfaces)
+        lens.remove_surface(index=2)
+        assert len(lens.surface_group.surfaces) == num_surfaces_before - 1
+    
     @patch("optiland.optic.optic.SurfaceSagViewer")
     def test_plot_surface_sag(self, mock_viewer, set_test_backend):
         lens = singlet_infinite_object()
@@ -532,4 +539,48 @@ class TestOptic:
         )
         mock_viewer.assert_called_once_with(lens)
         viewer_instance = mock_viewer.return_value
-        viewer_instance.view.assert_called_once_with(1, 2.0, -2.0)
+        viewer_instance.view.assert_called_once_with(
+            surface_index=1,
+            y_cross_section=2.0,
+            x_cross_section=-2.0,
+            fig_to_plot_on=None,
+            max_extent=None,
+            num_points_grid=50,
+            buffer_factor=1.1,
+        )
+
+
+def test_flip_updates_thickness_attribute(set_test_backend):
+    """
+    Verify that Optic.flip() correctly updates the thickness attribute
+    of each surface to maintain consistency with z-positions.
+
+    From bug reported in issue #362
+    """
+    lens = Optic()
+    lens.add_surface(index=0, thickness=be.inf, material="Air")
+    lens.add_surface(index=1, material="N-BK7", thickness=7.0)
+    lens.add_surface(index=2, material="SF5", thickness=2.5)
+    lens.add_surface(index=3, material="Air", thickness=70.0)
+    lens.add_surface(index=4, material="Air")
+
+    lens.flip()
+
+    flipped_surfaces = lens.surface_group.surfaces
+
+    # Expected thicknesses after flip (reversed order)
+    expected_thicknesses = [be.inf, 2.5, 7.0, 70.0, 0.0]
+
+    # Assertions
+    assert flipped_surfaces[0].thickness == expected_thicknesses[0]
+    assert flipped_surfaces[1].thickness == expected_thicknesses[1]
+    assert flipped_surfaces[2].thickness == expected_thicknesses[2]
+    assert flipped_surfaces[3].thickness == expected_thicknesses[3]
+    assert flipped_surfaces[4].thickness == expected_thicknesses[4]
+
+    # Also verify relationship between thickness and z-position
+    thicknesses = be.diff(
+        be.array([surf.geometry.cs.z for surf in flipped_surfaces]),
+        append=be.array([79.5]),
+    )
+    assert_allclose(thicknesses, expected_thicknesses)

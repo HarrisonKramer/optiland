@@ -91,42 +91,42 @@ def test_real_rays_init(set_test_backend):
 
     assert isinstance(rays.x, be.ndarray)
     assert rays.x.shape == (1,)
-    assert rays.x.dtype == be.array(x).dtype
+    assert rays.x.dtype == be.array(1.0).dtype
     assert_allclose(rays.x[0], 1.0)
 
     assert isinstance(rays.y, be.ndarray)
     assert rays.y.shape == (1,)
-    assert rays.y.dtype == be.array(y).dtype
+    assert rays.y.dtype == be.array(1.0).dtype
     assert_allclose(rays.y[0], 2.0)
 
     assert isinstance(rays.z, be.ndarray)
     assert rays.z.shape == (1,)
-    assert rays.z.dtype == be.array(z).dtype
+    assert rays.z.dtype == be.array(1.0).dtype
     assert_allclose(rays.z[0], 3.0)
 
     assert isinstance(rays.L, be.ndarray)
     assert rays.L.shape == (1,)
-    assert rays.L.dtype == be.array(L).dtype
+    assert rays.L.dtype == be.array(1.0).dtype
     assert_allclose(rays.L[0], 4.0)
 
     assert isinstance(rays.M, be.ndarray)
     assert rays.M.shape == (1,)
-    assert rays.M.dtype == be.array(M).dtype
+    assert rays.M.dtype == be.array(1.0).dtype
     assert_allclose(rays.M[0], 5.0)
 
     assert isinstance(rays.N, be.ndarray)
     assert rays.N.shape == (1,)
-    assert rays.N.dtype == be.array(N).dtype
+    assert rays.N.dtype == be.array(1.0).dtype
     assert_allclose(rays.N[0], 6.0)
 
     assert isinstance(rays.i, be.ndarray)
     assert rays.i.shape == (1,)
-    assert rays.i.dtype == be.array(intensity).dtype
+    assert rays.i.dtype == be.array(1.0).dtype
     assert_allclose(rays.i[0], 7.0)
 
     assert isinstance(rays.w, be.ndarray)
     assert rays.w.shape == (1,)
-    assert rays.w.dtype == be.array(wavelength).dtype
+    assert rays.w.dtype == be.array(1.0).dtype
     assert_allclose(rays.w[0], 8.0)
 
     assert isinstance(rays.opd, be.ndarray)
@@ -255,44 +255,28 @@ def test_rotate_z(set_test_backend):
     assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
 
 
-def test_propagate(set_test_backend):
-    rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+def test_normalize(set_test_backend):
+    """Test the normalization of ray direction cosines."""
+    # Create rays with unnormalized direction cosines
+    rays = RealRays(x=0, y=0, z=0, L=1, M=1, N=1, intensity=1, wavelength=0.5)
+    rays.is_normalized = False
 
-    rays.propagate(2.0)
+    rays.normalize()
 
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 5.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
+    # Check that the flag is updated
+    assert rays.is_normalized is True
 
-    rays.propagate(-1.5)
+    # Check that the direction cosines are correctly normalized
+    expected_L = 1 / be.sqrt(3)
+    expected_M = 1 / be.sqrt(3)
+    expected_N = 1 / be.sqrt(3)
+    assert_allclose(rays.L[0], expected_L, atol=1e-10)
+    assert_allclose(rays.M[0], expected_M, atol=1e-10)
+    assert_allclose(rays.N[0], expected_N, atol=1e-10)
 
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 3.5, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
-
-    rays.propagate(0.0)
-
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 3.5, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
-
-    rays.propagate(3.0)
-
-    assert_allclose(rays.x[0], 1.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.y[0], 2.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.z[0], 6.5, rtol=0, atol=1e-10)
-    assert_allclose(rays.L[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.M[0], 0.0, rtol=0, atol=1e-10)
-    assert_allclose(rays.N[0], 1.0, rtol=0, atol=1e-10)
+    # Check that the magnitude is 1
+    magnitude = be.sqrt(rays.L[0] ** 2 + rays.M[0] ** 2 + rays.N[0] ** 2)
+    assert_allclose(magnitude, 1.0, atol=1e-10)
 
 
 def test_clip(set_test_backend):
@@ -825,14 +809,13 @@ class TestRayGenerator:
         Hy = 0.5
         Px = be.array([0.1, 0.2])
         Py = be.array([0.1, 0.2])
-        vx = 0.0
-        vy = 0.0
+        wavelength = 0.55
 
-        x0, y0, z0 = generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+        rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-        assert x0.shape == (2,)
-        assert y0.shape == (2,)
-        assert z0.shape == (2,)
+        assert rays.x.shape == (2,)
+        assert rays.y.shape == (2,)
+        assert rays.z.shape == (2,)
 
     def test_get_ray_origins_invalid_field_type(self):
         lens = TessarLens()
@@ -843,11 +826,10 @@ class TestRayGenerator:
         Hy = 0.5
         Px = be.array([0.1, 0.2])
         Py = be.array([0.1, 0.2])
-        vx = 0.0
-        vy = 0.1
+        wavelength = 0.55
 
         with pytest.raises(ValueError):
-            generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
     def test_invalid_ray_origin_telecentric(self):
         lens = TessarLens()
@@ -858,24 +840,10 @@ class TestRayGenerator:
         Hy = 0.5
         Px = be.array([0.1, 0.2])
         Py = be.array([0.1, 0.2])
-        vx = 0.0
-        vy = 0.1
+        wavelength = 0.55
 
         with pytest.raises(ValueError):
-            generator._get_ray_origins(Hx, Hy, Px, Py, vx, vy)
-
-    def test_normalize(self):
-        rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
-
-        # normalize during propagation
-        rays.is_normalized = False
-        rays.propagate(1.0)
-        assert rays.is_normalized is True
-
-        # manually normalize
-        rays.is_normalized = False
-        rays.normalize()
-        assert rays.is_normalized is True
+            generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
 
 @pytest.mark.usefixtures("set_test_backend")

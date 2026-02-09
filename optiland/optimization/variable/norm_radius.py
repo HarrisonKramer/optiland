@@ -10,6 +10,7 @@ Manuel Fragata Mendes, August 2025
 
 from __future__ import annotations
 
+from optiland.optimization.scaling.identity import IdentityScaler
 from optiland.optimization.variable.base import VariableBehavior
 
 
@@ -18,8 +19,10 @@ class NormalizationRadiusVariable(VariableBehavior):
     Represents a variable for the normalization radius of a surface.
     """
 
-    def __init__(self, optic, surface_number, apply_scaling=True, **kwargs):
-        super().__init__(optic, surface_number, apply_scaling, **kwargs)
+    def __init__(self, optic, surface_number, scaler=None, **kwargs):
+        if scaler is None:
+            scaler = IdentityScaler()
+        super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.optic.surface_group.surfaces[
             self.surface_number
         ].is_norm_radius_variable = True

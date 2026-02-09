@@ -6,11 +6,12 @@ provides a set of tools for optimizing optical systems. It includes a variety of
 such as gradient-based and evolutionary algorithms, as well as tools for defining optimization variables
 and objectives.
 
-The optimization module is divided into three subcategories:
+The optimization module is divided into four subcategories:
 
-1. Optimization Core Functionalities
-2. Optimization Operands
-3. Optimization Variables
+1. Core Functionalities - Problem definition and optimizers
+2. Operands - Functions to compute optical performance metrics
+3. Variables - Properties of optical elements that can be optimized
+4. Scaling - Methods to scale optimization variables for better performance
 
 Core Functionalities
 --------------------
@@ -25,6 +26,7 @@ Core Functionalities
    optimization.optimizer.scipy.differential_evolution
    optimization.optimizer.scipy.dual_annealing
    optimization.optimizer.scipy.least_squares
+   optimization.optimizer.scipy.orthogonal_descent
    optimization.optimizer.scipy.shgo
    optimization.optimizer.scipy.glass_expert
    optimization.optimizer.torch.base
@@ -67,6 +69,7 @@ The `optimization.variable` subpackage contains the following modules:
    optimization.variable.index
    optimization.variable.material
    optimization.variable.norm_radius
+   optimization.variable.nurbs
    optimization.variable.polynomial_coeff
    optimization.variable.radius
    optimization.variable.reciprocal_radius
@@ -75,3 +78,21 @@ The `optimization.variable` subpackage contains the following modules:
    optimization.variable.variable_manager
    optimization.variable.variable
    optimization.variable.zernike_coeff
+
+
+Scaling
+-------
+
+The `optimization.scaling` subpackage contains the following modules:
+
+.. autosummary::
+   :toctree: optimization/scaling/
+   :caption: Scaling Modules
+   :recursive:
+
+   optimization.scaling.base
+   optimization.scaling.identity
+   optimization.scaling.linear
+   optimization.scaling.log
+   optimization.scaling.power
+   optimization.scaling.reciprocal

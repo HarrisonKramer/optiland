@@ -17,28 +17,25 @@ from optiland.rays.polarized_rays import PolarizedRays
 if TYPE_CHECKING:
     # pragma: no cover
     from optiland.coatings import BaseCoating
-    from optiland.geometries.base import BaseGeometry
-    from optiland.materials.base import BaseMaterial
     from optiland.scatter import BaseBSDF
+    from optiland.surfaces import Surface
 
 
 class ThinLensInteractionModel(BaseInteractionModel):
     """Interaction model for a thin lens."""
 
+    interaction_type = "thin_lens"
+
     def __init__(
         self,
+        parent_surface: Surface | None,
         focal_length: float,
-        geometry: BaseGeometry,
-        material_pre: BaseMaterial,
-        material_post: BaseMaterial,
         is_reflective: bool,
         coating: BaseCoating | None = None,
         bsdf: BaseBSDF | None = None,
     ):
         super().__init__(
-            geometry=geometry,
-            material_pre=material_pre,
-            material_post=material_post,
+            parent_surface=parent_surface,
             is_reflective=is_reflective,
             coating=coating,
             bsdf=bsdf,
@@ -53,8 +50,7 @@ class ThinLensInteractionModel(BaseInteractionModel):
 
     def flip(self):
         """Flip the interaction model."""
-        self.material_pre, self.material_post = self.material_post, self.material_pre
-        self.f = -self.f
+        pass
 
     def interact_real_rays(self, rays):
         """Interacts the rays with the surface by either reflecting or refracting

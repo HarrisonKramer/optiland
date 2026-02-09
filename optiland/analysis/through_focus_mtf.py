@@ -9,6 +9,8 @@ Kramer Harrison, 2025
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import make_interp_spline
@@ -16,6 +18,10 @@ from scipy.interpolate import make_interp_spline
 import optiland.backend as be
 from optiland.analysis.through_focus import ThroughFocusAnalysis
 from optiland.mtf.sampled import SampledMTF
+
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
 
 
 class ThroughFocusMTF(ThroughFocusAnalysis):
@@ -117,8 +123,10 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
         return results_at_this_focus
 
     def view(
-        self, fig_to_plot_on: plt.Figure = None, figsize: tuple[float, float] = (12, 4)
-    ) -> tuple[plt.Figure, plt.Axes]:
+        self,
+        fig_to_plot_on: Figure | None = None,
+        figsize: tuple[float, float] = (12, 4),
+    ) -> tuple[Figure, Axes]:
         """
         Visualizes the through-focus Modulation Transfer Function (MTF) results for
         each analyzed field.
@@ -142,7 +150,7 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
 
         Returns
         -------
-        tuple[plt.Figure, plt.Axes]
+        tuple[Figure, Axes]
             The matplotlib Figure and Axes objects containing the plot.
 
         Notes

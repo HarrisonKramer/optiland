@@ -1,5 +1,7 @@
 import pytest
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 from unittest.mock import patch, MagicMock
 
 from optiland.analysis import ThroughFocusMTF
@@ -116,8 +118,8 @@ class TestThroughFocusMTF:
         fig, ax = tfm.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)  # Close the figure to free resources
 
     def test_view_few_steps(self, set_test_backend):
@@ -127,8 +129,8 @@ class TestThroughFocusMTF:
         fig, ax = tfm.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_default_steps(self, set_test_backend):
@@ -138,8 +140,8 @@ class TestThroughFocusMTF:
         fig, ax = tfm.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
     def test_view_single_field(self, set_test_backend):
@@ -156,6 +158,6 @@ class TestThroughFocusMTF:
         fig, ax = tfm.view()
         assert fig is not None
         assert ax is not None
-        assert isinstance(fig, plt.Figure)
-        assert isinstance(ax, plt.Axes)
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)

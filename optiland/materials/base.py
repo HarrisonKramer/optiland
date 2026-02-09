@@ -1,4 +1,4 @@
-"""Basae Material
+"""Base Material
 
 This module defines the base class for materials. The base class provides
 methods to calculate the refractive index, extinction coefficient, and Abbe
@@ -12,6 +12,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+import numpy as np
+
+import optiland.backend as be
+from optiland.propagation.base import BasePropagationModel
+from optiland.propagation.homogeneous import HomogeneousPropagation
+
 
 class BaseMaterial(ABC):
     """Base class for materials.
@@ -24,13 +30,14 @@ class BaseMaterial(ABC):
     `k` to provide specific material properties.
 
     Attributes:
-        None
+        propagation_model: The model used to propagate rays through this
+            material.
 
     Methods:
-        n(wavelength: float or be.ndarray) -> float or be.ndarray:
+        n(wavelength: float | be.ndarray) -> float | be.ndarray:
             Abstract method to calculate the refractive index at a given
             wavelength(s) in microns.
-        k(wavelength: float or be.ndarray) -> float or be.ndarray:
+        k(wavelength: float | be.ndarray) -> float | be.ndarray:
             Abstract method to calculate the extinction coefficient at a given
             wavelength(s) in microns.
         abbe() -> float:
@@ -40,32 +47,102 @@ class BaseMaterial(ABC):
 
     _registry = {}
 
+    def __init__(self, propagation_model: BasePropagationModel | None = None):
+        """Initializes the material and its caches.
+
+        Args:
+            propagation_model: The propagation model to use for this material.
+                If None, a default HomogeneousPropagation model is created.
+        """
+        self._n_cache = {}
+        self._k_cache = {}
+
+        if propagation_model is None:
+            self.propagation_model = HomogeneousPropagation(self)
+        else:
+            self.propagation_model = propagation_model
+
     def __init_subclass__(cls, **kwargs):
         """Automatically register subclasses."""
         super().__init_subclass__(**kwargs)
         BaseMaterial._registry[cls.__name__] = cls
 
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, type(self)) and value.to_dict() == self.to_dict()
+
+    def _create_cache_key(self, wavelength: float | be.ndarray, **kwargs) -> tuple:
+        """Creates a hashable cache key from wavelength and kwargs."""
+        if be.is_array_like(wavelength):
+            wavelength_key = tuple(np.ravel(be.to_numpy(wavelength)))
+        else:
+            wavelength_key = wavelength
+        return (wavelength_key,) + tuple(sorted(kwargs.items()))
+
+    def n(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
+        """Calculates the refractive index at a given wavelength with caching.
+
+        Args:
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
+                Can be a float, numpy array, or torch tensor.
+            **kwargs: Additional keyword arguments for calculation (e.g., temperature).
+
+        Returns:
+            float | be.ndarray: The refractive index at the given wavelength(s).
+        """
+        cache_key = self._create_cache_key(wavelength, **kwargs)
+
+        if cache_key in self._n_cache:
+            return self._n_cache[cache_key]
+
+        result = self._calculate_n(wavelength, **kwargs)
+        self._n_cache[cache_key] = result
+        return result
+
+    def k(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
+        """Calculates the extinction coefficient at a given wavelength with caching.
+
+        Args:
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
+                Can be a float, numpy array, or torch tensor.
+            **kwargs: Additional keyword arguments for calculation.
+
+        Returns:
+            float | be.ndarray: The extinction coefficient at the given wavelength(s).
+        """
+        cache_key = self._create_cache_key(wavelength, **kwargs)
+
+        if cache_key in self._k_cache:
+            return self._k_cache[cache_key]
+
+        result = self._calculate_k(wavelength, **kwargs)
+        self._k_cache[cache_key] = result
+        return result
+
     @abstractmethod
-    def n(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
+    def _calculate_n(
+        self, wavelength: float | be.ndarray, **kwargs
+    ) -> float | be.ndarray:
         """Calculates the refractive index at a given wavelength.
 
         Args:
-            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            float or be.ndarray: The refractive index at the given wavelength(s).
+            float | be.ndarray: The refractive index at the given wavelength(s).
         """
         pass  # pragma: no cover
 
     @abstractmethod
-    def k(self, wavelength: float) -> float:  # Subclasses will handle be.ndarray
+    def _calculate_k(
+        self, wavelength: float | be.ndarray, **kwargs
+    ) -> float | be.ndarray:
         """Calculates the extinction coefficient at a given wavelength.
 
         Args:
-            wavelength (float or be.ndarray): The wavelength(s) of light in microns.
+            wavelength (float | be.ndarray): The wavelength(s) of light in microns.
 
         Returns:
-            float or be.ndarray: The extinction coefficient at the given
+            float | be.ndarray: The extinction coefficient at the given
             wavelength(s).
         """
         pass  # pragma: no cover
@@ -94,11 +171,18 @@ class BaseMaterial(ABC):
             dict: The dictionary representation of the material.
 
         """
-        return {"type": self.__class__.__name__}
+        return {
+            "type": self.__class__.__name__,
+            "propagation_model": self.propagation_model.to_dict(),
+        }
 
     @classmethod
     def from_dict(cls, data):
         """Create a material from a dictionary representation.
+
+        This factory method first delegates to the appropriate subclass to
+        create the material instance, then handles the deserialization of
+        the propagation model.
 
         Args:
             data (dict): The dictionary representation of the material.
@@ -112,5 +196,18 @@ class BaseMaterial(ABC):
         if material_type not in cls._registry:
             raise ValueError(f"Unknown material type: {material_type}")
 
-        # Delegate to the correct subclass's from_dict
-        return cls._registry[material_type].from_dict(data)
+        # Delegate to the correct subclass to create the instance.
+        material_subclass = cls._registry[material_type]
+        material = material_subclass.from_dict(data)
+
+        # Handle the propagation model deserialization here.
+        propagation_model_data = data.get("propagation_model")
+        if propagation_model_data:
+            # Create the model, passing the material to resolve dependencies.
+            new_prop_model = BasePropagationModel.from_dict(
+                propagation_model_data, material=material
+            )
+            # Overwrite the default propagation model.
+            material.propagation_model = new_prop_model
+
+        return material

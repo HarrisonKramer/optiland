@@ -10,7 +10,15 @@ Kramer Harrison, 2023
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import optiland.backend as be
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from optiland._types import BEArray
+    from optiland.optic import Optic
 
 
 class Aberrations:
@@ -23,15 +31,15 @@ class Aberrations:
         optic (Optic): An instance of the optical system to be analyzed.
     """
 
-    def __init__(self, optic):
+    def __init__(self, optic: Optic):
         self.optic = optic
 
-    def third_order(self):
+    def third_order(self) -> tuple[BEArray, ...]:
         """
         Compute all third-order aberrations and first-order color terms.
 
         Returns:
-            tuple: A tuple containing the following `be.ndarray` instances:
+            A tuple containing the following `be.ndarray` instances:
                 - TSC: Third-order transverse spherical aberration.
                 - SC: Third-order longitudinal spherical aberration.
                 - CC: Third-order sagittal coma.
@@ -82,12 +90,12 @@ class Aberrations:
             S,
         )
 
-    def seidels(self):
+    def seidels(self) -> BEArray:
         """
         Compute the Seidel aberration coefficients.
 
         Returns:
-            be.ndarray: Array of Seidel aberration coefficients.
+            Array of Seidel aberration coefficients.
         """
         self._precalculations()
         TSC = self._compute_over_surfaces(self._TSC_term)
@@ -98,134 +106,134 @@ class Aberrations:
         S = self._sum_seidels(TSC, CC, TAC, TPC, DC)
         return S.squeeze()
 
-    def TSC(self):
+    def TSC(self) -> BEArray:
         """
         Compute third-order transverse spherical aberration.
 
         Returns:
-            be.ndarray: Third-order transverse spherical aberration.
+            Third-order transverse spherical aberration.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TSC_term).flatten()
 
-    def SC(self):
+    def SC(self) -> BEArray:
         """
         Compute third-order longitudinal spherical aberration.
 
         Returns:
-            be.ndarray: Third-order longitudinal spherical aberration.
+            Third-order longitudinal spherical aberration.
         """
         self._precalculations()
         TSC = self._compute_over_surfaces(self._TSC_term)
         SC = -TSC / self._ua[-1]
         return SC.flatten()
 
-    def CC(self):
+    def CC(self) -> BEArray:
         """
         Compute third-order sagittal coma.
 
         Returns:
-            be.ndarray: Third-order sagittal coma.
+            Third-order sagittal coma.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._CC_term).flatten()
 
-    def TCC(self):
+    def TCC(self) -> BEArray:
         """
         Compute third-order tangential coma.
 
         Returns:
-            be.ndarray: Third-order tangential coma.
+            Third-order tangential coma.
         """
         return (self.CC() * 3).flatten()
 
-    def TAC(self):
+    def TAC(self) -> BEArray:
         """
         Compute third-order transverse astigmatism.
 
         Returns:
-            be.ndarray: Third-order transverse astigmatism.
+            Third-order transverse astigmatism.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TAC_term).flatten()
 
-    def AC(self):
+    def AC(self) -> BEArray:
         """
         Compute third-order longitudinal astigmatism.
 
         Returns:
-            be.ndarray: Third-order longitudinal astigmatism.
+            Third-order longitudinal astigmatism.
         """
         self._precalculations()
         TAC = self._compute_over_surfaces(self._TAC_term)
         AC = -TAC / self._ua[-1]
         return AC.flatten()
 
-    def TPC(self):
+    def TPC(self) -> BEArray:
         """
         Compute third-order transverse Petzval sum.
 
         Returns:
-            be.ndarray: Third-order transverse Petzval sum.
+            Third-order transverse Petzval sum.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TPC_term).flatten()
 
-    def PC(self):
+    def PC(self) -> BEArray:
         """
         Compute third-order longitudinal Petzval sum.
 
         Returns:
-            be.ndarray: Third-order longitudinal Petzval sum.
+            Third-order longitudinal Petzval sum.
         """
         self._precalculations()
         TPC = self._compute_over_surfaces(self._TPC_term)
         PC = -TPC / self._ua[-1]
         return PC.flatten()
 
-    def DC(self):
+    def DC(self) -> BEArray:
         """
         Compute third-order distortion.
 
         Returns:
-            be.ndarray: Third-order distortion.
+            Third-order distortion.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._DC_term).flatten()
 
-    def TAchC(self):
+    def TAchC(self) -> BEArray:
         """
         Compute first-order transverse axial color.
 
         Returns:
-            be.ndarray: First-order transverse axial color.
+            First-order transverse axial color.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TAchC_term).flatten()
 
-    def LchC(self):
+    def LchC(self) -> BEArray:
         """
         Compute first-order longitudinal axial color.
 
         Returns:
-            be.ndarray: First-order longitudinal axial color.
+            First-order longitudinal axial color.
         """
         self._precalculations()
         TAchC = self._compute_over_surfaces(self._TAchC_term)
         LchC = -TAchC / self._ua[-1]
         return LchC.flatten()
 
-    def TchC(self):
+    def TchC(self) -> BEArray:
         """
         Compute first-order lateral color.
 
         Returns:
-            be.ndarray: First-order lateral color.
+            First-order lateral color.
         """
         self._precalculations()
         return self._compute_over_surfaces(self._TchC_term).flatten()
 
-    def _compute_over_surfaces(self, term_func):
+    def _compute_over_surfaces(self, term_func: Callable) -> BEArray:
         """
         Compute a given aberration term over all relevant surfaces.
 
@@ -234,7 +242,7 @@ class Aberrations:
                 surface index.
 
         Returns:
-            be.ndarray: Array of computed term values over surfaces 1 to N-2.
+            Array of computed term values over surfaces 1 to N-2.
         """
         terms = [term_func(k) for k in range(1, self._N - 1)]
         return be.array(terms)
@@ -246,10 +254,10 @@ class Aberrations:
         This method computes and stores common parameters required by the
         various aberration term methods.
         """
-        self._inv = self.optic.paraxial.invariant()  # Lagrange invariant
+        self._inv: float = self.optic.paraxial.invariant()  # Lagrange invariant
         self._on_axis = be.isclose(self._inv, be.array(0.0))
-        self._n = self.optic.n()  # Refractive indices for all surfaces
-        self._N = self.optic.surface_group.num_surfaces
+        self._n: BEArray = self.optic.n()  # Refractive indices for all surfaces
+        self._N: int = self.optic.surface_group.num_surfaces
         self._C = 1 / self.optic.surface_group.radii
         self._ya, self._ua = self.optic.paraxial.marginal_ray()
         self._yb, self._ub = self.optic.paraxial.chief_ray()
@@ -294,16 +302,16 @@ class Aberrations:
         self._B = be.array(B_list)
         self._Bp = be.array(Bp_list)
 
-    def _TSC_on_axis_term(self, k):
+    def _TSC_on_axis_term(self, k: int) -> float:
         """
         Compute third-order transverse spherical aberration term for surface k
         when the system is on-axis.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed transverse spherical aberration term.
+            Computed transverse spherical aberration term.
         """
         i_val = self._C[k] * self._ya[k] + self._ua[k - 1]
         term = (
@@ -315,53 +323,53 @@ class Aberrations:
         )
         return term / (2 * self._n[k] * self._n[-1] * self._ua[-1])
 
-    def _TSC_term(self, k):
+    def _TSC_term(self, k: int) -> float:
         """
         Compute third-order transverse spherical aberration term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed transverse spherical aberration term.
+            Computed transverse spherical aberration term.
         """
         if self._on_axis:
             return self._TSC_on_axis_term(k)
         return self._B[k - 1] * self._i[k - 1] ** 2 * self._hp
 
-    def _CC_term(self, k):
+    def _CC_term(self, k: int) -> float:
         """
         Compute third-order sagittal coma term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed sagittal coma term.
+            Computed sagittal coma term.
         """
         return self._B[k - 1] * self._i[k - 1] * self._ip[k - 1] * self._hp
 
-    def _TAC_term(self, k):
+    def _TAC_term(self, k: int) -> float:
         """
         Compute third-order transverse astigmatism term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed transverse astigmatism term.
+            Computed transverse astigmatism term.
         """
         return self._B[k - 1] * self._ip[k - 1] ** 2 * self._hp
 
-    def _TPC_term(self, k):
+    def _TPC_term(self, k: int) -> BEArray:
         """
         Compute third-order transverse Petzval sum term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed transverse Petzval sum term.
+            Computed transverse Petzval sum term.
         """
         return (
             (self._n[k] - self._n[k - 1])
@@ -371,30 +379,30 @@ class Aberrations:
             / (2 * self._n[k] * self._n[k - 1])
         )
 
-    def _DC_term(self, k):
+    def _DC_term(self, k: int) -> BEArray:
         """
         Compute third-order distortion term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed distortion term.
+            Computed distortion term.
         """
         return self._hp * (
             self._Bp[k - 1] * self._i[k - 1] * self._ip[k - 1]
             + 0.5 * (self._ub[k] ** 2 - self._ub[k - 1] ** 2)
         )
 
-    def _TAchC_term(self, k):
+    def _TAchC_term(self, k: int) -> BEArray:
         """
         Compute first-order transverse axial color term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed transverse axial color term.
+            Computed transverse axial color term.
         """
         return (
             -self._ya[k - 1]
@@ -403,15 +411,15 @@ class Aberrations:
             * (self._dn[k - 1] - self._n[k - 1] / self._n[k] * self._dn[k])
         )
 
-    def _TchC_term(self, k):
+    def _TchC_term(self, k: int) -> BEArray:
         """
         Compute first-order lateral color term for surface k.
 
         Args:
-            k (int): Surface index.
+            k: Surface index.
 
         Returns:
-            float: Computed lateral color term.
+            Computed lateral color term.
         """
         return (
             -self._ya[k - 1]
@@ -420,19 +428,26 @@ class Aberrations:
             * (self._dn[k - 1] - self._n[k - 1] / self._n[k] * self._dn[k])
         )
 
-    def _sum_seidels(self, TSC, CC, TAC, TPC, DC):
+    def _sum_seidels(
+        self,
+        TSC: BEArray,
+        CC: BEArray,
+        TAC: BEArray,
+        TPC: BEArray,
+        DC: BEArray,
+    ) -> BEArray:
         """
         Sum the Seidel aberration coefficients from the individual terms.
 
         Args:
-            TSC (be.ndarray): Transverse spherical aberration terms.
-            CC (be.ndarray): Sagittal coma terms.
-            TAC (be.ndarray): Transverse astigmatism terms.
-            TPC (be.ndarray): Transverse Petzval sum terms.
-            DC (be.ndarray): Distortion terms.
+            TSC: Transverse spherical aberration terms.
+            CC: Sagittal coma terms.
+            TAC: Transverse astigmatism terms.
+            TPC: Transverse Petzval sum terms.
+            DC: Distortion terms.
 
         Returns:
-            be.ndarray: Array of Seidel aberration coefficients.
+            Array of Seidel aberration coefficients.
         """
         factor = self._n[-1] * self._ua[-1] * 2
         return be.array(

@@ -6,9 +6,16 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from optiland.zernike import ZernikeFit
 
 from .opd import OPD
+
+if TYPE_CHECKING:
+    from optiland._types import ZernikeType
+    from optiland.optic.optic import Optic
+    from optiland.wavefront.strategy import WavefrontStrategyType
 
 
 class ZernikeOPD(ZernikeFit, OPD):
@@ -20,7 +27,8 @@ class ZernikeOPD(ZernikeFit, OPD):
     Args:
         optic (object): The optic object representing the optical system.
         field (tuple): The field used for the calculation.
-        wavelength (float): The wavelength of light used in the calculation.
+        wavelength (str | float): The wavelength of light used in the calculation.
+            Can be 'primary' or a float value.
         num_rings (int, optional): The number of rings used in the Zernike
             calculation. Default is 15.
         zernike_type (str, optional): The type of Zernike polynomials used.
@@ -32,20 +40,21 @@ class ZernikeOPD(ZernikeFit, OPD):
             Defaults to "chief_ray".
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
-        **kwargs: Additional keyword arguments passed to the strategy.
+        **kwargs: Additional keyword arguments passed to the strategy, including the
+            `afocal` boolean flag to indicate if the system is afocal.
 
     """
 
     def __init__(
         self,
-        optic,
-        field,
-        wavelength,
-        num_rings=15,
-        zernike_type="fringe",
-        num_terms=37,
-        strategy="chief_ray",
-        remove_tilt=False,
+        optic: Optic,
+        field: tuple[float, float],
+        wavelength: str | float,
+        num_rings: int = 15,
+        zernike_type: ZernikeType = "fringe",
+        num_terms: int = 37,
+        strategy: WavefrontStrategyType = "chief_ray",
+        remove_tilt: bool = False,
         **kwargs,
     ):
         OPD.__init__(

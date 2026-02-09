@@ -1,11 +1,76 @@
 from importlib import resources
+from unittest.mock import MagicMock
 
 import optiland.backend as be
 import pytest
 import numpy as np
 
 from optiland import materials
+from optiland.materials.base import BaseMaterial
+from optiland.optic import Optic
 from .utils import assert_allclose
+
+
+class TestBaseMaterial:
+    def test_caching(self, set_test_backend):
+        class DummyMaterial(BaseMaterial):
+            def _calculate_n(self, wavelength, **kwargs):
+                pass
+
+            def _calculate_k(self, wavelength, **kwargs):
+                pass
+
+        material = DummyMaterial()
+        material._calculate_n = MagicMock(return_value=1.5)
+
+        # Test with scalar value
+        result1 = material.n(0.5, temperature=25)
+        assert result1 == 1.5
+        material._calculate_n.assert_called_once_with(0.5, temperature=25)
+
+        result2 = material.n(0.5, temperature=25)
+        assert result2 == 1.5
+        material._calculate_n.assert_called_once()
+
+        # Test with numpy array
+        wavelength_np = np.array([0.5, 0.6])
+        material.n(wavelength_np, temperature=25)
+        assert material._calculate_n.call_count == 2
+
+        material.n(wavelength_np, temperature=25)
+        assert material._calculate_n.call_count == 2
+
+        # Test with torch tensor if backend is torch
+        if set_test_backend == "torch":
+            # a torch tensor with same values should be a cache hit
+            wavelength_torch = be.asarray(np.array([0.5, 0.6]))
+            material.n(wavelength_torch, temperature=25)
+            assert material._calculate_n.call_count == 2
+
+            # a torch tensor with different values should be a cache miss
+            wavelength_torch_2 = be.asarray(np.array([0.7, 0.8]))
+            material.n(wavelength_torch_2, temperature=25)
+            assert material._calculate_n.call_count == 3
+
+            # and a cache hit
+            material.n(wavelength_torch_2, temperature=25)
+            assert material._calculate_n.call_count == 3
+
+
+def build_model(material: BaseMaterial):
+    lens = Optic()
+
+    lens.set_field_type("angle")
+    lens.add_field(0, 0)
+    lens.add_wavelength(0.550)
+    lens.set_aperture("EPD", 2)
+
+    lens.add_surface(index=0)
+    lens.add_surface(index=1, material=material, radius=10, thickness=10, is_stop=True)
+    lens.add_surface(index=2, radius=-10, thickness=10)
+    lens.add_surface(index=3, radius=np.inf)
+
+    return lens
 
 
 class TestIdealMaterial:
@@ -28,6 +93,7 @@ class TestIdealMaterial:
             "index": 1.5,
             "absorp": 0.2,
             "type": materials.IdealMaterial.__name__,
+            "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
     def test_ideal_from_dict(self, set_test_backend):
@@ -36,6 +102,66 @@ class TestIdealMaterial:
         )
         assert material.n(0.5) == 1.5
         assert material.k(0.5) == 0.2
+
+    def test_ray_trace(self, set_test_backend):
+        material = materials.IdealMaterial(n=1.5, k=0.0)
+        lens = build_model(material)
+
+        lens.trace(Hx=0, Hy=0, wavelength=0.55)
+
+
+class TestAbbeMaterial:
+    def test_refractive_index(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        wavelength = 0.58756  # in microns
+        value = abbe_material.n(wavelength)
+        assert_allclose(value, 1.4999167964912952)
+
+
+    def test_extinction_coefficient(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        wavelength = 0.58756  # in microns
+        assert abbe_material.k(wavelength) == 0
+
+
+    def test_coefficients(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        # Access the private method on the underlying model (AbbePolynomialModel)
+        coefficients = abbe_material.model._get_coefficients()
+        assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
+
+
+    def test_abbe_to_dict(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_dict = abbe_material.to_dict()
+        assert abbe_dict == {
+            "type": "AbbeMaterial",
+            "index": 1.5,
+            "abbe": 50.0,
+            "model": "polynomial",
+            "propagation_model": {"class": "HomogeneousPropagation"},
+        }
+
+
+    def test_abbe_from_dict(self, set_test_backend):
+        abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
+        abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
+        assert abbe_material.index == 1.5
+        assert abbe_material.abbe == 50
+
+
+    def test_abbe_out_of_bounds_wavelength(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        with pytest.raises(ValueError):
+            abbe_material.n(0.3)
+        with pytest.raises(ValueError):
+            abbe_material.n(0.8)
+
+    def test_ray_trace(self, set_test_backend):
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        lens = build_model(abbe_material)
+
+        lens.trace(Hx=0, Hy=0, wavelength=0.55)
 
 
 class TestMaterialFile:
@@ -53,7 +179,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_2(self, set_test_backend):
         filename = str(
@@ -72,7 +198,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_3(self, set_test_backend):
         filename = str(
@@ -92,7 +218,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_4(self, set_test_backend):
         rel_file = "data-nk/main/CaGdAlO4/Loiko-o.yml"
@@ -109,7 +235,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_5(self, set_test_backend):
         filename = str(
@@ -129,7 +255,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_6(self, set_test_backend):
         filename = str(
@@ -149,7 +275,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_7(self, set_test_backend):
         filename = str(
@@ -171,7 +297,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_8(self, set_test_backend):
         filename = str(
@@ -191,7 +317,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_formula_9(self, set_test_backend):
         rel_file = "data-nk/organic/CH4N2O - urea/Rosker-e.yml"
@@ -208,7 +334,7 @@ class TestMaterialFile:
         # force invalid coefficients to test the exception
         material.coefficients = [1.0, 0.58, 0.12, 0.87]
         with pytest.raises(ValueError):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_tabulated_n(self, set_test_backend):
         rel_file = "data-nk/main/Y3Al5O12/Bond.yml"
@@ -225,7 +351,7 @@ class TestMaterialFile:
         # Test case when no tabulated data available
         material._n = None
         with pytest.raises((ValueError, TypeError)):
-            material.n(1.0)
+            material._calculate_n(1.0)
 
     def test_tabulated_nk(self, set_test_backend):
         rel_file = "data-nk/main/B/Fernandez-Perea.yml"
@@ -258,6 +384,7 @@ class TestMaterialFile:
         assert material.to_dict() == {
             "filename": filename,
             "type": materials.MaterialFile.__name__,
+            "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
     def test_from_dict(self, set_test_backend):
@@ -336,6 +463,7 @@ class TestMaterial:
             "robust_search": True,
             "min_wavelength": None,
             "max_wavelength": None,
+            "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
     def test_from_dict(self, set_test_backend):
@@ -344,47 +472,6 @@ class TestMaterial:
 
     def test_raise_warning(self, set_test_backend):
         materials.Material("LITHOTEC-CAF2")  # prints a warning
-
-
-@pytest.fixture
-def abbe_material():
-    return materials.AbbeMaterial(n=1.5, abbe=50)
-
-
-def test_refractive_index(set_test_backend, abbe_material):
-    wavelength = 0.58756  # in microns
-    value = abbe_material.n(wavelength)
-    assert_allclose(value, 1.4999167964912952)
-
-
-def test_extinction_coefficient(set_test_backend, abbe_material):
-    wavelength = 0.58756  # in microns
-    assert abbe_material.k(wavelength) == 0
-
-
-def test_coefficients(set_test_backend, abbe_material):
-    coefficients = abbe_material._get_coefficients()
-    assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
-
-
-def test_abbe_to_dict(set_test_backend, abbe_material):
-    abbe_dict = abbe_material.to_dict()
-    assert abbe_dict == {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
-
-
-def test_abbe_from_dict(set_test_backend):
-    abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
-    abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
-    assert abbe_material.index == 1.5
-    assert abbe_material.abbe == 50
-
-
-def test_abbe_out_of_bounds_wavelength(set_test_backend):
-    abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
-    with pytest.raises(ValueError):
-        abbe_material.n(0.3)
-    with pytest.raises(ValueError):
-        abbe_material.n(0.8)
 
 
 def test_glasses_selection(set_test_backend):
@@ -448,11 +535,21 @@ def test_find_closest_glass(set_test_backend):
 
 
 def test_plot_nk():
-    import matplotlib.pyplot as plt
+    from matplotlib.figure import Figure
 
     mat = materials.Material("BK7")
     fig, axes = materials.plot_nk(mat, wavelength_range=(0.1, 15))
     assert fig is not None
-    assert isinstance(fig, plt.Figure)
-    assert isinstance(axes, list)
+    assert isinstance(fig, Figure)
+    assert isinstance(axes, tuple)
     assert len(axes) == 2
+
+def test___eq__():
+    ideal1 = materials.IdealMaterial(1.0, 0.0)
+    ideal2 = materials.IdealMaterial(1.0, 0.0)
+    ideal3 = materials.IdealMaterial(1.0, 0.1)
+    abbe = materials.AbbeMaterial(1.5, 60.0)
+    assert ideal1 == ideal2
+    assert ideal1 != ideal3
+    assert abbe != ideal1
+
