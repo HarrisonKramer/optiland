@@ -1,6 +1,7 @@
 import pytest
 
 import optiland.backend as be
+from optiland.materials import IdealMaterial
 from optiland.optic import Optic
 from optiland.paraxial import Paraxial
 from optiland.samples.eyepieces import EyepieceErfle
