@@ -49,6 +49,20 @@ Optimization and Tolerancing
 - **Extensible Framework**:
   Add new optimization variables, constraints, or algorithms with minimal overhead.
 
+Extended Source Modeling
+-----------------------
+
+- **Extended Source Ray Tracing**:
+  Model spatially and angularly extended light sources and trace them through optical systems using the ``ExtendedSourceOptic`` wrapper.
+- **Single-Mode Fiber (SMF) Source**:
+  Generate physically accurate ray bundles representing fiber outputs, with Gaussian spatial and angular distributions and quasi-random Sobol sampling.
+- **Custom Source Support**:
+  Define custom source types by inheriting from ``BaseSource`` and implementing the ``generate_rays`` method.
+- **Source Visualization**:
+  Validate source definitions with multi-panel diagnostic plots showing spatial distributions, angular distributions, cross-sections, and ray propagation paths.
+- **Irradiance Analysis Compatibility**:
+  Compute incoherent irradiance distributions at detector surfaces from extended source illumination.
+
 Material Database
 -----------------
 
