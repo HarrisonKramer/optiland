@@ -663,6 +663,15 @@ def get_bilinear_weights(
     x_edges, y_edges = bin_edges
     x, y = coords[:, 0].contiguous(), coords[:, 1].contiguous()
 
+    # --- NEW: Boundary Check ---
+    # We want to mask out any rays that fall outside the defined bin edges.
+    valid_mask = (
+        (x >= x_edges[0])
+        & (x <= x_edges[-1])
+        & (y >= y_edges[0])
+        & (y <= y_edges[-1])
+    )
+
     x_centers = (x_edges[:-1] + x_edges[1:]) / 2
     y_centers = (y_edges[:-1] + y_edges[1:]) / 2
 
@@ -698,6 +707,10 @@ def get_bilinear_weights(
     )
 
     all_weights = torch.stack([w00, w01, w10, w11], dim=1)
+
+    # --- NEW: Apply Mask ---
+    # Set weights to zero for invalid (out-of-bounds) rays
+    all_weights = all_weights * valid_mask.unsqueeze(1).to(all_weights.dtype)
 
     return all_indices, all_weights
 

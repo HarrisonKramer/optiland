@@ -89,6 +89,7 @@ class IncoherentIrradiance(BaseAnalysis):
         distribution: str = "random",
         user_initial_rays=None,
         source=None,
+        skip_trace: bool = False,
     ):
         if fields == "all":
             self.fields = optic.fields.get_field_coords()
@@ -131,6 +132,7 @@ class IncoherentIrradiance(BaseAnalysis):
                 "wavelength": self.user_initial_rays.w,
             }
         self.distribution = distribution
+        self.skip_trace = skip_trace
 
         # The detector surface must have a physical aperture
         surf = optic.surface_group.surfaces[self.detector_surface]
@@ -265,23 +267,29 @@ class IncoherentIrradiance(BaseAnalysis):
         Traces rays and bins their power. Switches between standard and
         differentiable methods based on the gradient mode.
         """
-        if user_initial_rays is None:
-            Hx, Hy = field
-            rays_traced = self.optic.trace(
-                Hx, Hy, wavelength, self.num_rays, distribution
-            )
-        else:
-            rays_to_trace = RealRays(**self._initial_ray_data)
-            self.optic.surface_group.trace(rays_to_trace)
-            rays_traced = rays_to_trace
+        rays_traced = None
+        if not self.skip_trace:
+            if user_initial_rays is None:
+                Hx, Hy = field
+                rays_traced = self.optic.trace(
+                    Hx, Hy, wavelength, self.num_rays, distribution
+                )
+            else:
+                rays_to_trace = RealRays(**self._initial_ray_data)
+                self.optic.surface_group.trace(rays_to_trace)
+                rays_traced = rays_to_trace
 
         surf = self.optic.surface_group.surfaces[self.detector_surface]
-        x_g, y_g, z_g, power = (
-            rays_traced.x,
-            rays_traced.y,
-            rays_traced.z,
-            rays_traced.i,
-        )
+        if rays_traced is not None:
+            x_g, y_g, z_g, power = (
+                rays_traced.x,
+                rays_traced.y,
+                rays_traced.z,
+                rays_traced.i,
+            )
+        else:
+            # Read from cache (assumes trace was done externally or skipping)
+            x_g, y_g, z_g, power = surf.x, surf.y, surf.z, surf.intensity
 
         from optiland.visualization.system.utils import transform
 

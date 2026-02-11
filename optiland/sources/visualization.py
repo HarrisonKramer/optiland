@@ -100,29 +100,18 @@ class SourceViewer(BaseViewer):
 
         # --- Calculate Theoretical Radiance for Visualization ---
         # This value is for color-coding only and is separate from rays.i (power)
-        # Import here to avoid potential circular imports
-        from optiland.sources.collimated_gaussian import CollimatedGaussianSource
-        from optiland.sources.gaussian import GaussianSource
+        from optiland.sources.smf import SMFSource
 
-        if isinstance(self.source, CollimatedGaussianSource):
-            # Radiance depends only on the spatial profile for a collimated source
-            term_x = -2.0 * (rays.x / self.source.gaussian_waist) ** 2
-            term_y = -2.0 * (rays.y / self.source.gaussian_waist) ** 2
-            radiance = be.exp(term_x + term_y)
+        if isinstance(self.source, SMFSource):
+            # SMFSource has both spatial and angular Gaussian profiles
+            w_spatial = self.source.sigma_spatial_mm * 2  # 1/e² radius in mm
+            w_angular = self.source.sigma_angular_rad * 2  # 1/e² half-angle
 
-        elif isinstance(self.source, GaussianSource):
-            # Radiance depends on both spatial and angular profiles
-            s_x_mm = self.source.sigma_spatial_mm_x * 2
-            s_y_mm = self.source.sigma_spatial_mm_y * 2
-            s_L_rad = self.source.sigma_angular_rad_x * 2
-            s_M_rad = self.source.sigma_angular_rad_y * 2
-
-            term_x = -2.0 * (rays.x / s_x_mm) ** 2
-            term_y = -2.0 * (rays.y / s_y_mm) ** 2
-            term_L = -2.0 * (rays.L / s_L_rad) ** 2
-            term_M = -2.0 * (rays.M / s_M_rad) ** 2
+            term_x = -2.0 * (rays.x / w_spatial) ** 2
+            term_y = -2.0 * (rays.y / w_spatial) ** 2
+            term_L = -2.0 * (rays.L / w_angular) ** 2
+            term_M = -2.0 * (rays.M / w_angular) ** 2
             radiance = be.exp(term_x + term_y + term_L + term_M)
-
         else:
             # Default for unknown source types: use ray power
             radiance = rays.i

@@ -156,12 +156,6 @@ class OpticViewer(BaseViewer):
 
         if title:
             ax.set_title(title, color=params["text.color"])
-        elif hasattr(self.optic, "source") and self.optic.source is not None:
-            # Auto-generate title for extended source
-            ax.set_title(
-                f"Optical System with {type(self.optic.source).__name__}",
-                color=params["text.color"],
-            )
         if xlim:
             ax.set_xlim(xlim)
         if ylim:
