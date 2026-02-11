@@ -239,8 +239,10 @@ class RadiantIntensity(BaseAnalysis):
             dx = be.radians(angle_X_bins[1] - angle_X_bins[0])
             dy = be.radians(angle_Y_bins[1] - angle_Y_bins[0])
 
-            # 2. Create meshgrid of bin centers (in Radians) for the Jacobian calculation
-            # Note: We must be careful with tensor shapes here to match power_map (Y, X)
+            # 2. Create meshgrid of bin centers (in Radians) for
+            # the Jacobian calculation
+            # Note: We must be careful with tensor shapes here to match
+            # power_map (Y, X)
             ax_c_rad = be.radians(angle_X_centers)
             ay_c_rad = be.radians(angle_Y_centers)
 

@@ -62,7 +62,6 @@ if TYPE_CHECKING:
     from optiland.distribution import BaseDistribution
     from optiland.materials.base import BaseMaterial
     from optiland.rays import RealRays
-
     from optiland.surfaces.standard_surface import Surface
 
 
@@ -147,8 +146,6 @@ class Optic:
         self.solves: SolveManager = SolveManager(self)
         self.obj_space_telecentric: bool = False
         self._updater = OpticUpdater(self)
-
-
 
     def __add__(self, other: Optic) -> Optic:
         """Add two Optic objects together.

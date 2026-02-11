@@ -8,10 +8,9 @@ visualization functionality.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 import optiland.backend as be
-from optiland.visualization.system.optic_viewer import OpticViewer
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -260,18 +259,27 @@ class ExtendedSourceOptic:
 
             if projection == "YZ":
                 ax.plot(
-                    z_coords[:, k], y_coords[:, k],
-                    "b-", alpha=0.3, linewidth=0.5,
+                    z_coords[:, k],
+                    y_coords[:, k],
+                    "b-",
+                    alpha=0.3,
+                    linewidth=0.5,
                 )
             elif projection == "XZ":
                 ax.plot(
-                    z_coords[:, k], x_coords[:, k],
-                    "b-", alpha=0.3, linewidth=0.5,
+                    z_coords[:, k],
+                    x_coords[:, k],
+                    "b-",
+                    alpha=0.3,
+                    linewidth=0.5,
                 )
             else:  # XY
                 ax.plot(
-                    x_coords[:, k], y_coords[:, k],
-                    "b-", alpha=0.3, linewidth=0.5,
+                    x_coords[:, k],
+                    y_coords[:, k],
+                    "b-",
+                    alpha=0.3,
+                    linewidth=0.5,
                 )
 
     # --- Methods that don't apply for extended source optics ---

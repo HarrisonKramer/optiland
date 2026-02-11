@@ -666,10 +666,7 @@ def get_bilinear_weights(
     # --- NEW: Boundary Check ---
     # We want to mask out any rays that fall outside the defined bin edges.
     valid_mask = (
-        (x >= x_edges[0])
-        & (x <= x_edges[-1])
-        & (y >= y_edges[0])
-        & (y <= y_edges[-1])
+        (x >= x_edges[0]) & (x <= x_edges[-1]) & (y >= y_edges[0]) & (y <= y_edges[-1])
     )
 
     x_centers = (x_edges[:-1] + x_edges[1:]) / 2

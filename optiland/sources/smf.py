@@ -93,6 +93,7 @@ class SMFSource(BaseSource):
         # Gaussian beam: theta_half = wavelength / (pi * w0)
         if divergence_deg_1e2 is None:
             import math
+
             w0 = mfd_um / 2.0
             theta_half_rad = wavelength_um / (math.pi * w0)
             self.divergence_deg_1e2 = 2 * math.degrees(theta_half_rad)
@@ -107,6 +108,7 @@ class SMFSource(BaseSource):
         # Angular sigma for importance sampling
         # Half-angle from full divergence, then divide by 2 for sigma
         import math
+
         theta_rad = math.radians(self.divergence_deg_1e2 / 2.0)
         self.sigma_angular_rad = theta_rad / 2.0
 
@@ -147,20 +149,12 @@ class SMFSource(BaseSource):
             x_start = be.zeros(num_samples)
             y_start = be.zeros(num_samples)
         else:
-            x_start = self.sigma_spatial_mm * sqrt2 * be.erfinv(
-                2 * u[:, 0] - 1
-            )
-            y_start = self.sigma_spatial_mm * sqrt2 * be.erfinv(
-                2 * u[:, 1] - 1
-            )
+            x_start = self.sigma_spatial_mm * sqrt2 * be.erfinv(2 * u[:, 0] - 1)
+            y_start = self.sigma_spatial_mm * sqrt2 * be.erfinv(2 * u[:, 1] - 1)
 
         # --- Angular coordinates (non-paraxial) ---
-        theta_x = self.sigma_angular_rad * sqrt2 * be.erfinv(
-            2 * u[:, 2] - 1
-        )
-        theta_y = self.sigma_angular_rad * sqrt2 * be.erfinv(
-            2 * u[:, 3] - 1
-        )
+        theta_x = self.sigma_angular_rad * sqrt2 * be.erfinv(2 * u[:, 2] - 1)
+        theta_y = self.sigma_angular_rad * sqrt2 * be.erfinv(2 * u[:, 3] - 1)
 
         # Convert angles to direction cosines via tangent mapping
         tau_x = be.tan(theta_x)
