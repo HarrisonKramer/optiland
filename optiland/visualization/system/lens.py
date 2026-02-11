@@ -66,8 +66,11 @@ class Lens2D:
                 edgecolor = theme.parameters.get("axes.edgecolor", edgecolor)
 
             circle = plt.Circle(
-                (center_x_global, center_y_global),
-                max_extent,
+                (
+                    float(be.to_numpy(center_x_global).item()),
+                    float(be.to_numpy(center_y_global).item()),
+                ),
+                float(be.to_numpy(max_extent).item()),
                 facecolor=facecolor,
                 edgecolor=edgecolor,
                 label="Lens",
