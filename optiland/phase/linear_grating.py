@@ -57,7 +57,9 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
     def efficiency(self) -> float:
         return self._efficiency
 
-    def get_phase(self, x: be.Array, y: be.Array, wavelength: be.Array = None) -> be.Array:
+    def get_phase(
+        self, x: be.Array, y: be.Array, wavelength: be.Array = None
+    ) -> be.Array:
         """Calculates the phase added by the profile at coordinates (x, y).
 
         Args:
