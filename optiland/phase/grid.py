@@ -56,7 +56,7 @@ class GridPhaseProfile(BasePhaseProfile):
             self.y_coords, self.x_coords, self.phase_grid
         )
 
-    def get_phase(self, x: be.Array, y: be.Array) -> be.Array:
+    def get_phase(self, x: be.Array, y: be.Array, wavelength: be.Array = None) -> be.Array:
         """Calculates the phase added by the profile at coordinates (x, y).
 
         Args:
@@ -69,7 +69,7 @@ class GridPhaseProfile(BasePhaseProfile):
         return self._spline.ev(be.to_numpy(y), be.to_numpy(x))
 
     def get_gradient(
-        self, x: be.Array, y: be.Array
+        self, x: be.Array, y: be.Array, wavelength: be.Array = None
     ) -> tuple[be.Array, be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 
@@ -88,7 +88,7 @@ class GridPhaseProfile(BasePhaseProfile):
         d_phi_dz = be.zeros_like(x)
         return d_phi_dx, d_phi_dy, d_phi_dz
 
-    def get_paraxial_gradient(self, y: be.Array) -> be.Array:
+    def get_paraxial_gradient(self, y: be.Array, wavelength: be.Array = None) -> be.Array:
         """Calculates the paraxial phase gradient at y-coordinate.
 
         This is the gradient d_phi/dy evaluated at x=0.
