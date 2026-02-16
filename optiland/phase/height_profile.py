@@ -1,12 +1,18 @@
 """
 Provides a phase profile based on a height map and dispersive material.
+
+Gustavo Vasconcelos, 2026
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from optiland import backend as be
-from optiland.materials.base import BaseMaterial
 from optiland.phase.base import BasePhaseProfile
+
+if TYPE_CHECKING:
+    from optiland.materials.base import BaseMaterial
 
 try:
     from scipy.interpolate import RectBivariateSpline
