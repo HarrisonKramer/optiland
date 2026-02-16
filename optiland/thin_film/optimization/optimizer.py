@@ -79,6 +79,13 @@ class ThinFilmOptimizer:
         # Store initial state for reporting
         self._initial_thicknesses = [layer.thickness_um for layer in stack.layers]
 
+    def __repr__(self) -> str:
+        """String representation of the optimizer."""
+        return (
+            f"<ThinFilmOptimizer: {len(self.stack.layers)} layers, "
+            f"{len(self.variables)} variables, {len(self.targets)} targets>"
+        )
+
     def add_thickness_variable(
         self,
         layer_index: int,
@@ -106,10 +113,10 @@ class ThinFilmOptimizer:
         )
 
         # Set bounds if provided (convert nm to μm for internal use)
-        # Ensure minimum thickness is always positive (at least 1 nm = 0.001 μm)
+        # Ensure minimum thickness is always positive (at least 0.01 nm = 0.000001 μm)
         min_val = min_nm / 1000.0 if min_nm is not None else None
         if min_val is not None and min_val <= 0:
-            min_val = 0.001  # Force minimum to 1 nm
+            min_val = 0.000001  # Force minimum to 0.01 nm
 
         max_val = max_nm / 1000.0 if max_nm is not None else None
         if max_val is not None and max_val <= 0:
@@ -541,12 +548,17 @@ class ThinFilmOptimizer:
         initial_merit = self._merit_function(x0)
 
         # Run optimization
+        # Note: 'disp' and 'iprint' are deprecated in scipy 1.18+
+        # Only include them in kwargs if explicitly provided by user
         options = {
             "maxiter": max_iterations,
             "ftol": tolerance,
-            "disp": verbose,
-            **kwargs,
         }
+
+        # Add user-provided kwargs, but avoid deprecated scipy options
+        for key, value in kwargs.items():
+            if key not in ("disp", "iprint"):
+                options[key] = value
 
         result = minimize(
             self._merit_function, x0, method=method, bounds=bounds, options=options
