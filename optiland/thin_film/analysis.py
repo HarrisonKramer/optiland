@@ -11,6 +11,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 import optiland.backend as be
+from optiland.colorimetry import core as color_core
+from optiland.colorimetry.plotting import plot_cie_1931_chromaticity_diagram
 
 if TYPE_CHECKING:
     from .stack import ThinFilmStack
@@ -409,3 +411,139 @@ class SpectralAnalyzer:
             ]  # Return list of axes for different quantities
         else:
             return fig, axs  # Return 2D array of axes
+
+    def _get_single_polarization(self, polarization: PolInput) -> Pol:
+        """Normalize and validate a single polarization selection."""
+        polarizations = self._normalize_polarizations(polarization)
+        if len(polarizations) != 1:
+            raise ValueError("Color analysis requires a single polarization")
+        return polarizations[0]
+
+    def _get_rt_spectrum(
+        self,
+        wavelength_values: float | Array,
+        wavelength_unit: WavelengthUnit = "um",
+        aoi: float = 0.0,
+        aoi_unit: AngleUnit = "deg",
+        polarization: PolInput = "u",
+        quantity: Literal["R", "T"] = "R",
+    ) -> tuple[list[float], list[float]]:
+        """Return normalized power spectrum (R or T) in nm."""
+        if quantity not in ("R", "T"):
+            raise ValueError("quantity must be 'R' or 'T'")
+
+        wl_um = self._convert_to_wavelength_um(wavelength_values, wavelength_unit)
+        aoi_rad = float(self._convert_angle_to_radians(aoi, aoi_unit).item())
+        pol = self._get_single_polarization(polarization)
+
+        rta_data = self.stack.compute_rtRTA(wl_um, aoi_rad, pol)
+
+        wl_nm = self._convert_wavelength_for_plotting(wl_um, "nm")
+        values = rta_data[quantity].flatten()
+
+        return wl_nm.tolist(), values.tolist()
+
+    def spectrum_to_xyY(
+        self,
+        wavelength_values: float | Array,
+        wavelength_unit: WavelengthUnit = "um",
+        aoi: float = 0.0,
+        aoi_unit: AngleUnit = "deg",
+        polarization: PolInput = "u",
+        quantity: Literal["R", "T"] = "R",
+        observer: Literal["2deg", "10deg"] = "2deg",
+        illuminant: list[float] | None = None,
+    ) -> tuple[float, float, float]:
+        """Compute xyY chromaticity from a normalized power spectrum."""
+        wavelengths_nm, values = self._get_rt_spectrum(
+            wavelength_values=wavelength_values,
+            wavelength_unit=wavelength_unit,
+            aoi=aoi,
+            aoi_unit=aoi_unit,
+            polarization=polarization,
+            quantity=quantity,
+        )
+
+        X, Y, Z = color_core.spectrum_to_xyz(
+            wavelengths=wavelengths_nm,
+            values=values,
+            illuminant=illuminant,
+            observer=observer,
+        )
+        x, y, Y = color_core.xyz_to_xyY(X, Y, Z)
+        return float(x), float(y), float(Y)
+
+    def analyze_color(
+        self,
+        wavelength_values: float | Array,
+        wavelength_unit: WavelengthUnit = "um",
+        aoi: float = 0.0,
+        aoi_unit: AngleUnit = "deg",
+        polarization: PolInput = "u",
+        quantity: Literal["R", "T"] = "R",
+        observer: Literal["2deg", "10deg"] = "2deg",
+        illuminant: list[float] | None = None,
+    ) -> dict[str, tuple[float, float, float] | tuple[int, int, int]]:
+        """Return XYZ, xyY, and sRGB for a thin-film spectrum."""
+        wavelengths_nm, values = self._get_rt_spectrum(
+            wavelength_values=wavelength_values,
+            wavelength_unit=wavelength_unit,
+            aoi=aoi,
+            aoi_unit=aoi_unit,
+            polarization=polarization,
+            quantity=quantity,
+        )
+
+        X, Y, Z = color_core.spectrum_to_xyz(
+            wavelengths=wavelengths_nm,
+            values=values,
+            illuminant=illuminant,
+            observer=observer,
+        )
+        x, y, Y = color_core.xyz_to_xyY(X, Y, Z)
+        r, g, b = color_core.xyz_to_srgb(X, Y, Z)
+
+        return {
+            "xyz": (float(X), float(Y), float(Z)),
+            "xyY": (float(x), float(y), float(Y)),
+            "sRGB": (int(r), int(g), int(b)),
+        }
+
+    def plot_color_on_cie_1931(
+        self,
+        wavelength_values: float | Array,
+        wavelength_unit: WavelengthUnit = "um",
+        aoi: float = 0.0,
+        aoi_unit: AngleUnit = "deg",
+        polarization: PolInput = "u",
+        quantity: Literal["R", "T"] = "R",
+        observer: Literal["2deg", "10deg"] = "2deg",
+        illuminant: list[float] | None = None,
+        ax: plt.Axes | None = None,
+        color: Literal["no", "contour", "fill"] = "contour",
+        marker: str = "o",
+        marker_size: float = 6.0,
+        marker_color: str = "black",
+    ) -> tuple[plt.Figure, plt.Axes]:
+        """Plot the chromaticity point on a CIE 1931 diagram."""
+        fig, ax = plot_cie_1931_chromaticity_diagram(ax=ax, color=color)
+        x, y, _ = self.spectrum_to_xyY(
+            wavelength_values=wavelength_values,
+            wavelength_unit=wavelength_unit,
+            aoi=aoi,
+            aoi_unit=aoi_unit,
+            polarization=polarization,
+            quantity=quantity,
+            observer=observer,
+            illuminant=illuminant,
+        )
+        ax.plot(x, y, marker=marker, markersize=marker_size, color=marker_color)
+        ax.text(
+            x + 0.02,
+            y + 0.02,
+            f"x={x:.4f}, y={y:.4f}",
+            fontsize=9,
+            ha="left",
+            va="bottom",
+        )
+        return fig, ax

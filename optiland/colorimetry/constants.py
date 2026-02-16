@@ -1,16 +1,16 @@
 """
-Données colorimétriques standards (CIE).
-Contient les observateurs standards et les illuminants.
-Ces valeurs peuvent être modifiées par l'utilisateur au runtime si nécessaire.
+Standard colorimetric data (CIE).
+Contains standard observers and illuminants.
+These values can be modified by the user at runtime if necessary.
 """
 
-# Plage de longueurs d'onde standard: 380nm à 780nm par pas de 5nm
+# Standard wavelength range: 380nm to 780nm in 5nm steps
 from __future__ import annotations
 
 WAVELENGTHS_STD = list(range(380, 785, 5))
 
-# Illuminant D65 (Lumière du jour standard) normalisé
-# Valeurs approximatives standard par pas de 5nm
+# Illuminant D65 (Standard daylight) normalized
+# Standard approximate values in 5nm steps
 ILLUMINANT_D65 = [
     50.0,
     54.6,
@@ -95,8 +95,8 @@ ILLUMINANT_D65 = [
     52.0,
 ]
 
-# Observateur Standard CIE 1931 2 degrés (x_bar, y_bar, z_bar)
-# Données simplifiées pour l'exemple (380-780nm, 5nm)
+# Standard CIE 1931 2 degree observer (x_bar, y_bar, z_bar)
+# Simplified data for example (380-780nm, 5nm)
 CIE_1931_2DEG = [
     (0.0014, 0.0000, 0.0065),
     (0.0022, 0.0001, 0.0105),
@@ -181,8 +181,7 @@ CIE_1931_2DEG = [
     (0.0000, 0.0000, 0.0000),
 ]
 
-# Observateur Standard CIE 1964 10 degrés
-# (Note: Pour cet exemple, j'utilise une copie du 2 degrés pour éviter de surcharger
-# la réponse,
-# mais dans une vraie implémentation, il faudrait les valeurs spécifiques 10 degrés)
+# Standard CIE 1964 10 degree observer
+# (Note: For this example, we use a copy of the 2 degree observer to avoid overloading
+# the response. In a real implementation, specific 10 degree values should be used)
 CIE_1964_10DEG = list(CIE_1931_2DEG)
