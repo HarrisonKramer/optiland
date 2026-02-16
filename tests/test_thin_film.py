@@ -824,7 +824,8 @@ class TestSpectralAnalyzer:
         wavelengths_um = be.linspace(0.4, 0.8, 3)
         angles_deg = be.linspace(0, 60, 3)
 
-        # Test multiple quantities with single polarization - should return array of axes
+        # Test multiple quantities with single
+        # polarization - should return array of axes
         fig, axs = analyzer.map_view(
             wavelengths_um, aoi_values=angles_deg, to_plot=["R", "T", "A"]
         )
@@ -855,7 +856,8 @@ class TestSpectralAnalyzer:
         plt.close(fig)
 
     def test_multiple_polarizations_comprehensive(self, set_test_backend, simple_stack):
-        """Test comprehensive support for multiple polarizations across all view methods."""
+        """Test comprehensive support for multiple polarizations across
+        all view methods."""
         analyzer = SpectralAnalyzer(simple_stack)
         wavelengths_um = be.linspace(0.4, 0.8, 5)
         angles_deg = be.linspace(0, 60, 5)
@@ -1000,7 +1002,8 @@ class TestSpectralAnalyzer:
         result_um = analyzer.stack.compute_rtRTA(wl_um, be.deg2rad(angles_deg), "s")
 
         # Test consistency - all should convert to the same wavelength internally
-        # We can't easily test the plotting results directly, but we can test the conversion methods
+        # We can't easily test the plotting results directly, but we can test the
+        # conversion methods
         assert_allclose(
             analyzer._convert_to_wavelength_um(wl_nm, "nm"), wl_um, rtol=1e-10
         )
@@ -1047,3 +1050,211 @@ class TestThinFilmStackComplex:
             values = result[quantity]
             assert be.all(values >= 0), f"{quantity} has negative values"
             assert be.all(values <= 1), f"{quantity} has values > 1"
+
+
+class TestEdgeCasesAndErrors:
+    """Test edge cases and error handling."""
+
+    def test_wavelength_unit_unknown(self, set_test_backend, simple_stack):
+        """Test error handling for unknown wavelength unit."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        with pytest.raises(ValueError, match="Unknown wavelength unit"):
+            analyzer._convert_to_wavelength_um(0.5, "invalid_unit")
+
+    def test_relative_wavenumber_without_reference(self, set_test_backend, air, glass):
+        """Test error handling for relative_wavenumber without reference_wl_um."""
+        # Create stack without reference_wl_um
+        stack = ThinFilmStack(incident_material=air, substrate_material=glass)
+        analyzer = SpectralAnalyzer(stack)
+
+        with pytest.raises(ValueError, match="reference_wl_um must be set"):
+            analyzer._convert_to_wavelength_um(0.5, "relative_wavenumber")
+
+    def test_angle_unit_conversion_deg(self, set_test_backend, simple_stack):
+        """Test angle conversion in degrees."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        angles_deg = 45.0
+        angles_rad = analyzer._convert_angle_to_radians(angles_deg, "deg")
+        assert_allclose(angles_rad, be.deg2rad(45.0), rtol=1e-10)
+
+    def test_angle_unit_conversion_rad(self, set_test_backend, simple_stack):
+        """Test angle conversion in radians (identity)."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        angles_rad_input = 0.7854  # 45 degrees in radians
+        angles_rad_output = analyzer._convert_angle_to_radians(angles_rad_input, "rad")
+        assert_allclose(angles_rad_output, be.atleast_1d(angles_rad_input), rtol=1e-10)
+
+    def test_layer_update_thickness_returns_self(self, set_test_backend, sio2):
+        """Test that Layer.update_thickness returns self for method chaining."""
+        layer = Layer(material=sio2, thickness_um=0.1)
+        result = layer.update_thickness(0.2)
+        assert result is layer
+        assert layer.thickness_um == 0.2
+
+    def test_get_rt_spectrum_invalid_quantity(self, set_test_backend, simple_stack):
+        """Test error handling for invalid quantity in _get_rt_spectrum."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        with pytest.raises(ValueError, match="quantity must be 'R' or 'T'"):
+            analyzer._get_rt_spectrum(wavelength_values=0.5, quantity="invalid")
+
+    def test_spectrum_to_xyY_consistency(self, set_test_backend, single_layer_stack):
+        """Test spectrum_to_xyY returns float values."""
+        analyzer = SpectralAnalyzer(single_layer_stack)
+        x, y, Y = analyzer.spectrum_to_xyY(
+            wavelength_values=be.linspace(0.38, 0.78, 10),
+            wavelength_unit="um",
+            quantity="R",
+        )
+        assert isinstance(x, float)
+        assert isinstance(y, float)
+        assert isinstance(Y, float)
+        assert 0 <= x <= 1  # x should be in valid chromaticity range
+        assert 0 <= y <= 1  # y should be in valid chromaticity range
+
+    def test_analyze_color_returns_dict(self, set_test_backend, single_layer_stack):
+        """Test analyze_color returns proper dictionary structure."""
+        analyzer = SpectralAnalyzer(single_layer_stack)
+        result = analyzer.analyze_color(
+            wavelength_values=be.linspace(0.38, 0.78, 10),
+            wavelength_unit="um",
+            quantity="R",
+        )
+
+        assert isinstance(result, dict)
+        assert "xyz" in result
+        assert "xyY" in result
+        assert "sRGB" in result
+        assert len(result["xyz"]) == 3
+        assert len(result["xyY"]) == 3
+        assert len(result["sRGB"]) == 3
+
+        # Check types
+        assert all(isinstance(v, float) for v in result["xyz"])
+        assert all(isinstance(v, float) for v in result["xyY"])
+        assert all(isinstance(v, int) for v in result["sRGB"])
+
+    def test_plot_color_on_cie_1931_returns_axes(
+        self, set_test_backend, single_layer_stack
+    ):
+        """Test plot_color_on_cie_1931 returns figure and axes."""
+        analyzer = SpectralAnalyzer(single_layer_stack)
+        fig, ax = analyzer.plot_color_on_cie_1931(
+            wavelength_values=be.linspace(0.38, 0.78, 10), wavelength_unit="um"
+        )
+
+        assert fig is not None
+        assert ax is not None
+        assert hasattr(ax, "plot")  # Check it's matplotlib axes
+        plt.close(fig)
+
+    def test_multiple_polarization_error_in_get_single_polarization(
+        self, set_test_backend, simple_stack
+    ):
+        """Test error handling when multiple polarizations passed to color method."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        with pytest.raises(
+            ValueError, match="Color analysis requires a single polarization"
+        ):
+            analyzer._get_single_polarization(["s", "p"])
+
+    def test_get_single_polarization_normalizes_string(
+        self, set_test_backend, simple_stack
+    ):
+        """Test _get_single_polarization accepts single string."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        pol = analyzer._get_single_polarization("s")
+        assert pol == "s"
+
+    def test_wavelength_unit_frequency_conversion(self, set_test_backend, simple_stack):
+        """Test frequency unit conversion."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wl_um = 0.5
+        freq_hz = SPEED_OF_LIGHT / (wl_um * 1e-6)
+
+        result = analyzer._convert_to_wavelength_um(freq_hz, "frequency")
+        assert_allclose(result, be.atleast_1d(wl_um), rtol=1e-10)
+
+    def test_wavelength_unit_energy_conversion(self, set_test_backend, simple_stack):
+        """Test energy unit conversion."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wl_um = 0.5
+        energy_ev = (PLANCK_EV * SPEED_OF_LIGHT) / (wl_um * 1e-6)
+
+        result = analyzer._convert_to_wavelength_um(energy_ev, "energy")
+        assert_allclose(result, be.atleast_1d(wl_um), rtol=1e-10)
+
+    def test_wavelength_unit_wavenumber_conversion(
+        self, set_test_backend, simple_stack
+    ):
+        """Test wavenumber unit conversion."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        wl_um = 0.5
+        wavenumber = 1e4 / wl_um
+
+        result = analyzer._convert_to_wavelength_um(wavenumber, "wavenumber")
+        assert_allclose(result, be.atleast_1d(wl_um), rtol=1e-10)
+
+    def test_normalize_polarizations_list(self, set_test_backend, simple_stack):
+        """Test _normalize_polarizations with list input."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        pols = analyzer._normalize_polarizations(["s", "p"])
+        assert pols == ["s", "p"]
+
+    def test_normalize_polarizations_string(self, set_test_backend, simple_stack):
+        """Test _normalize_polarizations with string input."""
+        analyzer = SpectralAnalyzer(simple_stack)
+        pols = analyzer._normalize_polarizations("s")
+        assert pols == ["s"]
+
+    def test_get_line_style(self, set_test_backend, simple_stack):
+        """Test line style assignment for different polarizations."""
+        analyzer = SpectralAnalyzer(simple_stack)
+
+        style0 = analyzer._get_line_style(0)
+        style1 = analyzer._get_line_style(1)
+        style2 = analyzer._get_line_style(2)
+
+        # Should return dict with linestyle and alpha
+        assert "linestyle" in style0
+        assert "alpha" in style0
+        assert style0["linestyle"] == "-"
+        assert style1["linestyle"] == "--"
+        assert style2["linestyle"] == ":"
+
+    def test_spectrum_to_xyY_with_custom_observer(
+        self, set_test_backend, single_layer_stack
+    ):
+        """Test spectrum_to_xyY with 10-degree observer."""
+        analyzer = SpectralAnalyzer(single_layer_stack)
+        x_2deg, y_2deg, Y_2deg = analyzer.spectrum_to_xyY(
+            wavelength_values=be.linspace(0.38, 0.78, 10), observer="2deg"
+        )
+        x_10deg, y_10deg, Y_10deg = analyzer.spectrum_to_xyY(
+            wavelength_values=be.linspace(0.38, 0.78, 10), observer="10deg"
+        )
+
+        # Different observers should give different results (usually)
+        # but they should still be valid chromaticity coordinates
+        assert 0 <= x_2deg <= 1
+        assert 0 <= y_2deg <= 1
+        assert 0 <= x_10deg <= 1
+        assert 0 <= y_10deg <= 1
+
+    def test_get_rt_spectrum_different_quantities(
+        self, set_test_backend, single_layer_stack
+    ):
+        """Test _get_rt_spectrum with both R and T quantities."""
+        analyzer = SpectralAnalyzer(single_layer_stack)
+
+        wl_nm_r, vals_r = analyzer._get_rt_spectrum(
+            wavelength_values=be.linspace(0.38, 0.78, 10), quantity="R"
+        )
+        wl_nm_t, vals_t = analyzer._get_rt_spectrum(
+            wavelength_values=be.linspace(0.38, 0.78, 10), quantity="T"
+        )
+
+        # Wavelengths should be the same
+        assert_allclose(wl_nm_r, wl_nm_t, rtol=1e-10)
+
+        # Values should be different (most likely)
+        assert not be.allclose(vals_r, vals_t)

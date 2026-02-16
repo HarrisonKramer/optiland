@@ -341,6 +341,11 @@ class ThinFilmStack:
         }
         total_layer_thickness = sum(layer.thickness_um for layer in self.layers)
 
+        # Ensure minimum thickness for visualization (avoid singular ylim
+        # on empty stacks)
+        if total_layer_thickness == 0:
+            total_layer_thickness = 1.0
+
         incident_thickness = 0.08 * total_layer_thickness
         substrate_thickness = 0.08 * total_layer_thickness
         y = -substrate_thickness
