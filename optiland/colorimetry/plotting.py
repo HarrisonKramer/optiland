@@ -20,6 +20,7 @@ def plot_cie_1931_chromaticity_diagram(
     ax: plt.Axes | None = None,
     title: str = "CIE 1931 Chromaticity Diagram",
     color: Literal["no", "contour", "fill"] = "contour",
+    show_legend: bool = False,
 ) -> tuple[plt.Figure, plt.Axes]:
     """
     Plots the CIE 1931 chromaticity diagram (spectral locus).
@@ -34,6 +35,7 @@ def plot_cie_1931_chromaticity_diagram(
                - "no": Black and white outline.
                - "contour": Spectral locus colored by wavelength (default).
                - "fill": Gamut filled with approximate sRGB colors.
+        show_legend: Whether to display the legend.
 
     Returns:
         Tuple (Figure, Axes).
@@ -151,7 +153,7 @@ def plot_cie_1931_chromaticity_diagram(
             origin="lower",
             interpolation="bilinear",
         )
-        ax.plot(x_locus, y_locus, "k-", linewidth=1.5, label="Spectral Locus")
+        ax.plot(x_locus, y_locus, "k-", linewidth=1.5)
         # Purple line (black dashed for fill mode to define boundary)
         ax.plot(
             [x_locus[-1], x_locus[0]], [y_locus[-1], y_locus[0]], "k--", linewidth=1
@@ -162,9 +164,7 @@ def plot_cie_1931_chromaticity_diagram(
         points = be.reshape(be.transpose(be.array([x_locus, y_locus])), (-1, 1, 2))
         segments = be.concatenate((points[:-1], points[1:]), axis=1)
 
-        lc = LineCollection(
-            segments, colors=rgb_locus[:-1], linewidth=2, label="Spectral Locus"
-        )
+        lc = LineCollection(segments, colors=rgb_locus[:-1], linewidth=2)
         ax.add_collection(lc)
 
         # 2. Purple Line (Colored Gradient)
@@ -190,8 +190,9 @@ def plot_cie_1931_chromaticity_diagram(
         ax.add_collection(lc_p)
 
         # Dummy line for legend
-        ax.plot([], [], "-", color="gray", linewidth=2, label="Spectral Locus")
-        ax.plot([], [], "--", color="gray", linewidth=2, label="Purple Line")
+        if show_legend:
+            ax.plot([], [], "-", color="gray", linewidth=2, label="Spectral Locus")
+            ax.plot([], [], "--", color="gray", linewidth=2, label="Purple Line")
 
         # Light fill
         ax.fill(x_poly, y_poly, "k", alpha=0.05)
@@ -232,5 +233,8 @@ def plot_cie_1931_chromaticity_diagram(
     ax.set_xlabel("x")
     ax.set_ylabel("y")
     ax.set_title(title)
+
+    if show_legend:
+        ax.legend()
 
     return fig, ax
