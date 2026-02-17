@@ -59,7 +59,7 @@ class Paraxial:
         """SurfaceGroup: the surface group of the optical system."""
         return self.optic.surface_group
 
-    def f1(self) -> BEArray:
+    def f1(self) -> ScalarOrArray:
         """Calculate the front focal length (f1).
 
         Returns:
@@ -84,7 +84,7 @@ class Paraxial:
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
         f2 = -y[0] / u[-1]
-        return be.abs(f2[0])
+        return f2[0]
 
     def F1(self) -> ScalarOrArray:
         """Calculate the front focal point (F1) location.

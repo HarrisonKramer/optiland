@@ -1,6 +1,7 @@
 import pytest
 
 import optiland.backend as be
+from optiland.materials import IdealMaterial
 from optiland.optic import Optic
 from optiland.paraxial import Paraxial
 from optiland.samples.eyepieces import EyepieceErfle
@@ -666,3 +667,196 @@ def test_EPD_float_by_stop_size_infinite(set_test_backend):
     lens.add_wavelength(value=0.65)
 
     assert_allclose(lens.paraxial.EPD(), 9.997764563903152)
+
+
+def test_negative_lens():
+    """A simple test to ensure negative paraxial lenses are handled correctly"""
+    lens = Optic()
+
+    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    lens.add_surface(
+        index=1, surface_type="paraxial", f=-50.0, thickness=0.0, is_stop=True
+    )
+    lens.add_surface(index=2)
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+    lens.add_wavelength(value=0.55, is_primary=True)
+    assert_allclose(
+        [
+            lens.paraxial.f1(),
+            lens.paraxial.f2(),
+            lens.paraxial.F1(),
+            lens.paraxial.F2(),
+            lens.paraxial.P1(),
+            lens.paraxial.P2(),
+        ],
+        [50.0, -50.0, 50.0, -50, 0.0, 0.0],
+    )
+
+
+class Lens:
+    """Base class to calculate paraxial properties. Formulas from Fundamentals Of
+    Optics, Jenkins & White, 4th ed, Ch. 5.6. Note that a Gaussian coordinate system is
+    used in the source. Variables n1, n2 and n3 are n, n' and n'' in the source, and
+    stand for the refractive index in the object, lens, and image media, respectively.
+    P, P1 and P2 are powers, not principal planes, as per source."""
+
+    n1: float
+    n2: float
+    n3: float
+    d: float
+
+    @property
+    def P1(self):
+        raise NotImplementedError
+
+    @property
+    def P2(self):
+        raise NotImplementedError
+
+    @property
+    def P(self) -> float:
+        return self.P1 + self.P2 - self.d / self.n2 * self.P1 * self.P2
+
+    @property
+    def F1(self) -> float:
+        return -self.n1 / self.P * (1 - self.d / self.n2 * self.P2)
+
+    @property
+    def F2(self) -> float:
+        return self.n3 / self.P * (1 - self.d / self.n2 * self.P1)
+
+    @property
+    def f1(self) -> float:
+        return (
+            -self.n1 / self.P
+        )  # Swapped sign wrt source. Reason: use cartesian coordinates
+
+    @property
+    def f2(self) -> float:
+        return self.n3 / self.P
+
+    @property
+    def PP1(self) -> float:
+        """Principal plane. IN J&W defined wrt first lens surface"""
+        return self.n1 / self.P * self.d / self.n2 * self.P2
+
+    @property
+    def PP2(self) -> float:
+        """Principal plane. IN J&W defined wrt last lens surface"""
+        return -self.n3 / self.P * self.d / self.n2 * self.P1
+
+
+class ThickLens(Lens):
+    """Calculate the properties of an immersed thick lens made of two spherical surfaces with radii
+    r1 and r2, a distance d apart."""
+
+    r1: float
+    r2: float
+
+    def __init__(
+        self, n1: float, n2: float, n3: float, r1: float, r2: float, d: float
+    ) -> None:
+        self.n1, self.n2, self.n3 = n1, n2, n3
+        self.r1, self.r2 = r1, r2
+        self.d = d
+
+    @property
+    def P1(self) -> float:
+        return (self.n2 - self.n1) / self.r1
+
+    @property
+    def P2(self) -> float:
+        return (self.n3 - self.n2) / self.r2
+
+
+class CompoundLens(Lens):
+    """Calculate the properties of a system of two immersed thin lenses with focal lengths
+    f1 and f2, a distance d apart."""
+
+    _f1: float
+    _f2: float
+
+    def __init__(
+        self, n1: float, n2: float, n3: float, f1: float, f2: float, d: float
+    ) -> None:
+        self.n1, self.n2, self.n3 = n1, n2, n3
+        self._f1, self._f2 = f1, f2
+        self.d = d
+
+    @property
+    def P1(self) -> float:
+        return self.n1 / self._f1
+
+    @property
+    def P2(self) -> float:
+        return self.n3 / self._f2
+
+
+@pytest.mark.parametrize("n1", [1.0, 1.33])
+@pytest.mark.parametrize("n2", [1.5, 1.8])
+@pytest.mark.parametrize("n3", [1.33, 1.5, 1.0])
+@pytest.mark.parametrize("r1", [50, -75])
+@pytest.mark.parametrize("r2", [-100, 225])
+@pytest.mark.parametrize("d", [0.0, 1.0, 2.0, 5.0, 10.0, 100.0])
+def test_thick_lens(n1, n2, n3, r1, r2, d, set_test_backend):
+    lens = Optic()
+    lens.add_surface(
+        index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n1)
+    )
+    lens.add_surface(
+        index=1, radius=r1, thickness=d, material=IdealMaterial(n2), is_stop=True
+    )
+    lens.add_surface(
+        index=2, radius=r2, thickness=0.0, material=IdealMaterial(n3), is_stop=False
+    )
+    lens.add_surface(index=3, material=IdealMaterial(n3))
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_field(y=0)
+    lens.set_field_type(field_type="angle")
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+    px = lens.paraxial
+    tl = ThickLens(n1, n2, n3, r1, r2, d)
+    assert_allclose(
+        [tl.F1, tl.F2, tl.f1, tl.f2, tl.PP1, tl.PP2],
+        [px.F1(), px.F2(), px.f1(), px.f2(), px.P1(), px.P2()],
+    )
+
+
+@pytest.mark.parametrize("n1", [1.0, 1.33])
+@pytest.mark.parametrize("n2", [1.0, 1.2])
+@pytest.mark.parametrize("n3", [1.0, 1.5])
+@pytest.mark.parametrize("f1", [50.0, -75.0])
+@pytest.mark.parametrize("f2", [-100.0, 225.0])
+@pytest.mark.parametrize("d", [0.0, 1.0, 2.0, 5.0, 10.0, 100.0])
+def test_compound_lens(n1, n2, n3, f1, f2, d, set_test_backend):
+    cl = CompoundLens(n1, n2, n3, f1, f2, d)
+    lens = Optic()
+    lens.add_surface(
+        index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n1)
+    )
+    lens.add_surface(
+        index=1,
+        surface_type="paraxial",
+        f=f1 / n1,
+        thickness=d,
+        material=IdealMaterial(n2),
+        is_stop=True,
+    )
+    lens.add_surface(
+        index=2,
+        surface_type="paraxial",
+        f=f2 / n3,
+        thickness=0.0,
+        material=IdealMaterial(n3),
+        is_stop=False,
+    )
+    lens.add_surface(index=3, material=IdealMaterial(n3))
+    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.add_field(y=0)
+    lens.set_field_type(field_type="angle")
+    lens.set_aperture(aperture_type="float_by_stop_size", value=5)
+    px = lens.paraxial
+    assert_allclose(
+        [cl.F1, cl.F2, cl.f1, cl.f2, cl.PP1, cl.PP2],
+        [px.F1(), px.F2(), px.f1(), px.f2(), px.P1(), px.P2()],
+    )
