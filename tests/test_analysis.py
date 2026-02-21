@@ -1754,6 +1754,16 @@ class TestThroughFocusSpotDiagram:
 
 
 def read_zmx_file(file_path, skip_lines, cols=(0, 1)):
+    import os
+    if not os.path.exists(file_path):
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        if file_path.startswith("tests/") or file_path.startswith("tests\\"):
+            candidate = os.path.join(this_dir, file_path[6:])
+        else:
+            candidate = os.path.join(this_dir, file_path)
+        if os.path.exists(candidate):
+            file_path = candidate
+
     try:
         data = np.loadtxt(
             file_path, skiprows=skip_lines, usecols=cols, encoding="utf-16"

@@ -55,6 +55,170 @@ class TestBaseMaterial:
             # and a cache hit
             material.n(wavelength_torch_2, temperature=25)
             assert material._calculate_n.call_count == 3
+    def test_detach_if_tensor_plain_value(self, set_test_backend):
+        """_detach_if_tensor returns plain values unchanged."""
+        assert BaseMaterial._detach_if_tensor(1.5) == 1.5
+        assert BaseMaterial._detach_if_tensor(None) is None
+
+    def test_detach_if_tensor_numpy(self, set_test_backend):
+        """_detach_if_tensor returns numpy arrays unchanged."""
+        arr = np.array([1.5, 1.6])
+        result = BaseMaterial._detach_if_tensor(arr)
+        np.testing.assert_array_equal(result, arr)
+
+    def test_requires_grad_plain_value(self, set_test_backend):
+        """_requires_grad returns False for plain values."""
+        assert BaseMaterial._requires_grad(1.5) is False
+        assert BaseMaterial._requires_grad(np.array(1.5)) is False
+
+
+@pytest.mark.skipif(
+    "torch" not in be.list_available_backends(),
+    reason="PyTorch not installed",
+)
+class TestBaseMaterialTorchCaching:
+    """Tests for material caching behavior specific to torch backend.
+
+    These tests verify:
+    - Cached tensors are detached (no stale computation graph)
+    - Repeated forward+backward passes don't raise RuntimeError
+    - Cache is bypassed when the result requires grad (optimizable index)
+    """
+
+    @pytest.fixture(autouse=True)
+    def _setup_torch(self):
+        be.set_backend("torch")
+        be.set_device("cpu")
+        be.grad_mode.enable()
+        be.set_precision("float64")
+        yield
+        be.set_backend("numpy")
+
+    def test_detach_if_tensor_torch(self):
+        """_detach_if_tensor detaches torch tensors."""
+        import torch
+
+        t = torch.tensor(1.5, requires_grad=True) * 2.0  # has grad_fn
+        result = BaseMaterial._detach_if_tensor(t)
+        assert not result.requires_grad
+        assert result.grad_fn is None
+
+    def test_requires_grad_torch(self):
+        """_requires_grad correctly detects torch tensors with grad."""
+        import torch
+
+        leaf = torch.tensor(1.5, requires_grad=True)
+        assert BaseMaterial._requires_grad(leaf) is True
+
+        no_grad = torch.tensor(1.5)
+        assert BaseMaterial._requires_grad(no_grad) is False
+
+    def test_cached_value_is_detached_when_no_grad(self):
+        """Cached n/k values must be detached when they don't require grad.
+
+        When grad_mode is off, Sellmeier formula results are torch tensors
+        without requires_grad. These should be cached and detached to prevent
+        stale computation graph references if grad_mode is later re-enabled.
+        """
+        import torch
+
+        be.grad_mode.disable()
+        try:
+            mat = materials.Material("N-BK7")
+            result = mat.n(0.5876)
+
+            # Should be cached since result doesn't require grad
+            assert len(mat._n_cache) > 0, "Result should be cached"
+
+            cached = list(mat._n_cache.values())[0]
+            if isinstance(cached, torch.Tensor):
+                assert cached.grad_fn is None, (
+                    "Cached tensor should be detached (no grad_fn)"
+                )
+        finally:
+            be.grad_mode.enable()
+
+    def test_cache_bypassed_for_real_material_under_grad_mode(self):
+        """Under torch + grad_mode, real material results require_grad=True
+        because be.array() creates grad-enabled tensors. The cache must be
+        bypassed in this case.
+        """
+        mat = materials.Material("N-BK7")
+        mat.n(0.5876)
+
+        assert len(mat._n_cache) == 0, (
+            "Cache should be empty — Sellmeier result requires_grad under "
+            "grad_mode, so caching must be skipped"
+        )
+
+    def test_no_runtime_error_on_repeated_backward(self):
+        """Repeated forward+backward passes must not raise RuntimeError.
+
+        This is the regression test for the 'backward through the graph a
+        second time' error. We simulate a multi-step optimization by calling
+        material.n() repeatedly and computing a loss that flows through it.
+        """
+        import torch
+
+        mat = materials.Material("N-BK7")
+
+        # Simulate multiple optimizer steps
+        param = torch.nn.Parameter(torch.tensor(0.55, dtype=torch.float64))
+
+        for _ in range(3):
+            # Forward: compute n at a wavelength that depends on param
+            n_val = mat.n(param)
+            loss = (n_val - 1.5) ** 2
+            loss.backward()
+
+            with torch.no_grad():
+                param.data -= 0.01 * param.grad
+                param.grad.zero_()
+
+    def test_cache_bypassed_when_result_requires_grad(self):
+        """n() must NOT cache when the result requires_grad.
+
+        If the refractive index itself is an optimization variable (e.g.
+        IdealMaterial with a nn.Parameter index), caching would break
+        gradient flow — grad(loss, n) would always be zero.
+        """
+        import torch
+
+        # Create an IdealMaterial whose index is a nn.Parameter
+        mat = materials.IdealMaterial(n=1.5)
+        mat.index = torch.nn.Parameter(torch.tensor([1.5], dtype=torch.float64))
+
+        # First call — result requires grad, should NOT be cached
+        result1 = mat.n(0.55)
+        assert result1.requires_grad, "Result should require grad"
+        assert len(mat._n_cache) == 0, "Should not cache requires_grad result"
+
+        # Second call — should recompute (not return stale cached value)
+        result2 = mat.n(0.55)
+        assert result2.requires_grad, "Second result should also require grad"
+        assert len(mat._n_cache) == 0, "Cache should still be empty"
+
+        # Verify gradient actually flows through
+        loss = result2.sum()
+        loss.backward()
+        assert mat.index.grad is not None, "Gradient should flow to index"
+        assert mat.index.grad.abs().sum() > 0, "Gradient should be non-zero"
+
+    def test_cache_bypassed_for_k_when_requires_grad(self):
+        """k() has the same bypass logic as n()."""
+        import torch
+
+        mat = materials.IdealMaterial(n=1.5, k=0.1)
+        mat.absorp = torch.nn.Parameter(torch.tensor([0.1], dtype=torch.float64))
+
+        result = mat.k(0.55)
+        assert result.requires_grad
+        assert len(mat._k_cache) == 0
+
+        loss = result.sum()
+        loss.backward()
+        assert mat.absorp.grad is not None
+
 
 
 def build_model(material: BaseMaterial):

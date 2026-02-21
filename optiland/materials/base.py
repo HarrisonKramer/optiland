@@ -78,6 +78,23 @@ class BaseMaterial(ABC):
             wavelength_key = wavelength
         return (wavelength_key,) + tuple(sorted(kwargs.items()))
 
+    @staticmethod
+    def _requires_grad(value) -> bool:
+        """Check if a value is a torch tensor that requires gradient."""
+        return hasattr(value, "requires_grad") and value.requires_grad
+
+    @staticmethod
+    def _detach_if_tensor(value):
+        """Detach a torch tensor to sever the computation graph link.
+
+        This prevents the 'backward through the graph a second time' error
+        that occurs when a cached tensor still references a freed computation
+        graph.
+        """
+        if hasattr(value, "detach"):
+            return value.detach()
+        return value
+
     def n(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
         """Calculates the refractive index at a given wavelength with caching.
 
@@ -95,8 +112,17 @@ class BaseMaterial(ABC):
             return self._n_cache[cache_key]
 
         result = self._calculate_n(wavelength, **kwargs)
-        self._n_cache[cache_key] = result
-        return result
+
+        # If the result requires grad, it is connected to an optimization
+        # variable (e.g. the index itself is being optimized).  In that case
+        # we must NOT cache — every forward pass needs a fresh graph.
+        if self._requires_grad(result):
+            return result
+
+        # Otherwise the value is a constant w.r.t. optimization variables.
+        # Detach before caching to avoid holding a stale computation graph.
+        self._n_cache[cache_key] = self._detach_if_tensor(result)
+        return self._n_cache[cache_key]
 
     def k(self, wavelength: float | be.ndarray, **kwargs) -> float | be.ndarray:
         """Calculates the extinction coefficient at a given wavelength with caching.
@@ -115,8 +141,12 @@ class BaseMaterial(ABC):
             return self._k_cache[cache_key]
 
         result = self._calculate_k(wavelength, **kwargs)
-        self._k_cache[cache_key] = result
-        return result
+        # Same logic as n(): skip cache if result is differentiable.
+        if self._requires_grad(result):
+            return result
+
+        self._k_cache[cache_key] = self._detach_if_tensor(result)
+        return self._k_cache[cache_key]
 
     @abstractmethod
     def _calculate_n(
