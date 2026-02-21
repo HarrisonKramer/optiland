@@ -187,6 +187,18 @@ def fftconvolve(
     return _fftconvolve(a, b, mode=mode)
 
 
+def fftfreq(n: int, d: float = 1.0) -> NDArray:
+    return np.fft.fftfreq(n, d=d)
+
+
+def fft2(x: ArrayLike) -> NDArray:
+    return np.fft.fft2(array(x))
+
+
+def ifft2(x: ArrayLike) -> NDArray:
+    return np.fft.ifft2(array(x))
+
+
 def grid_sample(
     input, grid, mode="bilinear", padding_mode="zeros", align_corners=False
 ):
@@ -265,3 +277,32 @@ def polyval(coeffs: ArrayLike, x: ArrayLike) -> NDArray:
         x: A number or an array of numbers at which to evaluate.
     """
     return np.polyval(coeffs, x)
+
+
+def meshgrid(*arrays: ArrayLike, indexing: str = "xy"):
+    return np.meshgrid(*arrays, indexing=indexing)
+
+
+def pad(
+    x: NDArray,
+    pad_width: tuple[tuple[int, int], tuple[int, int]],
+    mode: Literal["constant"] = "constant",
+    constant_values: float = 0.0,
+) -> NDArray:
+    (pt, pb), (pl, pr) = pad_width
+    pads = [(0, 0)] * x.ndim
+    pads[-2] = (pt, pb)
+    pads[-1] = (pl, pr)
+    return np.pad(x, pads, mode=mode, constant_values=constant_values)
+
+
+def clamp(x: ArrayLike, min: float | None = None, max: float | None = None) -> NDArray:
+    return np.clip(array(x), a_min=min, a_max=max)
+
+
+def broadcast_to(x: ArrayLike, shape) -> NDArray:
+    return np.broadcast_to(array(x), shape)
+
+
+def zeros(shape) -> NDArray:
+    return np.zeros(shape, dtype=complex)
