@@ -212,3 +212,150 @@ class TestTorchOptimizers:
             assert "Loss" in captured.out
         else:
             assert "Loss" not in captured.out
+
+            
+class TestTorchOptimizerScaledSpace:
+    """
+    Tests that verify the Torch optimizers work in scaled parameter space,
+    consistent with the bounds from var.bounds.
+
+    This prevents the bug where raw parameters (e.g. radius=15.0) were clamped
+    by scaled bounds (e.g. [-0.9, -0.7]), corrupting the value and producing
+    NaN loss.
+    """
+
+    def test_params_initialized_in_scaled_space(self):
+        """
+        Optimizer params must match var.value (scaled), not
+        var.variable.get_value() (raw).
+
+        For a RadiusVariable with LinearScaler(factor=1/100, offset=-1.0),
+        raw=5.0 should become scaled = 5.0 * 0.01 - 1.0 = -0.95.
+        """
+        problem, _ = setup_problem(initial_value=5.0, min_val=1.0, max_val=10.0)
+        optimizer = TorchAdamOptimizer(problem)
+
+        # The optimizer param should be the scaled value, not the raw value
+        scaled_param = optimizer.params[0].item()
+        raw_value = problem.variables[0].variable.get_value()
+        expected_scaled = problem.variables[0].value
+
+        assert abs(scaled_param - expected_scaled) < 1e-10, (
+            f"Param {scaled_param} should equal scaled value {expected_scaled}, "
+            f"not raw value {raw_value}"
+        )
+        # Sanity: scaled and raw should differ for this scaler
+        assert abs(scaled_param - raw_value) > 0.1, (
+            "Scaled and raw values should be different"
+        )
+
+    def test_bounds_consistent_with_params(self):
+        """
+        After _apply_bounds(), the parameter must remain in the valid scaled
+        range — not be corrupted by a space mismatch.
+        """
+        problem, _ = setup_problem(initial_value=5.0, min_val=1.0, max_val=10.0)
+        optimizer = TorchAdamOptimizer(problem)
+
+        min_bound, max_bound = problem.variables[0].bounds
+
+        # Apply bounds and verify param stays in range (with float tolerance)
+        optimizer._apply_bounds()
+        param_val = optimizer.params[0].item()
+
+        tol = 1e-6
+        assert min_bound - tol <= param_val <= max_bound + tol, (
+            f"Param {param_val} outside scaled bounds [{min_bound}, {max_bound}]"
+        )
+
+    def test_bounded_optimization_no_nan(self):
+        """
+        Regression test: optimization with bounded variables must not produce
+        NaN loss. This was the exact failure mode when raw params were clamped
+        by scaled bounds.
+        """
+        import math
+
+        problem, lens = setup_problem(
+            initial_value=5.0,
+            min_val=1.0,
+            max_val=10.0,
+            target=12.0,
+        )
+        optimizer = TorchAdamOptimizer(problem)
+        result = optimizer.optimize(n_steps=20, disp=False)
+
+        assert not math.isnan(result.fun), (
+            f"Loss should not be NaN, got {result.fun}"
+        )
+        assert result.fun >= 0.0, (
+            f"Loss should be non-negative, got {result.fun}"
+        )
+
+    def test_bounded_variable_stays_in_physical_range(self):
+        """
+        After optimization with bounds [1, 10], the actual radius on the
+        optic must be within that physical range — not corrupted to a scaled
+        value like -0.7.
+        """
+        problem, lens = setup_problem(
+            initial_value=5.0,
+            min_val=1.0,
+            max_val=10.0,
+            target=12.0,
+        )
+        optimizer = TorchAdamOptimizer(problem)
+        optimizer.optimize(n_steps=10, disp=False)
+
+        # Get the actual physical radius from the optic
+        raw_radius = problem.variables[0].variable.get_value()
+        if hasattr(raw_radius, "item"):
+            raw_radius = raw_radius.item()
+
+        # Allow small floating-point overshoot from inverse-scaling
+        tol = 1e-4
+        assert 1.0 - tol <= raw_radius <= 10.0 + tol, (
+            f"Physical radius {raw_radius} outside bounds [1.0, 10.0]. "
+            "This suggests a scaled/unscaled space mismatch."
+        )
+
+    def test_optimizer_with_real_material_no_nan(self):
+        """
+        End-to-end regression test using Material("N-BK7") with bounded
+        variables — the exact combination that triggered both the NaN bug
+        (scaled/unscaled mismatch) and the RuntimeError (stale graph in
+        cached material tensors).
+        """
+        import math
+
+        from optiland.optic import Optic
+
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(
+            index=1, thickness=7, radius=15, material="N-BK7", is_stop=True,
+        )
+        lens.add_surface(index=2, thickness=30, radius=-1000)
+        lens.add_surface(index=3)
+        lens.set_aperture(aperture_type="EPD", value=15)
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_wavelength(value=0.55, is_primary=True)
+
+        problem = OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2", target=50, weight=1,
+            input_data={"optic": lens},
+        )
+        problem.add_variable(
+            lens, "radius", surface_number=1, min_val=10, max_val=30,
+        )
+        problem.add_variable(lens, "thickness", surface_number=2)
+
+        optimizer = TorchAdamOptimizer(problem)
+        result = optimizer.optimize(n_steps=10, disp=False)
+
+        assert not math.isnan(result.fun), (
+            f"Loss should not be NaN with Material('N-BK7') and bounded "
+            f"variables, got {result.fun}"
+        )
