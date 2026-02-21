@@ -309,6 +309,10 @@ def cast(x: ArrayLike) -> Tensor:
     return x.to(device=get_device(), dtype=get_precision())
 
 
+def clamp(x: Tensor, min: float | None = None, max: float | None = None) -> Tensor:
+    return torch.clamp(x, min=min, max=max)
+
+
 def copy(x: Tensor) -> Tensor:
     return x.clone()
 
@@ -357,8 +361,8 @@ def flip(x: Tensor) -> Tensor:
     return torch.flip(x, dims=(0,))
 
 
-def meshgrid(*arrays: Tensor) -> tuple[Tensor, ...]:
-    return torch.meshgrid(*arrays, indexing="xy")
+def meshgrid(*arrays: Tensor, indexing: str = "xy") -> tuple[Tensor, ...]:
+    return torch.meshgrid(*arrays, indexing=indexing)
 
 
 def roll(
@@ -865,6 +869,18 @@ def eye(n: int) -> Tensor:
 # --------------------------
 # Signal Processing
 # --------------------------
+def fftfreq(n: int, d: float = 1.0) -> Tensor:
+    return torch.fft.fftfreq(n, d=d, device=get_device(), dtype=get_precision())
+
+
+def fft2(x: Tensor) -> Tensor:
+    return torch.fft.fft2(x)
+
+
+def ifft2(x: Tensor) -> Tensor:
+    return torch.fft.ifft2(x)
+
+
 def fftconvolve(
     in1: Tensor, in2: Tensor, mode: Literal["full", "valid", "same"] = "full"
 ) -> Tensor:
@@ -997,6 +1013,7 @@ __all__ = [
     "load",
     # Utilities
     "cast",
+    "clamp",
     "copy",
     "is_array_like",
     "size",
@@ -1063,4 +1080,8 @@ __all__ = [
     # Simulation
     "fftconvolve",
     "grid_sample",
+    # FFT
+    "fftfreq",
+    "fft2",
+    "ifft2",
 ]
