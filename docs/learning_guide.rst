@@ -114,7 +114,15 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
    examples/Tutorial_10b_Custom_Coating_Types
    examples/Tutorial_10c_Custom_Optimization_Algorithm
 
-11. Machine Learning in Optical Design
+11. Extended Source Modeling
+---------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   examples/Tutorial_11a_Extended_Source_Modeling
+
+12. Machine Learning in Optical Design
 --------------------------------------
 
 These examples demonstrate how Optiland can be used in conjunction with machine learning to solve optical design problems.

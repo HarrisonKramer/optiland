@@ -14,6 +14,7 @@ from optiland.optic import Optic
 from optiland.physical_apertures import RectangularAperture
 from optiland.rays import RealRays
 from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
+from optiland.sources import SMFSource
 
 from .utils import assert_allclose
 
@@ -1777,90 +1778,17 @@ def read_zmx_file(file_path, skip_lines, cols=(0, 1)):
         return None, None
 
 
-class ExtendedSource:
-    """
-    It generates rays based on a Gaussian distribution defined by the source parameters.
-    """
-
-    def __init__(self, mfd=10.4, wavelength=1.55, total_power=1.0):
-        """
-        Initializes the ExtendedSource with source-specific parameters.
-
-        Args:
-            mfd (float): Mode Field Diameter in micrometers (µm).
-            wavelength (float): Wavelength of the source in micrometers (µm).
-            total_power (float): Total optical power of the source in Watts (W).
-        """
-        self.mfd = mfd
-        self.wavelength = wavelength
-        self.total_power = total_power
-
-        w0_um = self.mfd / 2.0
-        s_L_rad = self.wavelength / (
-            be.pi * w0_um
-        )  # 1/e^2 angular radius in L-space (radians)
-
-        # convert units for Optiland
-        s_x_mm = w0_um * 1e-3
-
-        # importance sampling
-        self.sigma_spatial_mm = s_x_mm / 2.0
-        self.sigma_angular_rad = s_L_rad / 2.0
-
-    def generate_rays(self, num_rays):
-        """
-        Returns:
-            RealRays: An object containing the generated rays.
-        """
-        # generate ray coordinates and angles
-        x_start = be.random_normal(loc=0.0, scale=self.sigma_spatial_mm, size=num_rays)
-        y_start = be.random_normal(loc=0.0, scale=self.sigma_spatial_mm, size=num_rays)
-        z_start = be.zeros(num_rays)
-
-        L_initial = be.random_normal(
-            loc=0.0, scale=self.sigma_angular_rad, size=num_rays
-        )
-        M_initial = be.random_normal(
-            loc=0.0, scale=self.sigma_angular_rad, size=num_rays
-        )
-
-        # filter for possible rays
-        valid_mask = L_initial**2 + M_initial**2 < 1.0
-        x_start, y_start, z_start = (
-            x_start[valid_mask],
-            y_start[valid_mask],
-            z_start[valid_mask],
-        )
-        L_initial, M_initial = L_initial[valid_mask], M_initial[valid_mask]
-
-        num_valid_rays = be.size(L_initial)
-
-        # calculate power per ray
-        power_per_ray = self.total_power / num_valid_rays
-        intensity_power_array = be.full((num_valid_rays,), power_per_ray)
-
-        N_initial = be.sqrt(
-            be.maximum(be.array(0.0), 1.0 - L_initial**2 - M_initial**2)
-        )
-        wavelength_array = be.full((num_valid_rays,), self.wavelength)
-
-        rays = RealRays(
-            x=x_start,
-            y=y_start,
-            z=z_start,
-            L=L_initial,
-            M=M_initial,
-            N=N_initial,
-            intensity=intensity_power_array,
-            wavelength=wavelength_array,
-        )
-        return rays
-
-
 @pytest.fixture
 def extended_source():
-    """Fixture to provide an instance of ExtendedSource."""
-    return ExtendedSource(mfd=10.4, wavelength=1.55, total_power=1.0)
+    """Fixture to provide an instance of SMFSource."""
+    # Using default behavior: divergence calculated from MFD and Wavelength
+    # This matches the diffraction-limited physics of a perfect Gaussian beam.
+    return SMFSource(
+        mfd_um=10.4,
+        wavelength_um=1.55,
+        total_power=1.0,
+        # divergence_deg_1e2 is calculated automatically
+    )
 
 
 @pytest.fixture

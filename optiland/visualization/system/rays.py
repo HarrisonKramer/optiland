@@ -81,6 +81,7 @@ class Rays2D:
         wavelengths = resolve_wavelengths(self.optic, wavelengths)
 
         artists = {}
+
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
                 # if only one field, use different colors for each wavelength
@@ -170,8 +171,12 @@ class Rays2D:
         """Updates the extents of the surfaces in the optic's surface group."""
         r_extent_new = be.copy(be.zeros_like(self.r_extent))
         for i, surf in enumerate(self.optic.surface_group.surfaces):
-            # convert to local coordinate system
-            x, y, _ = transform(self.x[i], self.y[i], self.z[i], surf, is_global=True)
+            x_surf = self.x[i]
+            y_surf = self.y[i]
+            z_surf = self.z[i]
+
+            # Convert to local coordinate system
+            x, y, _ = transform(x_surf, y_surf, z_surf, surf, is_global=True)
 
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)

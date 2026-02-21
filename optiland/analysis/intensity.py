@@ -48,6 +48,10 @@ class RadiantIntensity(BaseAnalysis):
         num_rays (int): Number of rays to trace if user_initial_rays is None.
         distribution_name (str): Ray distribution if user_initial_rays is None.
         user_initial_rays (RealRays | None): Optional user-provided initial rays.
+        source (BaseSource | None): Optional extended source object
+            (e.g., GaussianSource) to generate initial rays automatically.
+            Cannot be used with user_initial_rays. When provided, num_rays
+            determines how many rays to generate.
         data (list[list[tuple]]): Stores (intensity_map,
                                           angle_X_bin_edges, angle_Y_bin_edges,
                                           angle_X_bin_centers, angle_Y_bin_centers)
@@ -73,6 +77,8 @@ class RadiantIntensity(BaseAnalysis):
         num_rays: int = 100000,
         distribution: DistributionType = "random",
         user_initial_rays=None,
+        source=None,
+        skip_trace: bool = False,
     ):
         if fields == "all":
             self.fields = optic.fields.get_field_coords()
@@ -80,6 +86,31 @@ class RadiantIntensity(BaseAnalysis):
             if not isinstance(fields, list):
                 fields = [fields]
             self.fields = tuple(fields)
+
+        # Handle source integration
+        if source is not None and user_initial_rays is not None:
+            raise ValueError("Cannot specify both 'source' and 'user_initial_rays'.")
+
+        self.user_initial_rays = user_initial_rays
+        if source is not None:
+            # Generate rays from the extended source
+            self.user_initial_rays = source.generate_rays(num_rays)
+            # When using a source, we treat all rays as a single "field"
+            # The source emission defines the field, not optic.fields
+            self.fields = [(0.0, 0.0)]  # Single dummy field for source rays
+
+        self._initial_ray_data = None
+        if self.user_initial_rays is not None:
+            self._initial_ray_data = {
+                "x": self.user_initial_rays.x,
+                "y": self.user_initial_rays.y,
+                "z": self.user_initial_rays.z,
+                "L": self.user_initial_rays.L,
+                "M": self.user_initial_rays.M,
+                "N": self.user_initial_rays.N,
+                "intensity": self.user_initial_rays.i,
+                "wavelength": self.user_initial_rays.w,
+            }
 
         self.num_angular_bins_X = num_angular_bins_X
         self.num_angular_bins_Y = num_angular_bins_Y
@@ -89,7 +120,7 @@ class RadiantIntensity(BaseAnalysis):
         # for absolute units, we need to ensure the user has provided rays
         # with 'calibrated' power
         self.use_absolute_units = use_absolute_units
-        if self.use_absolute_units and user_initial_rays is None:
+        if self.use_absolute_units and self.user_initial_rays is None:
             print(
                 "Warning: `use_absolute_units` is True, but no `user_initial_rays` "
                 "were provided."
@@ -103,7 +134,7 @@ class RadiantIntensity(BaseAnalysis):
         self.reference_surface_index = int(reference_surface_index)
         self.num_rays = num_rays
         self.distribution_name: DistributionType = distribution
-        self.user_initial_rays = user_initial_rays
+        self.skip_trace = skip_trace
 
         super().__init__(optic, wavelengths)
 
@@ -121,15 +152,19 @@ class RadiantIntensity(BaseAnalysis):
     def _generate_field_wavelength_data(
         self, field_coord: tuple[ScalarOrArray, ScalarOrArray], wavelength: float
     ) -> tuple[BEArray, BEArray, BEArray, BEArray, BEArray]:
-        if self.user_initial_rays is None:
-            self.optic.trace(
-                *field_coord,
-                wavelength=wavelength,
-                num_rays=self.num_rays,
-                distribution=self.distribution_name,
-            )
-        else:
-            self.optic.surface_group.trace(self.user_initial_rays)
+        if not self.skip_trace:
+            if self.user_initial_rays is None:
+                self.optic.trace(
+                    *field_coord,
+                    wavelength=wavelength,
+                    num_rays=self.num_rays,
+                    distribution=self.distribution_name,
+                )
+            else:
+                from optiland.rays import RealRays
+
+                rays_to_trace = RealRays(**self._initial_ray_data)
+                self.optic.surface_group.trace(rays_to_trace)
 
         surf_group = self.optic.surface_group
         try:
@@ -200,13 +235,43 @@ class RadiantIntensity(BaseAnalysis):
                 )
 
         if self.use_absolute_units:
-            delta_angle_X_rad = be.radians(angle_X_bins[1] - angle_X_bins[0])
-            delta_angle_Y_rad = be.radians(angle_Y_bins[1] - angle_Y_bins[0])
-            solid_angle_per_bin_sr = delta_angle_X_rad * delta_angle_Y_rad
+            # 1. Calculate basic bin sizes (radians)
+            dx = be.radians(angle_X_bins[1] - angle_X_bins[0])
+            dy = be.radians(angle_Y_bins[1] - angle_Y_bins[0])
 
+            # 2. Create meshgrid of bin centers (in Radians) for
+            # the Jacobian calculation
+            # Note: We must be careful with tensor shapes here to match
+            # power_map (Y, X)
+            ax_c_rad = be.radians(angle_X_centers)
+            ay_c_rad = be.radians(angle_Y_centers)
+
+            # Create grids. Meshgrid usually returns (Y, X) with
+            # indexing='ij' or 'xy' depending on backend
+            # For safety, let's explicitely broadcast
+            # resulting shape (Y, X) usually
+            AX, AY = be.meshgrid(ax_c_rad, ay_c_rad)
+
+            # 3. Compute Jacobian terms
+            # J = (sec^2(tx) * sec^2(ty)) / (1 + tan^2(tx) + tan^2(ty))^(3/2)
+            tan2_tx = be.tan(AX) ** 2
+            tan2_ty = be.tan(AY) ** 2
+            sec2_tx = 1.0 + tan2_tx  # Identity: sec^2 = 1 + tan^2
+            sec2_ty = 1.0 + tan2_ty
+
+            numerator = sec2_tx * sec2_ty
+            denominator = (1.0 + tan2_tx + tan2_ty) ** 1.5
+
+            jacobian_factor = numerator / denominator
+
+            # 4. Compute true solid angle per bin
+            # d_omega = J * d_theta_x * d_theta_y
+            true_solid_angle_map = jacobian_factor * dx * dy
+
+            # 5. Normalize Power Map
             final_intensity_map = be.where(
-                solid_angle_per_bin_sr > 1e-12,
-                power_map / solid_angle_per_bin_sr,
+                true_solid_angle_map > 1e-12,
+                power_map / true_solid_angle_map,
                 be.zeros_like(power_map),
             )
         else:

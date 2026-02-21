@@ -107,6 +107,7 @@ class Optic:
         obj_space_telecentric (bool): If True, the system is object-space
             telecentric. Defaults to False.
 
+
     """
 
     def __init__(self, name: str | None = None):

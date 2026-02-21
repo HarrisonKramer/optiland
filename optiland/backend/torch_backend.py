@@ -450,6 +450,45 @@ def random_normal(
     )
 
 
+def sobol_sampler(dim, num_samples, scramble=True, seed=None):
+    """
+    Generate quasi-random samples using Sobol sequences.
+
+    Args:
+        dim (int): Dimension of the samples
+        num_samples (int): Number of samples to generate
+        scramble (bool): Whether to scramble the sequence
+        seed (int): Random seed for scrambling
+
+    Returns:
+        torch.Tensor: Samples of shape (num_samples, dim)
+    """
+    # Ensure num_samples is a power of 2 for best Sobol performance
+    if num_samples > 0:
+        num_samples_pow2 = 1 << (num_samples - 1).bit_length()
+    else:
+        num_samples_pow2 = num_samples
+
+    sobol_engine = torch.quasirandom.SobolEngine(
+        dimension=dim, scramble=scramble, seed=seed
+    )
+    samples = sobol_engine.draw(num_samples_pow2)
+    return samples.to(device=get_device(), dtype=get_precision())
+
+
+def erfinv(x):
+    """
+    Inverse error function.
+
+    Args:
+        x: Input tensor
+
+    Returns:
+        torch.Tensor: Inverse error function of x
+    """
+    return torch.erfinv(array(x))
+
+
 # --------------------------
 # Mathematical Operations
 # --------------------------
@@ -624,6 +663,12 @@ def get_bilinear_weights(
     x_edges, y_edges = bin_edges
     x, y = coords[:, 0].contiguous(), coords[:, 1].contiguous()
 
+    # --- NEW: Boundary Check ---
+    # We want to mask out any rays that fall outside the defined bin edges.
+    valid_mask = (
+        (x >= x_edges[0]) & (x <= x_edges[-1]) & (y >= y_edges[0]) & (y <= y_edges[-1])
+    )
+
     x_centers = (x_edges[:-1] + x_edges[1:]) / 2
     y_centers = (y_edges[:-1] + y_edges[1:]) / 2
 
@@ -659,6 +704,10 @@ def get_bilinear_weights(
     )
 
     all_weights = torch.stack([w00, w01, w10, w11], dim=1)
+
+    # --- NEW: Apply Mask ---
+    # Set weights to zero for invalid (out-of-bounds) rays
+    all_weights = all_weights * valid_mask.unsqueeze(1).to(all_weights.dtype)
 
     return all_indices, all_weights
 
@@ -820,9 +869,11 @@ def vectorize(pyfunc: Callable[..., Any]) -> Callable[[Tensor], Tensor]:
         mapped = [pyfunc(xi) for xi in flat]
         out = torch.stack(
             [
-                m
-                if isinstance(m, torch.Tensor)
-                else torch.tensor(m, dtype=get_precision(), device=get_device())
+                (
+                    m
+                    if isinstance(m, torch.Tensor)
+                    else torch.tensor(m, dtype=get_precision(), device=get_device())
+                )
                 for m in mapped
             ]
         )
@@ -1018,6 +1069,7 @@ __all__ = [
     "default_rng",
     "random_uniform",
     "random_normal",
+    "sobol_sampler",
     # Math
     "sqrt",
     "sin",
@@ -1036,6 +1088,7 @@ __all__ = [
     "where",
     "histogram2d",
     "get_bilinear_weights",
+    "erfinv",
     # Linear Algebra
     "matmul",
     "batched_chain_matmul3",
