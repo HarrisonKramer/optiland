@@ -56,7 +56,9 @@ class PickupManager:
             source_surface_idx (int): The index of the source surface in the
                 optic's surface group.
             attr_type (str): The type of attribute to be picked up ('radius',
-                'conic', or 'thickness'). Can also be a generic path.
+                'conic', or 'thickness'). Can also be a generic path, where `[i]`
+                should be used to indicate the surface index (e.g.
+                `surface_group.surfaces[i].geometry.coefficients`).
             target_surface_idx (int): The index of the target surface in the
                 optic's surface group.
             scale (float, optional): The scaling factor applied to the picked
@@ -137,7 +139,9 @@ class Pickup:
         source_surface_idx (int): The index of the source surface in the
             optic's surface group.
         attr_type (str): The type of attribute to be picked up ('radius',
-            'conic', or 'thickness').
+            'conic', or 'thickness'). Can also be a generic path, where `[i]`
+            should be used to indicate the surface index (e.g.
+            `surface_group.surfaces[i].geometry.coefficients`).
         target_surface_idx (int): The index of the target surface in the
             optic's surface group.
         scale (float, optional): The scaling factor applied to the picked up
@@ -212,7 +216,8 @@ class Pickup:
 
         # Generic path support
         try:
-            val = get_attr_by_path(self.source_optic, self.attr_type)
+            path = self.attr_type.replace("[i]", f"[{self.source_surface_idx}]")
+            val = get_attr_by_path(self.source_optic, path)
             return val
         except AttributeError:
             raise ValueError("Invalid source attribute") from None
@@ -237,9 +242,10 @@ class Pickup:
 
         # Generic path support
         try:
+            path = self.attr_type.replace("[i]", f"[{self.target_surface_idx}]")
             # Check existence first to ensure no arbitrary attribute creation
-            get_attr_by_path(self.optic, self.attr_type)
-            set_attr_by_path(self.optic, self.attr_type, value)
+            get_attr_by_path(self.optic, path)
+            set_attr_by_path(self.optic, path, value)
         except Exception:
             raise ValueError("Invalid target attribute") from None
 
