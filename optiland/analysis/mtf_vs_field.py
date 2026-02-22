@@ -91,36 +91,41 @@ class MTFvsField(BaseAnalysis):
         fields = [(0.0, float(Hy)) for Hy in be.linspace(0.0, 1.0, self.num_fields)]
         self._field_coords = be.array(fields)
 
+        # Pre-build list of frequencies to calculate at once
+        freqs_to_calc = []
+        for freq in self.frequencies:
+            freqs_to_calc.append((freq, 0.0))
+            freqs_to_calc.append((0.0, freq))
+
         results = []
         for wl in self.wavelengths:
-            wl_results = []
-            for freq in self.frequencies:
-                freq_tan = (freq, 0.0)
-                freq_sag = (0.0, freq)
+            wl_results = [{"tangential": [], "sagittal": []} for _ in self.frequencies]
 
-                tan_mtf = []
-                sag_mtf = []
-
-                for field in fields:
-                    sampled_mtf = SampledMTF(
-                        optic=self.optic,
-                        field=field,
-                        wavelength=wl,
-                        num_rays=self.num_rays,
-                        distribution="uniform",
-                        zernike_terms=37,
-                        zernike_type="fringe",
-                    )
-
-                    mtf_t = sampled_mtf.calculate_mtf([freq_tan])[0]
-                    mtf_s = sampled_mtf.calculate_mtf([freq_sag])[0]
-
-                    tan_mtf.append(mtf_t)
-                    sag_mtf.append(mtf_s)
-
-                wl_results.append(
-                    {"tangential": be.array(tan_mtf), "sagittal": be.array(sag_mtf)}
+            for field in fields:
+                sampled_mtf = SampledMTF(
+                    optic=self.optic,
+                    field=field,
+                    wavelength=wl,
+                    num_rays=self.num_rays,
+                    distribution="uniform",
+                    zernike_terms=37,
+                    zernike_type="fringe",
                 )
+
+                mtfs = sampled_mtf.calculate_mtf(freqs_to_calc)
+
+                for i_freq in range(len(self.frequencies)):
+                    wl_results[i_freq]["tangential"].append(mtfs[2 * i_freq])
+                    wl_results[i_freq]["sagittal"].append(mtfs[2 * i_freq + 1])
+
+            for i_freq in range(len(self.frequencies)):
+                wl_results[i_freq]["tangential"] = be.array(
+                    wl_results[i_freq]["tangential"]
+                )
+                wl_results[i_freq]["sagittal"] = be.array(
+                    wl_results[i_freq]["sagittal"]
+                )
+
             results.append(wl_results)
 
         return results
@@ -174,7 +179,9 @@ class MTFvsField(BaseAnalysis):
 
         for i_wl, wavelength in enumerate(self.wavelengths):
             for i_freq, freq in enumerate(self.frequencies):
-                color_idx = i_freq % len(axes_color_cycle)
+                color_idx = (i_wl * len(self.frequencies) + i_freq) % len(
+                    axes_color_cycle
+                )
                 color = axes_color_cycle[color_idx]
 
                 tan_data = be.to_numpy(self.data[i_wl][i_freq]["tangential"])

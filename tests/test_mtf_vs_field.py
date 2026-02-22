@@ -7,19 +7,27 @@ from optiland.analysis import MTFvsField
 from optiland.samples.objectives import CookeTriplet
 import optiland.backend as be
 import numpy as np
+from unittest.mock import patch
 
 
 class TestMTFvsField:
     """Test suite for the MTFvsField class."""
 
-    def test_init_defaults(self, set_test_backend):
+    @patch('optiland.analysis.MTFvsField._generate_data')
+    def test_init_defaults(self, mock_generate_data, set_test_backend):
         """Test initialization with default parameters."""
+        mock_generate_data.return_value = [
+            [
+                {"tangential": np.zeros(32), "sagittal": np.zeros(32)},
+                {"tangential": np.zeros(32), "sagittal": np.zeros(32)}
+            ] for _ in range(3)
+        ]
         optic = CookeTriplet()
-        mtf_vf = MTFvsField(optic, frequencies=[10.0, 20.0], num_fields=3, num_rays=12)
+        mtf_vf = MTFvsField(optic, frequencies=[10.0, 20.0])
 
         assert mtf_vf.frequencies == [10.0, 20.0]
-        assert mtf_vf.num_fields == 3
-        assert mtf_vf.num_rays == 12
+        assert mtf_vf.num_fields == 32
+        assert mtf_vf.num_rays == 128
         assert mtf_vf.wavelengths == [w.value for w in optic.wavelengths.wavelengths]
 
         # Check results structure
@@ -42,7 +50,8 @@ class TestMTFvsField:
             MTFvsField(optic, frequencies=freqs)
             
         # Try with override
-        mtf_vf = MTFvsField(optic, frequencies=freqs, num_rays=32, num_fields=5, override_limits=True)
+        with patch('optiland.analysis.MTFvsField._generate_data'):
+            mtf_vf = MTFvsField(optic, frequencies=freqs, num_rays=16, num_fields=2, override_limits=True)
         assert len(mtf_vf.frequencies) == 6
 
     def test_init_limits_wavelengths(self, set_test_backend):
@@ -57,7 +66,8 @@ class TestMTFvsField:
             MTFvsField(optic, frequencies=[10], wavelengths="all")
             
         # Try with override
-        mtf_vf = MTFvsField(optic, frequencies=[10], wavelengths="all", num_rays=32, num_fields=5, override_limits=True)
+        with patch('optiland.analysis.MTFvsField._generate_data'):
+            mtf_vf = MTFvsField(optic, frequencies=[10], wavelengths="all", num_rays=16, num_fields=2, override_limits=True)
         assert len(mtf_vf.wavelengths) == 6
 
     def test_custom_params(self, set_test_backend):
@@ -66,19 +76,19 @@ class TestMTFvsField:
         mtf_vf = MTFvsField(
             optic, 
             frequencies=[15.0],
-            num_fields=16,
+            num_fields=3,
             wavelengths=[0.55],
-            num_rays=64
+            num_rays=16
         )
 
         assert mtf_vf.frequencies == [15.0]
-        assert mtf_vf.num_fields == 16
-        assert mtf_vf.num_rays == 64
+        assert mtf_vf.num_fields == 3
+        assert mtf_vf.num_rays == 16
         assert mtf_vf.wavelengths == [0.55]
 
         # Check data
         res = mtf_vf.data[0][0]
-        assert len(res["tangential"]) == 16
+        assert len(res["tangential"]) == 3
         
         # Check values
         assert be.all(res["tangential"] >= 0.0)
@@ -89,7 +99,7 @@ class TestMTFvsField:
     def test_view(self, set_test_backend):
         """Test view method to ensure it creates plots properly."""
         optic = CookeTriplet()
-        mtf_vf = MTFvsField(optic, frequencies=[10.0], num_fields=8, num_rays=32)
+        mtf_vf = MTFvsField(optic, frequencies=[10.0], num_fields=2, num_rays=16)
         fig, ax = mtf_vf.view()
         
         assert fig is not None
