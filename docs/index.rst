@@ -169,7 +169,6 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_materials
    api/api_ml
    api/api_optic
-   api/api_sources
    api/api_optimization
    api/api_paraxial
    api/api_phase
@@ -177,6 +176,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_rays
    api/api_raytrace
    api/api_solves
+   api/api_sources
    api/api_surfaces
    api/api_tolerancing
    api/api_visualization
