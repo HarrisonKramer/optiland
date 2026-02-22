@@ -38,7 +38,9 @@ class Surface2D:
 
         if self.surf.aperture:
             x_min, x_max, y_min, y_max = self.surf.aperture.extent
-            self.extent = be.max(be.array([x_min, x_max, y_min, y_max]))
+            extent = be.max(be.array([x_min, x_max, y_min, y_max]))
+            # Fall back to ray extent if aperture extent is infinite
+            self.extent = extent if be.isfinite(be.array(extent)) else ray_extent
         else:
             self.extent = ray_extent
 

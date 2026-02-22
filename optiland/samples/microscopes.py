@@ -108,7 +108,6 @@ class Microscope20x(optic.Optic):
         self.add_wavelength(value=0.58756180, is_primary=True)
         self.add_wavelength(value=0.65627250)
 
-        self.update_paraxial()
         self.image_solve()
 
         # scale from inches to mm
@@ -164,8 +163,6 @@ class UVReflectingMicroscope(optic.Optic):
         self.add_field(y=4)
 
         self.add_wavelength(value=0.27, is_primary=True)
-
-        self.update_paraxial()
 
         # scale from inches to mm
         self.scale_system(25.4)

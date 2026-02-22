@@ -16,6 +16,7 @@ from optiland.materials import AbbeMaterial, BaseMaterial, IdealMaterial, Materi
 from optiland.optic import Optic
 from optiland.samples.objectives import ReverseTelephoto, TessarLens
 from optiland.samples.simple import Edmund_49_847
+from optiland.samples.microscopes import UVReflectingMicroscope
 from optiland.samples.telescopes import HubbleTelescope
 from optiland.visualization.base import BaseViewer
 from optiland.visualization.system import OpticViewer, OpticViewer3D
@@ -201,6 +202,31 @@ class TestOpticViewer:
         assert fig is not None
         assert ax is not None
         assert len(ax.get_lines()) > 0  # Ensure rays were drawn
+        plt.close(fig)
+
+    def test_view_uv_reflecting_microscope(self, set_test_backend):
+        """Regression test: drawing a catadioptric system with small-radius
+        mirrors must not produce RuntimeWarnings."""
+        import warnings
+
+        lens = UVReflectingMicroscope()
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            fig, ax = lens.draw()
+
+        # No RuntimeWarnings should be raised
+        runtime_warnings = [
+            x for x in w if issubclass(x.category, RuntimeWarning)
+        ]
+        assert len(runtime_warnings) == 0, (
+            f"RuntimeWarnings raised: "
+            f"{[str(x.message) for x in runtime_warnings]}"
+        )
+
+        assert fig is not None
+        assert ax is not None
+        assert isinstance(fig, Figure)
+        assert isinstance(ax, Axes)
         plt.close(fig)
 
 
