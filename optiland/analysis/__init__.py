@@ -12,6 +12,7 @@ from .rms_vs_field import RmsSpotSizeVsField, RmsWavefrontErrorVsField
 from .pupil_aberration import PupilAberration
 from .irradiance import IncoherentIrradiance
 from .intensity import RadiantIntensity
+from .mtf_vs_field import MTFvsField
 from .through_focus_mtf import ThroughFocusMTF
 from .through_focus_spot_diagram import ThroughFocusSpotDiagram
 from .jones_pupil import JonesPupil

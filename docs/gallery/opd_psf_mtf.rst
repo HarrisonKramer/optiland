@@ -17,6 +17,7 @@ This section contains examples of the analysis of the optical path difference (O
     wavefront/mtf_geometric
     wavefront/mtf_fft
     wavefront/mtf_huygens
+    wavefront/mtf_vs_field
     wavefront/through_focus_mtf
     wavefront/sampled_mtf
     wavefront/zernike_decomposition
