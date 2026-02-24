@@ -62,6 +62,7 @@ class ZemaxDataModel:
         - Glass Catalogs
     """
 
+    name: str | None = None
     aperture: dict[str, Any] = field(default_factory=dict)
     fields: dict[str, Any] = field(default_factory=dict)
     wavelengths: dict[str, Any] = field(default_factory=lambda: {"data": []})
@@ -71,6 +72,7 @@ class ZemaxDataModel:
     def to_dict(self) -> dict[str, Any]:
         """Return the data model as a plain dictionary."""
         result = {
+            "name": self.name,
             "aperture": self.aperture,
             "fields": self.fields,
             "wavelengths": self.wavelengths,
@@ -122,6 +124,7 @@ class ZemaxDataParser:
 
         # Operand dispatch table
         self._operand_table = {
+            "NAME": self._read_name,
             "FNUM": self._read_fno,
             "ENPD": self._read_epd,
             "OBNA": self._read_object_na,
@@ -180,6 +183,10 @@ class ZemaxDataParser:
         return self.data_model
 
     # ------------------ Parsing methods ------------------
+    def _read_name(self, data):
+        print(data)
+        self.data_model.name = " ".join(data[1:])
+
     def _read_fno(self, data):
         if int(data[2]) == 0:
             self.data_model.aperture["imageFNO"] = float(data[1])
