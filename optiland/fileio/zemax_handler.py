@@ -184,7 +184,6 @@ class ZemaxDataParser:
 
     # ------------------ Parsing methods ------------------
     def _read_name(self, data):
-        print(data)
         self.data_model.name = " ".join(data[1:])
 
     def _read_fno(self, data):
