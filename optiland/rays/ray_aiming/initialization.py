@@ -150,8 +150,23 @@ class RealReferenceStrategy(StopSizeStrategy):
             if be.any(be.isnan(rays.x)):
                 raise ValueError("Ray trace resulted in NaNs (TIR or missed surface).")
 
-        # Return intersection radial height at Stop
-        return float(be.sqrt(rays.x[0] ** 2 + rays.y[0] ** 2))
+        # Localize rays to the stop surface's local frame so the radial
+        # height is measured from the stop center, not the global origin.
+        stop_cs = self.optic.surface_group.surfaces[stop_index].geometry.cs
+        local_rays = RealRays(
+            be.copy(rays.x),
+            be.copy(rays.y),
+            be.copy(rays.z),
+            be.copy(rays.L),
+            be.copy(rays.M),
+            be.copy(rays.N),
+            intensity=be.copy(rays.i),
+            wavelength=rays.w,
+        )
+        stop_cs.localize(local_rays)
+
+        # Return intersection radial height at Stop in local coords
+        return float(be.sqrt(local_rays.x[0] ** 2 + local_rays.y[0] ** 2))
 
 
 def get_stop_radius_strategy(optic: Optic, aiming_mode: str) -> StopSizeStrategy:
