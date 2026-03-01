@@ -13,11 +13,13 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox
 
 import optiland.backend as be
+from optiland.fileio.zemax_handler import load_zemax_file
 from optiland.materials import IdealMaterial
 from optiland.materials import Material as OptilandMaterial
 from optiland.optic import Optic
@@ -267,23 +269,29 @@ class OptilandConnector(QObject):
 
     def load_optic_from_file(self, filepath: str):
         try:
-            with open(filepath) as f:
+            name, extension = os.path.splitext(filepath)
+            if extension == ".zmx":
+                self._undo_redo_manager.clear_stacks()
+                self._optic = load_zemax_file(filepath)
+                self._current_filepath = None
+            else:
+                with open(filepath) as f:
 
-                def json_inf_nan_hook(dct):
-                    for k, v in dct.items():
-                        if isinstance(v, str):
-                            if v == "Infinity":
-                                dct[k] = float("inf")
-                            elif v == "-Infinity":
-                                dct[k] = float("-inf")
-                            elif v == "NaN":
-                                dct[k] = float("nan")
-                    return dct
+                    def json_inf_nan_hook(dct):
+                        for k, v in dct.items():
+                            if isinstance(v, str):
+                                if v == "Infinity":
+                                    dct[k] = float("inf")
+                                elif v == "-Infinity":
+                                    dct[k] = float("-inf")
+                                elif v == "NaN":
+                                    dct[k] = float("nan")
+                        return dct
 
-                data = json.load(f, object_hook=json_inf_nan_hook)
-            self._undo_redo_manager.clear_stacks()
-            self._optic = Optic.from_dict(data)
-            self._current_filepath = filepath
+                    data = json.load(f, object_hook=json_inf_nan_hook)
+                self._undo_redo_manager.clear_stacks()
+                self._optic = Optic.from_dict(data)
+                self._current_filepath = filepath
             self._initialize_optic_structure(self._optic, is_specific_new_system=False)
             self.set_modified(False)
             self.opticLoaded.emit()

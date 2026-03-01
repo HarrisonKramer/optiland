@@ -45,7 +45,7 @@ class ZemaxToOpticConverter:
             Optic: The configured `Optic` object.
 
         """
-        self.optic = Optic()
+        self.optic = Optic(self.data.get("name"))
         self._configure_surfaces()
         self._configure_aperture()
         self._configure_fields()
@@ -187,8 +187,11 @@ class ZemaxToOpticConverter:
             "thickness": data.get("thickness"),
             "is_stop": data.get("is_stop", False),
             "material": data.get("material"),
-            "aperture": data.get("aperture"),
         }
+
+        diameter = data.get("diameter")
+        if diameter:
+            surface_params["aperture"] = diameter * 2
 
         # only the coefficient key differs for toroidal surfaces
         if data["type"] == "toroidal":
