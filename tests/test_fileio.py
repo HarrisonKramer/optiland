@@ -231,6 +231,62 @@ def test_load_legacy_optiland_file_with_field_type():
     os.remove(filepath)
 
 
+def test_save_load_optiland_file_with_tensor(set_test_backend):
+    """Test saving and loading an Optiland file when the backend uses tensors."""
+    import optiland.backend as be
+    import numpy as np
+    
+    try:
+        import torch
+        tensor_val = torch.tensor(1.23)
+        tensor_array = torch.tensor([1.23, 4.56])
+        has_torch = True
+    except ImportError:
+        has_torch = False
+        tensor_val = float(1.23)
+        tensor_array = [1.23, 4.56]
+        
+    lens = HeliarLens()
+    lens.add_surface(index=2, surface_type="even_asphere", radius=10.0, conic=-1.0, coefficients=[1.23, 1.23])
+
+    # Manually insert a tensor after creation to simulate a backend mismatch or torch active state
+    if has_torch:
+        lens.surface_group.surfaces[1].thickness = tensor_val
+        lens.surface_group.surfaces[1].geometry.radius = tensor_val
+        lens.surface_group.surfaces[2].geometry.coefficients = [tensor_val, tensor_val]
+    else:
+        # We need a custom mock class to simulate a PyTorch Tensor
+        class MockTensor:
+            def __init__(self, val):
+                self.val = val
+            def tolist(self):
+                return self.val if isinstance(self.val, list) else [self.val]
+            def item(self):
+                return self.val
+        
+        lens.surface_group.surfaces[1].thickness = MockTensor(1.23)
+        lens.surface_group.surfaces[1].geometry.radius = MockTensor(1.23)
+        lens.surface_group.surfaces[2].geometry.coefficients = [MockTensor(1.23), MockTensor(1.23)]
+
+    with tempfile.NamedTemporaryFile(
+        delete=False, mode="w", suffix=".json"
+    ) as temp_file:
+        from optiland.fileio import save_optiland_file, load_optiland_file
+
+        # This should successfully serialize and not crash
+        save_optiland_file(lens, temp_file.name)
+        
+        # Reloading should read the json file which stores floats
+        lens2 = load_optiland_file(temp_file.name)
+    
+    # Assert values loaded properly
+    assert abs(lens2.surface_group.surfaces[1].thickness - 1.23) < 1e-6
+    assert abs(lens2.surface_group.surfaces[1].geometry.radius - 1.23) < 1e-6
+    assert abs(lens2.surface_group.surfaces[2].geometry.coefficients[0] - 1.23) < 1e-6
+    
+    os.remove(temp_file.name)
+
+
 def test_remove_surface_after_load(set_test_backend, tmp_path):
     """
     Test that removing a surface after loading from a file works correctly.
