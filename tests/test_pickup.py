@@ -35,6 +35,15 @@ class TestPickup:
         with pytest.raises(ValueError):
             pickup.apply()
 
+    def test_apply_generic_coefficients(self, set_test_backend):
+        lens = CookeTriplet()
+        # Ensure it has aspheric coefficients
+        lens.add_surface(index=1, radius=50, thickness=3, surface_type="even_asphere", coefficients=[-2e-4, -4e-6])
+        lens.add_surface(index=2, radius=-50, thickness=30, surface_type="even_asphere", coefficients=[0, 0])
+        pickup = Pickup(lens, 1, "surface_group.surfaces[i].geometry.coefficients", 2, scale=1, offset=0)
+        pickup.apply()
+        assert lens.surface_group.surfaces[2].geometry.coefficients == [-2e-4, -4e-6]
+
     def test_invalid_set_attr(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "invalid", 2, scale=1, offset=0)
