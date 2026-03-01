@@ -33,6 +33,7 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **Scott Paine** (`GitHub <https://github.com/scottpaine>`_)
 - **Renato Ferracini Alves** (`GitHub <https://github.com/RFerraciniAlves>`_)
 - **Gustavo Vasconcelos** (`GitHub <https://github.com/gustavu92>`_)
+- **cyberstudio10** (`GitHub <https://github.com/cyberstudio10>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
