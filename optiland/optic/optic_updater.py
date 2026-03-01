@@ -215,7 +215,7 @@ class OpticUpdater:
             r_max = ya[k] + yb[k]
             if surface.aperture is not None:
                 extent_max = be.max(be.abs(be.array(surface.aperture.extent)))
-                if be.isfinite(extent_max):
+                if be.isfinite(be.array(extent_max)):
                     r_max = be.max(be.array([r_max, extent_max]))
 
             surface.set_semi_aperture(r_max=r_max)
