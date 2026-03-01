@@ -10,14 +10,10 @@ from typing import TYPE_CHECKING
 
 from optiland import backend as be
 from optiland.phase.base import BasePhaseProfile
+from optiland.phase.interpolators import GridInterpolator
 
 if TYPE_CHECKING:
     from optiland.materials.base import BaseMaterial
-
-try:
-    from scipy.interpolate import RectBivariateSpline
-except ImportError:
-    RectBivariateSpline = None
 
 
 class HeightProfile(BasePhaseProfile):
@@ -45,33 +41,21 @@ class HeightProfile(BasePhaseProfile):
         height_map: be.Array,
         material: BaseMaterial,
     ):
-        if RectBivariateSpline is None:
-            raise ImportError(
-                "scipy is required for HeightProfile. Install with: pip install scipy"
-            )
-
-        self.x_coords = be.to_numpy(x_coords)
-        self.y_coords = be.to_numpy(y_coords)
-        self.height_map = be.to_numpy(height_map)
+        self.backend = be.get_backend()
+        self.x_coords = x_coords
+        self.y_coords = y_coords
+        self.height_map = height_map
         self.material = material
 
-        self._spline = RectBivariateSpline(
-            self.y_coords,
-            self.x_coords,
-            self.height_map,
-        )
+        self._interp = GridInterpolator(x_coords, y_coords, height_map)
 
     def _interpolate_height(self, x: be.Array, y: be.Array) -> be.Array:
-        return self._spline.ev(be.to_numpy(y), be.to_numpy(x))
+        return self._interp.height(x, y)
 
     def _interpolate_gradient(
         self, x: be.Array, y: be.Array
     ) -> tuple[be.Array, be.Array]:
-        x_np = be.to_numpy(x)
-        y_np = be.to_numpy(y)
-        dh_dx = self._spline.ev(y_np, x_np, dy=1)
-        dh_dy = self._spline.ev(y_np, x_np, dx=1)
-        return dh_dx, dh_dy
+        return self._interp.gradient(x, y)
 
     def get_phase(
         self,
@@ -99,19 +83,16 @@ class HeightProfile(BasePhaseProfile):
         y: be.Array,
         wavelength: be.Array,
     ) -> be.Array:
-        dh_dy = self._spline.ev(
-            be.to_numpy(y),
-            be.zeros_like(y),
-            dx=1,
-        )
+        x0 = be.zeros_like(y)
+        _, dh_dy = self._interpolate_gradient(x0, y)
         n = self.material.n(wavelength)
         return 2 * be.pi / (wavelength * 1e-3) * (n - 1.0) * dh_dy
 
     def to_dict(self) -> dict:
         data = super().to_dict()
-        data["x_coords"] = self.x_coords.tolist()
-        data["y_coords"] = self.y_coords.tolist()
-        data["height_map"] = self.height_map.tolist()
+        data["x_coords"] = be.to_numpy(self.x_coords).tolist()
+        data["y_coords"] = be.to_numpy(self.y_coords).tolist()
+        data["height_map"] = be.to_numpy(self.height_map).tolist()
         data["material"] = getattr(self.material, "name", str(self.material))
         return data
 
