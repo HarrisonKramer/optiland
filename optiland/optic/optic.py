@@ -756,7 +756,7 @@ class Optic:
 
         """
         optic = cls()
-        optic.name = data["name"]
+        optic.name = data.get("name")
         optic.aperture = Aperture.from_dict(data["aperture"])
         optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
