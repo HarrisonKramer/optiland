@@ -446,7 +446,7 @@ class TestExtendedSourceOptic:
 
     def test_set_thickness_through_wrapper(self, optic, ext_optic):
         ext_optic.set_thickness(99.0, surface_number=1)
-        assert float(optic.surface_group.get_thickness(1)) == (
+        assert optic.surface_group.get_thickness(1).item() == (
             pytest.approx(99.0)
         )
 
