@@ -65,7 +65,7 @@ class ParaxialReferenceStrategy(StopSizeStrategy):
 
         # Determine marginal ray height at the stop surface
         y_marginal, _ = para.marginal_ray()
-        return be.abs(y_marginal[stop_index].item())
+        return float(be.abs(y_marginal[stop_index].item()))
 
 
 class RealReferenceStrategy(StopSizeStrategy):
