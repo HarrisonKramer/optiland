@@ -175,7 +175,7 @@ class OpticalSystem:
                 r = 0.5 * self.optic.aperture.value
                 x_min, x_max, y_min, y_max = -r, r, -r, r
             elif surface.is_stop and self.rays is not None:
-                r = float(be.to_numpy(self.rays.r_extent[idx]))
+                r = be.to_numpy(self.rays.r_extent[idx]).item()
                 if r <= 0:
                     continue
                 x_min, x_max, y_min, y_max = -r, r, -r, r

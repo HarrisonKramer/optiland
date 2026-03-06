@@ -132,7 +132,7 @@ class MarginalRayAngleCurvatureSolve(CurvatureSolve):
 
         num = (n_pre * u_in) - (n_post * u_out_target)
         den = y_surf * delta_n
-        c = float(num / den)
+        c = (num / den).item()
 
         # Update curvature
         if hasattr(self.optic.surface_group.surfaces[self.surface_idx].geometry, "c"):
@@ -237,7 +237,7 @@ class ChiefRayAngleCurvatureSolve(CurvatureSolve):
             # c = (nu - n'u') / (y * delta_n)
             num = (n_pre * u_in) - (n_post * u_out_target)
             den = y_surf * delta_n
-            c_target = float(num / den)
+            c_target = (num / den).item()
 
             # Get current curvature
             if hasattr(
