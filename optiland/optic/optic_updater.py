@@ -118,16 +118,19 @@ class OpticUpdater:
         surface = self.optic.surface_group.surfaces[surface_number]
         surface.material_post = material
 
-    def set_norm_radius(self, value, surface_number):
+    def set_norm_radius(self, value, surface_number, is_fixed=True):
         """Set the normalization radius on a surface.
 
         Args:
             value (float): The new value for the normalization radius.
             surface_number (int): The index of the surface to modify.
+            is_fixed (bool, optional): Whether to lock the normalization radius
+                from automatic paraxial updates. Defaults to True.
         """
         surface = self.optic.surface_group.surfaces[surface_number]
         if hasattr(surface.geometry, "norm_radius"):
             surface.geometry.norm_radius = value
+            surface.geometry.normalization_mode = "manual" if is_fixed else "auto"
         else:
             # This error is useful for debugging if used on an incorrect surface type
             raise AttributeError(
@@ -209,14 +212,17 @@ class OpticUpdater:
         ya = be.abs(be.ravel(ya))
         yb = be.abs(be.ravel(yb))
         for k, surface in enumerate(self.optic.surface_group.surfaces):
-            surface.set_semi_aperture(r_max=ya[k] + yb[k])
+            r_max = ya[k] + yb[k]
+            if surface.aperture is not None:
+                extent_max = be.max(be.abs(be.array(surface.aperture.extent)))
+                if be.isfinite(be.array(extent_max)):
+                    r_max = be.max(be.array([r_max, extent_max]))
+
+            surface.set_semi_aperture(r_max=r_max)
             self.update_normalization(surface)
 
     def update_normalization(self, surface) -> None:
         """Update the normalization radius/factors of a given non-spherical surface.
-
-        The normalization factors (`norm_x`, `norm_y`, or `norm_radius`) are
-        typically set to 1.25 times the surface's current semi-aperture.
 
         Args:
             surface (Surface): The surface whose normalization factors are to be
@@ -226,29 +232,8 @@ class OpticUpdater:
         if getattr(surface, "is_norm_radius_variable", False):
             return
 
-        if hasattr(surface.geometry, "norm_x"):
-            surface.geometry.norm_x = surface.semi_aperture * 1.25
-        if hasattr(surface.geometry, "norm_y"):
-            surface.geometry.norm_y = surface.semi_aperture * 1.25
-        if (
-            hasattr(surface.geometry, "is_fitted")
-            and surface.geometry.is_fitted is True
-        ):
-            surface.geometry.nurbs_norm_x = surface.semi_aperture * 1.25
-            surface.geometry.nurbs_norm_y = surface.semi_aperture * 1.25
-            surface.geometry.fit_surface()
-
-        other_types = ["zernike"]
-        if surface.surface_type in other_types:
-            # For Zernike and Forbes, we set the normalization radius
-            if hasattr(surface.geometry, "norm_radius"):
-                surface.geometry.norm_radius = surface.semi_aperture * 1.25
-            else:
-                raise AttributeError(
-                    f"Surface {surface.surface_number} with geometry type "
-                    f"'{surface.geometry.__class__.__name__}' has no "
-                    "'norm_radius' attribute."
-                )
+        # Delegate updating normalization directly to the geometry
+        surface.geometry.update_normalization(surface.semi_aperture)
 
     def update(self) -> None:
         """Update the optical system by applying all defined pickups and solves.
