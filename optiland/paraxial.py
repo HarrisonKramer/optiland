@@ -55,17 +55,6 @@ class Paraxial:
         self._ray_tracer = ParaxialRayTracer(self.optic)
 
     @property
-    def _n_mirrors(self):
-        return be.count_nonzero(
-            be.array(
-                [
-                    surf.interaction_model.is_reflective
-                    for surf in self.optic.surface_group.surfaces
-                ]
-            )
-        )
-
-    @property
     def surfaces(self) -> SurfaceGroup:
         """SurfaceGroup: the surface group of the optical system."""
         return self.optic.surface_group
@@ -77,8 +66,6 @@ class Paraxial:
             Front focal length.
 
         """
-        if self._n_mirrors % 2:
-            return self.f2()
         z_start = -1
         wavelength = self.optic.primary_wavelength
         y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
@@ -108,8 +95,6 @@ class Paraxial:
             Front focal point location.
 
         """
-        if self._n_mirrors % 2:
-            return self.F2()
         # start tracing 1 lens unit before first surface
         z_start = -1
         wavelength = self.optic.primary_wavelength
@@ -142,8 +127,6 @@ class Paraxial:
             Front principal plane location.
 
         """
-        if self._n_mirrors % 2:
-            return self.P2()
         return self.F1() - self.f1()
 
     def P2(self) -> ScalarOrArray:
@@ -165,8 +148,6 @@ class Paraxial:
         Returns:
             Front anti-principal plane location.
         """
-        if self._n_mirrors % 2:
-            return self.P2anti()
         return self.F1() + self.f1()
 
     def P2anti(self) -> ScalarOrArray:
@@ -188,8 +169,6 @@ class Paraxial:
             Front nodal plane location.
 
         """
-        if self._n_mirrors % 2:
-            return self.N1()
         return self.F1() + self.f2()
 
     def N2(self) -> ScalarOrArray:
@@ -212,8 +191,6 @@ class Paraxial:
             Front anti-nodal plane location.
 
         """
-        if self._n_mirrors % 2:
-            return self.N2anti()
         return self.F1() - self.f2()
 
     def N2anti(self) -> ScalarOrArray:
