@@ -1,7 +1,7 @@
 # flake8: noqa
 
 from .angle_vs_height import PupilIncidentAngleVsHeight, FieldIncidentAngleVsHeight
-from .spot_diagram import SpotDiagram
+from .spot_diagram import SpotDiagram, SpotReferenceType
 from .encircled_energy import EncircledEnergy
 from .ray_fan import RayFan, BestFitRayFan
 from .y_ybar import YYbar

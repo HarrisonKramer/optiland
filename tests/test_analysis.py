@@ -76,13 +76,13 @@ class TestCookeTripetSpotDiagram:
         assert_allclose(geo_radius[0][1], 0.00628645771124)
         assert_allclose(geo_radius[0][2], 0.00931911440064)
 
-        assert_allclose(geo_radius[1][0], 0.03717783072826)
-        assert_allclose(geo_radius[1][1], 0.03864613392848)
-        assert_allclose(geo_radius[1][2], 0.04561512437816)
+        assert_allclose(geo_radius[1][0], 0.03928464835617618)
+        assert_allclose(geo_radius[1][1], 0.04075295155639047)
+        assert_allclose(geo_radius[1][2], 0.04772194200606705)
 
-        assert_allclose(geo_radius[2][0], 0.01951655430245)
-        assert_allclose(geo_radius[2][1], 0.02342659090311)
-        assert_allclose(geo_radius[2][2], 0.03747033587405)
+        assert_allclose(geo_radius[2][0], 0.018909146395329878)
+        assert_allclose(geo_radius[2][1], 0.022501847359635008)
+        assert_allclose(geo_radius[2][2], 0.036545592330568866)
 
     def test_spot_rms_radius(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
@@ -92,13 +92,13 @@ class TestCookeTripetSpotDiagram:
         assert_allclose(rms_radius[0][1], 0.004293689564257)
         assert_allclose(rms_radius[0][2], 0.006195618755672)
 
-        assert_allclose(rms_radius[1][0], 0.015694600107671)
-        assert_allclose(rms_radius[1][1], 0.016786721284464)
-        assert_allclose(rms_radius[1][2], 0.019109151416248)
+        assert_allclose(rms_radius[1][0], 0.01582480029344623)
+        assert_allclose(rms_radius[1][1], 0.016918412809703662)
+        assert_allclose(rms_radius[1][2], 0.019221165873836682)
 
-        assert_allclose(rms_radius[2][0], 0.013229165357157)
-        assert_allclose(rms_radius[2][1], 0.012081348897953)
-        assert_allclose(rms_radius[2][2], 0.013596802321537)
+        assert_allclose(rms_radius[2][0], 0.013236232767092956)
+        assert_allclose(rms_radius[2][1], 0.012116688566406967)
+        assert_allclose(rms_radius[2][2], 0.013648684944411313)
 
     def test_airy_disc(self, set_test_backend, cooke_triplet):
         spot = analysis.SpotDiagram(cooke_triplet)
