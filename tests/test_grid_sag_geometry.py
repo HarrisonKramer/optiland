@@ -57,7 +57,14 @@ def test_grid_sag_distance_and_normal(set_test_backend):
 
     # Ray starting at (0, 0, -1) and traveling along +z
     rays = RealRays(
-        x=[0.0], y=[0.0], z=[-1.0], L=[0.0], M=[0.0], N=[1.0], intensity=1.0, wavelength=0.55
+        x=[0.0],
+        y=[0.0],
+        z=[-1.0],
+        L=[0.0],
+        M=[0.0],
+        N=[1.0],
+        intensity=1.0,
+        wavelength=0.55,
     )
 
     distance = geometry.distance(rays)
@@ -74,7 +81,8 @@ def test_grid_sag_distance_and_normal(set_test_backend):
     assert be.allclose(nx, be.asarray([expected_nx], dtype=dtype), atol=1e-5)
     assert be.allclose(ny, be.asarray([0.0], dtype=dtype), atol=1e-5)
     assert be.allclose(nz, be.asarray([1 / expected_norm_mag], dtype=dtype), atol=1e-5)
-    
+
+
 def test_grid_sag_serialization(set_test_backend):
     """Test the to_dict and from_dict methods."""
     cs = CoordinateSystem()

@@ -1,4 +1,3 @@
-
 import pytest
 from unittest.mock import MagicMock
 import numpy as np
@@ -10,23 +9,46 @@ from optiland.rays import RealRays
 from optiland.geometries.forbes import jacobi
 from optiland.geometries.nurbs import nurbs_basis_functions
 
+
 def test_standard_grating_init(set_test_backend):
     cs = CoordinateSystem()
-    g = StandardGratingGeometry(cs, radius=100.0, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0, conic=0.0)
+    g = StandardGratingGeometry(
+        cs,
+        radius=100.0,
+        grating_order=1,
+        grating_period=1.0,
+        groove_orientation_angle=0.0,
+        conic=0.0,
+    )
     assert g.radius == 100.0
     assert g.grating_order == 1
     assert g.grating_period == 1.0
 
+
 def test_standard_grating_sag(set_test_backend):
     cs = CoordinateSystem()
-    g = StandardGratingGeometry(cs, radius=100.0, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0)
+    g = StandardGratingGeometry(
+        cs,
+        radius=100.0,
+        grating_order=1,
+        grating_period=1.0,
+        groove_orientation_angle=0.0,
+    )
     assert g.sag(0, 0) == 0.0
     s = g.sag(10, 0)
     assert abs(s - 0.5) < 0.1
 
+
 def test_standard_grating_serialization(set_test_backend):
     cs = CoordinateSystem()
-    g = StandardGratingGeometry(cs, radius=100.0, grating_order=1, grating_period=2.0, groove_orientation_angle=0.5, conic=-1.0)
+    g = StandardGratingGeometry(
+        cs,
+        radius=100.0,
+        grating_order=1,
+        grating_period=2.0,
+        groove_orientation_angle=0.5,
+        conic=-1.0,
+    )
     d = g.to_dict()
 
     g2 = StandardGratingGeometry.from_dict(d)
@@ -36,19 +58,28 @@ def test_standard_grating_serialization(set_test_backend):
     assert g2.groove_orientation_angle == 0.5
     assert g2.k == -1.0
 
+
 def test_plane_grating_init(set_test_backend):
     cs = CoordinateSystem()
-    g = PlaneGrating(cs, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0)
+    g = PlaneGrating(
+        cs, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0
+    )
     assert g.grating_order == 1
+
 
 def test_plane_grating_sag(set_test_backend):
     cs = CoordinateSystem()
-    g = PlaneGrating(cs, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0)
+    g = PlaneGrating(
+        cs, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0
+    )
     assert g.sag(10, 10) == 0.0
+
 
 def test_plane_grating_serialization(set_test_backend):
     cs = CoordinateSystem()
-    g = PlaneGrating(cs, grating_order=1, grating_period=2.0, groove_orientation_angle=0.5)
+    g = PlaneGrating(
+        cs, grating_order=1, grating_period=2.0, groove_orientation_angle=0.5
+    )
     d = g.to_dict()
 
     g2 = PlaneGrating.from_dict(d)
@@ -56,25 +87,54 @@ def test_plane_grating_serialization(set_test_backend):
     assert g2.grating_period == 2.0
     assert g2.groove_orientation_angle == 0.5
 
+
 def test_standard_grating_distance(set_test_backend):
     cs = CoordinateSystem()
-    g = StandardGratingGeometry(cs, radius=100.0, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0)
+    g = StandardGratingGeometry(
+        cs,
+        radius=100.0,
+        grating_order=1,
+        grating_period=1.0,
+        groove_orientation_angle=0.0,
+    )
 
-    rays = RealRays(x=be.array([0.0]), y=be.array([0.0]), z=be.array([0.0]),
-                    L=be.array([0.0]), M=be.array([0.0]), N=be.array([1.0]),
-                    wavelength=0.55, intensity=1.0)
+    rays = RealRays(
+        x=be.array([0.0]),
+        y=be.array([0.0]),
+        z=be.array([0.0]),
+        L=be.array([0.0]),
+        M=be.array([0.0]),
+        N=be.array([1.0]),
+        wavelength=0.55,
+        intensity=1.0,
+    )
     dist = g.distance(rays)
     val = dist[0]
-    if hasattr(val, "item"): val = val.item()
+    if hasattr(val, "item"):
+        val = val.item()
     assert abs(val) < 1e-6
+
 
 def test_standard_grating_vectors(set_test_backend):
     cs = CoordinateSystem()
-    g = StandardGratingGeometry(cs, radius=100.0, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0)
+    g = StandardGratingGeometry(
+        cs,
+        radius=100.0,
+        grating_order=1,
+        grating_period=1.0,
+        groove_orientation_angle=0.0,
+    )
 
-    rays = RealRays(x=be.array([0.0]), y=be.array([0.0]), z=be.array([0.0]),
-                    L=be.array([0.0]), M=be.array([0.0]), N=be.array([1.0]),
-                    wavelength=0.55, intensity=1.0)
+    rays = RealRays(
+        x=be.array([0.0]),
+        y=be.array([0.0]),
+        z=be.array([0.0]),
+        L=be.array([0.0]),
+        M=be.array([0.0]),
+        N=be.array([1.0]),
+        wavelength=0.55,
+        intensity=1.0,
+    )
 
     nx, ny, nz = g.surface_normal(rays)
     val_nx = nx[0].item() if hasattr(nx[0], "item") else nx[0]
@@ -89,17 +149,28 @@ def test_standard_grating_vectors(set_test_backend):
     # Grating vector should be perpendicular to grooves.
     assert abs(val_gy) > 0.0
 
+
 def test_plane_grating_vectors(set_test_backend):
     cs = CoordinateSystem()
-    g = PlaneGrating(cs, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0)
+    g = PlaneGrating(
+        cs, grating_order=1, grating_period=1.0, groove_orientation_angle=0.0
+    )
 
-    rays = RealRays(x=be.array([0.0]), y=be.array([0.0]), z=be.array([0.0]),
-                    L=be.array([0.0]), M=be.array([0.0]), N=be.array([1.0]),
-                    wavelength=0.55, intensity=1.0)
+    rays = RealRays(
+        x=be.array([0.0]),
+        y=be.array([0.0]),
+        z=be.array([0.0]),
+        L=be.array([0.0]),
+        M=be.array([0.0]),
+        N=be.array([1.0]),
+        wavelength=0.55,
+        intensity=1.0,
+    )
 
     gx, gy, gz = g.grating_vector(rays)
     val_gy = gy[0].item() if hasattr(gy[0], "item") else gy[0]
-    assert abs(val_gy - 1.0) < 1e-6 # Cos(0) = 1
+    assert abs(val_gy - 1.0) < 1e-6  # Cos(0) = 1
+
 
 def test_jacobi(set_test_backend):
     x = be.linspace(-1, 1, 10)
@@ -112,12 +183,14 @@ def test_jacobi(set_test_backend):
     j1 = jacobi.jacobi(1, 0, 0, x)
     assert be.allclose(j1, x, atol=1e-5)
 
+
 def test_jacobi_sum_clenshaw(set_test_backend):
     x = be.linspace(-1, 1, 10)
-    s = [1.0, 1.0] # 1*P0 + 1*P1 = 1 + x
+    s = [1.0, 1.0]  # 1*P0 + 1*P1 = 1 + x
     res = jacobi.jacobi_sum_clenshaw(s, 0, 0, x)
     # The result of the sum is in res[0]
     assert be.allclose(res[0], 1.0 + x, atol=1e-5)
+
 
 def test_nurbs_basis(set_test_backend):
     # n=2 (3 basis funcs), p=1 (degree 1 -> linear), U=[0, 0, 0.5, 1, 1] (clamped)
@@ -138,6 +211,7 @@ def test_nurbs_basis(set_test_backend):
     assert N.shape == (2, 3)
     assert abs(N[0, 0] - 1.0) < 1e-6
     assert abs(N[1, 2] - 1.0) < 1e-6
+
 
 def test_nurbs_basis_derivatives(set_test_backend):
     n = 1

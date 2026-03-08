@@ -90,7 +90,7 @@ class TestWavelengthGroups:
         wg.add_wavelength(500, unit="nm")
         wg.add_wavelength(600, is_primary=True, unit="nm")
         assert wg.primary_wavelength.value == 0.6
-    
+
     def test_set_primary_index(self, set_test_backend):
         wg = WavelengthGroup()
         wg.add_wavelength(500, unit="nm")

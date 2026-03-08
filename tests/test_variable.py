@@ -24,7 +24,7 @@ from optiland.optimization.variable import (
     TiltVariable,
     AsphereCoeffVariable,
     ZernikeCoeffVariable,
-    Variable
+    Variable,
 )
 from .utils import assert_allclose
 
@@ -48,7 +48,9 @@ class TestReciprocalRadiusVariable:
     def setup(self):
         self.optic = Edmund_49_847()
         self.reciprocal_radius_var = variable.ReciprocalRadiusVariable(self.optic, 1)
-        self.radius_var = variable.RadiusVariable(self.optic, 1, scaler=IdentityScaler())
+        self.radius_var = variable.RadiusVariable(
+            self.optic, 1, scaler=IdentityScaler()
+        )
         self.problem = OptimizationProblem()
         input_data = {
             "optic": self.optic,
@@ -391,7 +393,10 @@ class TestVariable:
         )
         assert_allclose(radius_var.value, 4.5326)
         captured = capsys.readouterr()
-        assert "Warning: unrecognized_attribute is not a recognized attribute" in captured.out
+        assert (
+            "Warning: unrecognized_attribute is not a recognized attribute"
+            in captured.out
+        )
 
     def test_invalid_type(self, set_test_backend):
         optic = Objective60x()
@@ -430,7 +435,9 @@ class TestTiltVariable:
 
     def test_get_value_no_scaling(self, set_test_backend):
         self.optic = Objective60x()
-        self.tilt_var_x = variable.TiltVariable(self.optic, 1, "x", scaler=IdentityScaler())
+        self.tilt_var_x = variable.TiltVariable(
+            self.optic, 1, "x", scaler=IdentityScaler()
+        )
         assert_allclose(self.tilt_var_x.get_value(), 0.0)
 
 
@@ -455,9 +462,9 @@ class TestDecenterVariable:
         self.decenter_var_y.update_value(5.0)
         assert_allclose(self.decenter_var_y.get_value(), 5.0)
 
-#    def test_invalid_axis(self, set_test_backend):
-#        with pytest.raises(ValueError):
-#            variable.DecenterVariable(self.optic, 1, "z")
+    #    def test_invalid_axis(self, set_test_backend):
+    #        with pytest.raises(ValueError):
+    #            variable.DecenterVariable(self.optic, 1, "z")
 
     def test_str(self, set_test_backend):
         assert str(self.decenter_var_x) == "Decenter X, Surface 1"
@@ -499,15 +506,12 @@ class TestForbesQbfsCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
-        
+
         surface_config = ForbesSurfaceConfig(
-            radius=100,
-            terms={1: 0.1, 2: 0.2, 3: 0.3},
-            norm_radius=15.0
+            radius=100, terms={1: 0.1, 2: 0.2, 3: 0.3}, norm_radius=15.0
         )
         forbes_geo = ForbesQbfsGeometry(
-            CoordinateSystem(),
-            surface_config=surface_config
+            CoordinateSystem(), surface_config=surface_config
         )
         self.optic.surface_group.surfaces[1].geometry = forbes_geo
         self.forbes_var = variable.ForbesQbfsCoeffVariable(
@@ -534,14 +538,19 @@ class TestForbesQbfsCoeffVariable:
         assert str(self.forbes_var) == "Forbes Q-bfs Coeff n=1, Surface 1"
 
     def test_get_value_nonexistent(self, set_test_backend):
-        var_n0 = variable.ForbesQbfsCoeffVariable(self.optic, 1, 0, scaler=IdentityScaler())
+        var_n0 = variable.ForbesQbfsCoeffVariable(
+            self.optic, 1, 0, scaler=IdentityScaler()
+        )
         assert_allclose(var_n0.get_value(), 0.0)
 
-        var_n5 = variable.ForbesQbfsCoeffVariable(self.optic, 1, 5, scaler=IdentityScaler())
+        var_n5 = variable.ForbesQbfsCoeffVariable(
+            self.optic, 1, 5, scaler=IdentityScaler()
+        )
         assert_allclose(var_n5.get_value(), 0.0)
 
     def test_scaling(self, set_test_backend):
         from optiland.optimization.scaling.linear import LinearScaler
+
         var_scaled = variable.ForbesQbfsCoeffVariable(
             self.optic, 1, 2, scaler=LinearScaler(factor=10.0)
         )
@@ -553,49 +562,45 @@ class TestForbesQ2dCoeffVariable:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()
-        
+
         freeform_coeffs = {
-            ('a', 1, 1): 0.1,
-            ('a', 2, 2): 0.2,
-            ('b', 1, 1): 0.3,
+            ("a", 1, 1): 0.1,
+            ("a", 2, 2): 0.2,
+            ("b", 1, 1): 0.3,
         }
         surface_config = ForbesSurfaceConfig(
-            radius=100,
-            conic=0.0,
-            terms=freeform_coeffs,
-            norm_radius=15.0
+            radius=100, conic=0.0, terms=freeform_coeffs, norm_radius=15.0
         )
         forbes_geo = ForbesQ2dGeometry(
             CoordinateSystem(),
             surface_config=surface_config,
         )
         self.optic.surface_group.surfaces[1].geometry = forbes_geo
-        
+
         self.forbes_var = variable.ForbesQ2dCoeffVariable(
-            self.optic, 1, ('a', 2, 2), scaler=IdentityScaler()
+            self.optic, 1, ("a", 2, 2), scaler=IdentityScaler()
         )
 
     def test_get_value(self, set_test_backend):
         assert_allclose(self.forbes_var.get_value(), 0.2)
 
     def test_get_value_nonexistent(self, set_test_backend):
-        
         forbes_var_new = variable.ForbesQ2dCoeffVariable(
-            self.optic, 1, ('a', 1, 3), scaler=IdentityScaler()
+            self.optic, 1, ("a", 1, 3), scaler=IdentityScaler()
         )
         assert_allclose(forbes_var_new.get_value(), 0.0)
 
     def test_update_value_existing(self, set_test_backend):
         self.forbes_var.update_value(0.5)
         assert_allclose(self.forbes_var.get_value(), 0.5)
-        
+
         assert_allclose(
-            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[('a', 2, 2)], 0.5
+            self.optic.surface_group.surfaces[1].geometry.freeform_coeffs[("a", 2, 2)],
+            0.5,
         )
 
     def test_update_value__new(self, set_test_backend):
-        
-        key = ('a', 1, 3)
+        key = ("a", 1, 3)
         forbes_var_new = variable.ForbesQ2dCoeffVariable(
             self.optic, 1, key, scaler=IdentityScaler()
         )
@@ -614,8 +619,7 @@ class TestForbesQ2dCoeffVariable:
             variable.ForbesQ2dCoeffVariable(self.optic, 1, (1))
 
     def test_get_and_update_sine_term(self, set_test_backend):
-        
-        key = ('b', 1, 1)
+        key = ("b", 1, 1)
         var_sin = variable.ForbesQ2dCoeffVariable(
             self.optic, 1, key, scaler=IdentityScaler()
         )
@@ -630,8 +634,8 @@ class TestForbesQ2dCoeffVariable:
 
     def test_string_representation_sine(self, set_test_backend):
         """Test the string representation for a sine term."""
-        
-        var_sin = variable.ForbesQ2dCoeffVariable(self.optic, 1, ('b', 1, 1))
+
+        var_sin = variable.ForbesQ2dCoeffVariable(self.optic, 1, ("b", 1, 1))
         assert str(var_sin) == "Forbes Q-2D Coeff (n=1, m=1, sin), Surface 1"
 
 
@@ -721,24 +725,28 @@ class TestVariablesExtended:
         optic = Optic()
         optic.add_surface(index=0, surface_type="plane")
         optic.add_surface(index=1, surface_type="standard", radius=100)
-        optic.add_surface(index=2, surface_type="even_asphere", radius=50, coefficients=[0.0, 0.1])
-        optic.add_surface(index=3, surface_type="zernike", radius=200, coefficients=[0.0]*5)
+        optic.add_surface(
+            index=2, surface_type="even_asphere", radius=50, coefficients=[0.0, 0.1]
+        )
+        optic.add_surface(
+            index=3, surface_type="zernike", radius=200, coefficients=[0.0] * 5
+        )
         return optic
 
     def test_decenter_variable(self, optic):
         # Surface 1 is standard
         var = DecenterVariable(optic, surface_number=1, axis="x")
         assert var.get_value() == 0.0
-        
+
         var.update_value(0.5)
         assert optic.surface_group.surfaces[1].geometry.cs.x == 0.5
         assert var.get_value() == 0.5
-        
+
         # Test y and z
         var_y = DecenterVariable(optic, surface_number=1, axis="y")
         var_y.update_value(-0.2)
         assert optic.surface_group.surfaces[1].geometry.cs.y == -0.2
-        
+
         var_z = DecenterVariable(optic, surface_number=1, axis="z")
         var_z.update_value(1.0)
         assert optic.surface_group.surfaces[1].geometry.cs.z == 1.0
@@ -746,7 +754,7 @@ class TestVariablesExtended:
     def test_decenter_variable_invalid_axis(self, optic):
         with pytest.raises(ValueError, match='Invalid axis "r"'):
             DecenterVariable(optic, surface_number=1, axis="r")
-            
+
         var = DecenterVariable(optic, surface_number=1, axis="x")
         var.axis = "r"
         with pytest.raises(ValueError, match='Invalid axis "r"'):
@@ -756,13 +764,12 @@ class TestVariablesExtended:
 
     def test_tilt_variable(self, optic):
         var = TiltVariable(optic, surface_number=1, axis="x")
-        var.update_value(0.1) # radians
+        var.update_value(0.1)  # radians
         assert optic.surface_group.surfaces[1].geometry.cs.rx == 0.1
-        
+
         var_y = TiltVariable(optic, surface_number=1, axis="y")
         var_y.update_value(0.2)
         assert optic.surface_group.surfaces[1].geometry.cs.ry == 0.2
-        
 
     def test_tilt_variable_invalid_axis(self, optic):
         with pytest.raises(ValueError, match='Invalid axis "r"'):
@@ -785,13 +792,13 @@ class TestVariablesExtended:
     def test_zernike_coeff_variable_padding(self, optic):
         # Surface 3 is zernike with 5 coeffs (indices 0-4)
         var = ZernikeCoeffVariable(optic, surface_number=3, coeff_index=10)
-        
+
         # Test update padding
         var.update_value(1.5)
         coeffs = optic.surface_group.surfaces[3].geometry.coefficients
         assert len(coeffs) >= 11
         assert coeffs[10] == 1.5
-        
+
         # Test get padding
         var2 = ZernikeCoeffVariable(optic, surface_number=3, coeff_index=15)
         val = var2.get_value()

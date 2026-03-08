@@ -13,12 +13,11 @@ def base_optic():
     optic = Optic()
     # Create a simple triplet-like structure
     # Surfaces: 0 (Obj), 1 (Lens1), 2 (Air), 3 (Lens2), 4 (Img)
-    optic.add_surface(radius=100, thickness=10, material='air', index=0)
-    optic.add_surface(radius=-100, thickness=5, material='air', index=1)
-    optic.add_surface(radius=50, thickness=10, material='air', index=2)
-    optic.add_surface(radius=-50, thickness=0, material='air', index=3) # Image
+    optic.add_surface(radius=100, thickness=10, material="air", index=0)
+    optic.add_surface(radius=-100, thickness=5, material="air", index=1)
+    optic.add_surface(radius=50, thickness=10, material="air", index=2)
+    optic.add_surface(radius=-50, thickness=0, material="air", index=3)  # Image
     return optic
-
 
 
 def test_set_global_radius(base_optic):
@@ -44,7 +43,9 @@ def test_set_unique_radius(base_optic):
     mc.current_config(0).update()
     mc.current_config(1).update()
 
-    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == -100 # Original
+    assert (
+        mc.current_config(0).surface_group.surfaces[1].geometry.radius == -100
+    )  # Original
     assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
 
     # Modify global, config 1 should NOT change
@@ -74,7 +75,7 @@ def test_relink_radius(base_optic):
     assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 500
 
     # Update global again, check link persists
-    mc.set_radius(1, 600, configurations=[0]) # Only set 0, but 1 is linked now
+    mc.set_radius(1, 600, configurations=[0])  # Only set 0, but 1 is linked now
     mc.current_config(0).update()
     mc.current_config(1).update()
 
@@ -88,7 +89,7 @@ def test_set_generic_property(base_optic):
     # Or just use an existing property like 'material_post.n_p'? No, read-only mostly.
     # Let's use 'thickness' via generic path for test, or assign a dummy var?
     # Better: set 'geometry.radius' via generic path to prove generic logic works.
-    
+
     mc = MultiConfiguration(base_optic)
     mc.add_configuration()
 
@@ -105,7 +106,7 @@ def test_set_generic_property(base_optic):
     # Check Pickups
     # Note: `set_property` maps "radius" alias, but here we passed "geometry.radius" explicitly.
     # So it used _ensure_generic_pickup.
-    
+
     has_generic_pickup = False
     target_path = "surface_group.surfaces[1].geometry.radius"
     for p in mc.current_config(1).pickups.pickups:
@@ -122,16 +123,16 @@ def test_set_optic_property(base_optic):
 
     # Set global field type? Or maybe just 'name'
     mc.set_optic_property("name", "TestOptic", configurations="all")
-    
+
     assert mc.current_config(0).name == "TestOptic"
     # Config 1 initially copied name?
     # Generic pickup should handle future updates.
-    
+
     mc.set_optic_property("name", "NewName", configurations="all")
     mc.current_config(0).update()
     mc.current_config(1).update()
 
-    # Pickups apply on update(). 
+    # Pickups apply on update().
     # Generic pickup sets attr on config 1 from config 0.
     assert mc.current_config(0).name == "NewName"
     assert mc.current_config(1).name == "NewName"
@@ -140,21 +141,19 @@ def test_set_optic_property(base_optic):
 def test_multiconfig_draw(base_optic):
     """Test that the draw method runs and returns a figure."""
     mc = MultiConfiguration(base_optic)
-    
+
     # Setup optic for drawing (needs aperture/fields)
     base_optic.set_aperture("EPD", 20)
     base_optic.set_field_type("angle")
     base_optic.add_field(0)
     base_optic.add_wavelength(0.55, is_primary=True)
     base_optic.surface_group.surfaces[1].is_stop = True
-    
+
     mc.add_configuration()
 
     fig, axes = mc.draw(figsize=(5, 2))
-    
+
     assert fig is not None
     assert len(axes) == 2
-    
+
     plt.close(fig)
-
-

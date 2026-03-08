@@ -215,12 +215,9 @@ class TestOpticViewer:
             fig, ax = lens.draw()
 
         # No RuntimeWarnings should be raised
-        runtime_warnings = [
-            x for x in w if issubclass(x.category, RuntimeWarning)
-        ]
+        runtime_warnings = [x for x in w if issubclass(x.category, RuntimeWarning)]
         assert len(runtime_warnings) == 0, (
-            f"RuntimeWarnings raised: "
-            f"{[str(x.message) for x in runtime_warnings]}"
+            f"RuntimeWarnings raised: {[str(x.message) for x in runtime_warnings]}"
         )
 
         assert fig is not None
@@ -521,13 +518,16 @@ class TestLensInfoViewer:
 
     def test_view_abbe_material(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[2].material_post = AbbeMaterial(1.5, 60, model="polynomial")
+        lens.surface_group.surfaces[2].material_post = AbbeMaterial(
+            1.5, 60, model="polynomial"
+        )
         viewer = LensInfoViewer(lens)
         viewer.view()
 
     def test_view_abbe_material_e(self, set_test_backend):
         lens = ReverseTelephoto()
         from optiland.materials import AbbeMaterialE
+
         lens.surface_group.surfaces[2].material_post = AbbeMaterialE(1.5, 60)
         viewer = LensInfoViewer(lens)
         viewer.view()
@@ -569,9 +569,15 @@ def test_mangin_mirror_visualization(projection, lens_class, set_test_backend):
     mangin_mirror = Optic(name="Mangin Mirror")
     mangin_mirror.add_wavelength(value=0.55, is_primary=True)
     mangin_mirror.add_surface(index=0, radius=be.inf, thickness=be.inf)  # Object
-    mangin_mirror.add_surface(index=1, radius=-100, thickness=+5, material="N-BK7")   # Front surface
-    mangin_mirror.add_surface(index=2, radius=-100, thickness=-5, material="mirror", is_stop=True)  # Back surface (reflective)
-    mangin_mirror.add_surface(index=3, radius=-100, thickness=-50, material="N-BK7")   # Front surface
+    mangin_mirror.add_surface(
+        index=1, radius=-100, thickness=+5, material="N-BK7"
+    )  # Front surface
+    mangin_mirror.add_surface(
+        index=2, radius=-100, thickness=-5, material="mirror", is_stop=True
+    )  # Back surface (reflective)
+    mangin_mirror.add_surface(
+        index=3, radius=-100, thickness=-50, material="N-BK7"
+    )  # Front surface
     mangin_mirror.add_surface(index=4, radius=be.inf)  # Image
     mangin_mirror.set_field_type("angle")
     mangin_mirror.add_field(y=0)
@@ -590,18 +596,18 @@ def test_mangin_mirror_visualization(projection, lens_class, set_test_backend):
 
     # Verify the components were identified correctly
     # Two "lens" (really just same lens, superimposed) and one image plane.
-    assert (
-        len(optical_system.components) == 3
-    ), "Expected two components: the lens and the image plane."
+    assert len(optical_system.components) == 3, (
+        "Expected two components: the lens and the image plane."
+    )
 
     lens_components = [
         c for c in optical_system.components if isinstance(c, lens_class)
     ]
-    
+
     # Ensure "two" lenses are found - really, this is the same lens, superimposed.
     assert len(lens_components) == 2
 
     # Ensure that the identified lens consists of two surfaces.
-    assert (
-        len(lens_components[0].surfaces) == 2
-    ), "The Mangin mirror component should be made of two surfaces."
+    assert len(lens_components[0].surfaces) == 2, (
+        "The Mangin mirror component should be made of two surfaces."
+    )

@@ -167,7 +167,6 @@ class TestCiddorRefractiveIndex:
         )
         assert_allclose(_calculate_compressibility(p_pa, t_k, xw), expected_z)
 
-
     # --- Test Cases for ciddor_refractive_index ---
 
     def test_ciddor_refractive_index_standard_conditions(self, set_test_backend):

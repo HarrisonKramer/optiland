@@ -1756,6 +1756,7 @@ class TestThroughFocusSpotDiagram:
 
 def read_zmx_file(file_path, skip_lines, cols=(0, 1)):
     import os
+
     if not os.path.exists(file_path):
         this_dir = os.path.dirname(os.path.abspath(__file__))
         if file_path.startswith("tests/") or file_path.startswith("tests\\"):
@@ -2015,11 +2016,13 @@ class TestCookeTripletBestFitRayFan:
         """
         cooke_triplet = CookeTriplet()
         num_points = 33
-        
+
         # Perform both standard and best-fit analyses for comparison
-        fan_best_fit = analysis.BestFitRayFan(cooke_triplet, num_points=num_points, num_rays_for_fit=5)
+        fan_best_fit = analysis.BestFitRayFan(
+            cooke_triplet, num_points=num_points, num_rays_for_fit=5
+        )
         fan_standard = analysis.RayFan(cooke_triplet, num_points=num_points)
-        
+
         data_best_fit = fan_best_fit.data
         data_standard = fan_standard.data
 
@@ -2030,19 +2033,21 @@ class TestCookeTripletBestFitRayFan:
         assert len(data_best_fit["Py"]) == num_points
 
         # Check data for an off-axis field and primary wavelength
-        field_key = f"{cooke_triplet.fields.get_field_coords()[1]}" # e.g., "(0.0, 0.7)"
+        field_key = (
+            f"{cooke_triplet.fields.get_field_coords()[1]}"  # e.g., "(0.0, 0.7)"
+        )
         wave_key = f"{cooke_triplet.primary_wavelength}"
 
         x_best_fit = data_best_fit[field_key][wave_key]["x"]
         x_standard = data_standard[field_key][wave_key]["x"]
-        
+
         y_best_fit = data_best_fit[field_key][wave_key]["y"]
         y_standard = data_standard[field_key][wave_key]["y"]
 
         # Assert that the data is valid (not all NaN)
         assert not be.all(be.isnan(x_best_fit))
         assert not be.all(be.isnan(y_best_fit))
-        
+
         # Crucially, assert that the best-fit data is similar to the standard ray fan data
         assert_allclose(x_best_fit, x_standard)
         assert_allclose(y_best_fit[0], -0.0268906245)
@@ -2067,7 +2072,7 @@ class TestCookeTripletBestFitRayFan:
         # We don't need a real optic, just the structure to call the method
         mock_optic = MagicMock()
         mock_optic.primary_wavelength = 0.55
-        
+
         # Instantiate RayFan, it will be our object under test
         fan = analysis.BestFitRayFan(mock_optic, num_points=5)
         fan.fields = [(0.0, 0.7)]
@@ -2075,13 +2080,17 @@ class TestCookeTripletBestFitRayFan:
 
         # 2. Manually construct the input data dictionary
         center_idx = fan.num_points // 2  # This will be index 2 for num_points=5
-        
+
         # Create intensity arrays where the central ray has zero intensity
         intensity_with_obscuration = be.array([1.0, 1.0, 0.0, 1.0, 1.0])
-        
+
         # Create coordinate arrays with known values
-        x_coords = be.array([10.0, 20.0, 999.0, 30.0, 40.0]) # 999 is a dummy for the invalid ray
-        y_coords = be.array([-4.0, -2.0, 888.0, 2.0, 4.0])   # 888 is a dummy for the invalid ray
+        x_coords = be.array(
+            [10.0, 20.0, 999.0, 30.0, 40.0]
+        )  # 999 is a dummy for the invalid ray
+        y_coords = be.array(
+            [-4.0, -2.0, 888.0, 2.0, 4.0]
+        )  # 888 is a dummy for the invalid ray
 
         fan.data = {
             "(0.0, 0.7)": {
@@ -2103,7 +2112,7 @@ class TestCookeTripletBestFitRayFan:
         # Expected y_offset = mean([-4, -2, 2, 4]) = 0
         expected_x_offset = 25.0
         expected_y_offset = 0.0
-        
+
         expected_x_final = x_coords - expected_x_offset
         expected_y_final = y_coords - expected_y_offset
 

@@ -1,4 +1,3 @@
-
 import pytest
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,23 +9,24 @@ from optiland.rays import PolarizationState
 
 def test_jones_pupil_initialization(set_test_backend):
     optic = CookeTriplet()
-    optic.set_polarization("ignore") # Default state for test
+    optic.set_polarization("ignore")  # Default state for test
     jp = JonesPupil(optic)
     assert jp.optic == optic
     assert jp.grid_size == 65
     assert jp.field == (0, 0)
     assert jp.wavelengths is not None
 
+
 def test_jones_pupil_generate_data(set_test_backend):
     optic = CookeTriplet()
-    optic.set_polarization("ignore") # Default state for test
+    optic.set_polarization("ignore")  # Default state for test
     jp = JonesPupil(optic, grid_size=5)
     data = jp.data
 
     # Check structure: list of wavelengths -> dict
     assert isinstance(data, list)
     assert len(data) == len(jp.wavelengths)
-    
+
     # Check data for first wavelength
     single_data = data[0]
     assert isinstance(single_data, dict)
@@ -53,9 +53,10 @@ def test_jones_pupil_generate_data(set_test_backend):
     assert np.abs(val_xx) > 0.5
     assert np.abs(val_xy) < 0.1
 
+
 def test_jones_pupil_polarization_handling(set_test_backend):
     optic = CookeTriplet()
-    optic.set_polarization("ignore") # Default state for test
+    optic.set_polarization("ignore")  # Default state for test
     # Ensure it works even if optic polarization is 'ignore'
     optic.set_polarization("ignore")
     jp = JonesPupil(optic, grid_size=3)
@@ -67,9 +68,10 @@ def test_jones_pupil_polarization_handling(set_test_backend):
     # Data should be valid
     assert jp.data is not None
 
+
 def test_jones_pupil_view(set_test_backend):
     optic = CookeTriplet()
-    optic.set_polarization("ignore") # Default state for test
+    optic.set_polarization("ignore")  # Default state for test
     jp = JonesPupil(optic, grid_size=5)
     fig, axs = jp.view()
 
@@ -80,14 +82,15 @@ def test_jones_pupil_view(set_test_backend):
     # Clean up
     plt.close(fig)
 
+
 def test_jones_pupil_view_custom_field(set_test_backend):
     optic = CookeTriplet()
-    optic.set_polarization("ignore") # Default state for test
+    optic.set_polarization("ignore")  # Default state for test
     # Test with off-axis field
     jp = JonesPupil(optic, field=(0, 1.0), grid_size=5)
     data = jp.data
     assert len(data) == len(jp.wavelengths)
-    
+
     # Just verify valid execution
     single_data = data[0]
     assert "J" in single_data

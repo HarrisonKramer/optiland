@@ -1,14 +1,15 @@
-
 import pytest
 from unittest.mock import MagicMock, patch
 import matplotlib.pyplot as plt
 from optiland.visualization.system import interaction, lens, surface, ray_bundle
 from optiland.visualization.info import providers
 
+
 @pytest.fixture
 def mock_fig_ax():
     fig, ax = plt.subplots()
     return fig, ax
+
 
 @pytest.fixture
 def mock_optic():
@@ -16,6 +17,7 @@ def mock_optic():
     optic.surface_group = MagicMock()
     optic.surface_group.surfaces = []
     return optic
+
 
 class TestInfoProviders:
     def test_surface_info_provider(self, mock_optic):
@@ -72,7 +74,8 @@ class TestInfoProviders:
         info = provider.get_info(bundle)
         assert "Ray Bundle" in info
         assert "Field: (0.00, 1.00)" in info
-        assert "Wavelength: 0.6 nm" in info # 0.55 rounds to 0.6 with .1f
+        assert "Wavelength: 0.6 nm" in info  # 0.55 rounds to 0.6 with .1f
+
 
 class TestInteractionManager:
     def test_init(self, mock_fig_ax, mock_optic):
@@ -135,7 +138,10 @@ class TestInteractionManager:
         event.xdata, event.ydata = 0, 0
 
         # Need to ensure SurfaceInfoProvider can run
-        with patch("optiland.visualization.info.providers.SurfaceInfoProvider.get_info", return_value="Tooltip Info"):
+        with patch(
+            "optiland.visualization.info.providers.SurfaceInfoProvider.get_info",
+            return_value="Tooltip Info",
+        ):
             manager.show_tooltip(artist, event)
             assert manager.tooltip.get_text() == "Tooltip Info"
             assert manager.tooltip.get_visible() == True
@@ -145,7 +151,7 @@ class TestInteractionManager:
         manager = interaction.InteractionManager(fig, ax, mock_optic)
 
         # Test showing panel
-        with patch.object(manager, 'get_info_text', return_value="Panel Info"):
+        with patch.object(manager, "get_info_text", return_value="Panel Info"):
             manager.show_info_panel(MagicMock())
             assert manager.info_panel is not None
 

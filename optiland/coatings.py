@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
-from optiland.jones import JonesFresnel
+from optiland.jones import BaseJones, JonesFresnel
 from optiland.materials import BaseMaterial
 
 if TYPE_CHECKING:
@@ -259,13 +259,20 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     """A base class for polarized coatings.
 
     This class inherits from the `BaseCoating` class and the `ABC`
-    (Abstract Base Class) module.
+    (Abstract Base Class) module. Any subclass must implement the `jones`
+    property to provide the Jones matrix model for the coating.
 
     Methods:
         reflect(rays, nx, ny, nz): Reflects the rays off the coating.
         transmit(rays, nx, ny, nz): Transmits the rays through the coating.
 
     """
+
+    @property
+    @abstractmethod
+    def jones(self) -> BaseJones:
+        """The Jones matrix model associated with the coating."""
+        pass
 
     def reflect(
         self,
@@ -362,7 +369,11 @@ class FresnelCoating(BaseCoatingPolarized):
         self.material_pre = material_pre
         self.material_post = material_post
 
-        self.jones = JonesFresnel(material_pre, material_post)
+        self._jones = JonesFresnel(material_pre, material_post)
+
+    @property
+    def jones(self) -> JonesFresnel:
+        return self._jones
 
     def to_dict(self):
         """Converts the coating to a dictionary.

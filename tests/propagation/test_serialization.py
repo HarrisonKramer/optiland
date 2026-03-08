@@ -37,6 +37,7 @@ case_abbe_default = (AbbeMaterial(n=1.5168, abbe=64.17), HomogeneousPropagation)
 
 # --- Helper Function for File-Based Materials ---
 
+
 def create_dummy_material_file(tmp_path):
     """Creates a temporary material file for testing."""
     content = {
@@ -54,6 +55,7 @@ def create_dummy_material_file(tmp_path):
 
 
 # --- The Main Test Function ---
+
 
 @pytest.mark.parametrize(
     "material, expected_model_class",
@@ -116,7 +118,9 @@ def test_material_file_serialization_round_trip(tmp_path, set_test_backend):
     optic.add_surface(
         Surface(
             previous_surface=None,
-            geometry=StandardGeometry(coordinate_system=CoordinateSystem(), radius=-100),
+            geometry=StandardGeometry(
+                coordinate_system=CoordinateSystem(), radius=-100
+            ),
             material_post=material,
         )
     )
@@ -136,4 +140,3 @@ def test_material_file_serialization_round_trip(tmp_path, set_test_backend):
     deserialized_model = deserialized_material.propagation_model
     assert isinstance(deserialized_model, HomogeneousPropagation)
     assert deserialized_model.material is deserialized_material
-

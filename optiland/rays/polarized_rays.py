@@ -127,8 +127,16 @@ class PolarizedRays(RealRays):
         # handle case when mag = 0 (i.e., k0 parallel to k1)
         mask = mag == 0
         if be.any(mask):
-            fallback = be.broadcast_to(be.array([1.0, 0.0, 0.0]), k0[mask].shape)
-            s[mask] = be.cross(k0[mask], fallback)
+            x = be.broadcast_to(be.array([1.0, 0.0, 0.0]), k0[mask].shape)
+            p_fallback = be.cross(k0[mask], x)
+
+            p_norms = be.linalg.norm(p_fallback, axis=1)
+            if be.any(p_norms == 0):
+                raise ValueError(
+                    "k-vector parallel to x-axis is not currently supported."
+                )
+
+            s[mask] = be.cross(p_fallback, k0[mask])
             mag = be.linalg.norm(s, axis=1)
 
         s = s / be.unsqueeze_last(mag)

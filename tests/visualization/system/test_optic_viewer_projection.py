@@ -46,6 +46,7 @@ def test_optic_viewer_view_valid_projections(
     if projection == "XY":
         # Check if circles are plotted for lenses and surfaces
         from matplotlib.patches import Circle
+
         assert any(isinstance(p, Circle) for p in ax.patches)
         # Check that the circle for the first lens is centered correctly
         first_lens_patch = next(p for p in ax.patches if isinstance(p, Circle))
@@ -55,16 +56,17 @@ def test_optic_viewer_view_valid_projections(
 
     else:  # XZ, YZ
         from matplotlib.patches import Polygon
+
         assert any(isinstance(p, Polygon) for p in ax.patches)
         # Check that the polygon for the first lens has the correct orientation
         first_lens_patch = next(p for p in ax.patches if isinstance(p, Polygon))
         vertices = first_lens_patch.get_xy()
         if projection == "XZ":
-                # In XZ, y-coordinates of vertices should contain both positive and negative values
-                assert np.any(vertices[:, 1] > 0) and np.any(vertices[:, 1] < 0)
+            # In XZ, y-coordinates of vertices should contain both positive and negative values
+            assert np.any(vertices[:, 1] > 0) and np.any(vertices[:, 1] < 0)
         else:  # YZ
-                # In YZ, y-coordinates of vertices should contain both positive and negative values
-                assert np.any(vertices[:, 1] > 0) and np.any(vertices[:, 1] < 0)
+            # In YZ, y-coordinates of vertices should contain both positive and negative values
+            assert np.any(vertices[:, 1] > 0) and np.any(vertices[:, 1] < 0)
 
     plt.close(fig)
 
@@ -72,5 +74,7 @@ def test_optic_viewer_view_valid_projections(
 def test_optic_viewer_view_invalid_projection(optic: Optic):
     """Test that an invalid projection raises a ValueError."""
     viewer = OpticViewer(optic)
-    with pytest.raises(ValueError, match="Invalid projection type. Must be 'XY', 'XZ', or 'YZ'."):
+    with pytest.raises(
+        ValueError, match="Invalid projection type. Must be 'XY', 'XZ', or 'YZ'."
+    ):
         viewer.view(projection="invalid")

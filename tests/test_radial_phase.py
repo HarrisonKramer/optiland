@@ -1,12 +1,13 @@
-
 import pytest
 from optiland import backend as be
 from .utils import assert_allclose
 from optiland.phase.radial import RadialPhaseProfile
 
+
 def test_radial_phase_profile_init():
     profile = RadialPhaseProfile(coefficients=[1.0, 2.0])
     assert profile.coefficients == [1.0, 2.0]
+
 
 def test_radial_phase_profile_get_phase(set_test_backend):
     # phi(r) = 0.5 * r^2 + 0.1 * r^4
@@ -17,6 +18,7 @@ def test_radial_phase_profile_get_phase(set_test_backend):
     # expected_phase = [0.5*1 + 0.1*1, 0.5*5 + 0.1*25, 0] = [0.6, 5.0, 0]
     phase = profile.get_phase(x, y)
     assert_allclose(phase, be.array([0.6, 5.0, 0.0]))
+
 
 def test_radial_phase_profile_get_gradient(set_test_backend):
     # phi(r) = 0.5 * r^2
@@ -47,6 +49,7 @@ def test_radial_phase_profile_get_paraxial_gradient(set_test_backend):
     # at x=0, d_phi/dy = d_phi/dr * sign(y) = r * sign(y) = |y| * sign(y) = y
     paraxial_grad = profile.get_paraxial_gradient(y)
     assert_allclose(paraxial_grad, y)
+
 
 def test_radial_phase_profile_to_from_dict():
     profile = RadialPhaseProfile(coefficients=[1.0, 2.0, 3.0])

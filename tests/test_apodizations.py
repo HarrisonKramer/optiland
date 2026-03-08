@@ -136,7 +136,9 @@ def test_hann_apodization(set_test_backend, Px_Py):
     apod = HannApodization(D=2.0)
     intensity = apod.get_intensity(Px, Py)
     r = (Px**2 + Py**2) ** 0.5
-    assert be.isclose(intensity[12], be.array(0.0))  # Center should be 0.5 * (1 - cos(0)) = 0
+    assert be.isclose(
+        intensity[12], be.array(0.0)
+    )  # Center should be 0.5 * (1 - cos(0)) = 0
     assert be.all(intensity[r >= 1.0] == 0.0)  # Outside radius
 
     with pytest.raises(ValueError):

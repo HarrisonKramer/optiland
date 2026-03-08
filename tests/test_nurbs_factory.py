@@ -1,4 +1,3 @@
-
 import pytest
 
 from optiland import backend as be

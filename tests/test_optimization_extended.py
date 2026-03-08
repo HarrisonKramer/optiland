@@ -1,10 +1,13 @@
-
 import pytest
 from unittest.mock import MagicMock
 import numpy as np
 import optiland.backend as be
-from optiland.optimization.variable.nurbs import NurbsPointsVariable, NurbsWeightsVariable
+from optiland.optimization.variable.nurbs import (
+    NurbsPointsVariable,
+    NurbsWeightsVariable,
+)
 from optiland.optimization.variable.torch import TorchVariable
+
 
 def test_nurbs_points_variable(set_test_backend):
     # Setup mocks
@@ -15,12 +18,13 @@ def test_nurbs_points_variable(set_test_backend):
     shape = (3, 3, 3)
     if be.get_backend() == "torch":
         import torch
+
         mock_surf.geometry.P = torch.zeros(shape, dtype=torch.float64)
     else:
         mock_surf.geometry.P = np.zeros(shape, dtype=float)
 
     mock_optic.surface_group.surfaces = [mock_surf]
-    mock_optic.surfaces = [mock_surf] # Usually accessible via wrapper or property
+    mock_optic.surfaces = [mock_surf]  # Usually accessible via wrapper or property
     # VariableBehavior accesses self._surfaces.surfaces[self.surface_number]
     # self._surfaces is usually self.optic.surface_group
 
@@ -28,7 +32,8 @@ def test_nurbs_points_variable(set_test_backend):
 
     # Check initial value
     val = var.get_value()
-    if hasattr(val, "item"): val = val.item()
+    if hasattr(val, "item"):
+        val = val.item()
     assert val == 0.0
 
     # Update value
@@ -37,11 +42,13 @@ def test_nurbs_points_variable(set_test_backend):
     # Check updated value
     # For torch, update_value replaces the tensor or modifies it.
     new_val = mock_surf.geometry.P[0, 1, 1]
-    if hasattr(new_val, "item"): new_val = new_val.item()
+    if hasattr(new_val, "item"):
+        new_val = new_val.item()
     assert new_val == 5.0
 
     # Check str
     assert "Control Point" in str(var)
+
 
 def test_nurbs_weights_variable(set_test_backend):
     mock_optic = MagicMock()
@@ -49,6 +56,7 @@ def test_nurbs_weights_variable(set_test_backend):
     shape = (3, 3)
     if be.get_backend() == "torch":
         import torch
+
         mock_surf.geometry.W = torch.zeros(shape, dtype=torch.float64)
     else:
         mock_surf.geometry.W = np.zeros(shape, dtype=float)
@@ -60,10 +68,12 @@ def test_nurbs_weights_variable(set_test_backend):
     # Update
     var.update_value(2.0)
     new_val = mock_surf.geometry.W[1, 1]
-    if hasattr(new_val, "item"): new_val = new_val.item()
+    if hasattr(new_val, "item"):
+        new_val = new_val.item()
     assert new_val == 2.0
 
     assert "Weight" in str(var)
+
 
 def test_torch_variable_init(set_test_backend):
     if be.get_backend() != "torch":
@@ -74,6 +84,7 @@ def test_torch_variable_init(set_test_backend):
         # Should work
         mock_optic = MagicMock()
         import torch
+
         var = TorchVariable(mock_optic, 0, 1.0)
         assert isinstance(var.value, torch.nn.Parameter)
         assert var.value.item() == 1.0

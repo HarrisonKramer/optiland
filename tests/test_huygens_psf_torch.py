@@ -1,6 +1,8 @@
 import pytest
+
 try:
     import torch
+
     TORCH_AVAILABLE = True
 except ImportError:
     TORCH_AVAILABLE = False
