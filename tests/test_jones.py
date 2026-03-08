@@ -9,7 +9,7 @@ from .utils import assert_allclose
 class TestJonesFresnel:
     def test_normal_incidence(self, set_test_backend):
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
-    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
+        rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
         material_pre = materials.IdealMaterial(n=1.0)
         material_post = materials.IdealMaterial(n=1.5)
@@ -36,7 +36,7 @@ class TestJonesFresnel:
         M = -0.25
         N = np.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, 3.0, L, M, N, 1.0, 1.0)
-    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
+        rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
         material_pre = materials.IdealMaterial(n=1.0, k=0.0)
         material_post = materials.IdealMaterial(n=1.5, k=0.1)
@@ -117,11 +117,11 @@ def test_jones_polarizer_L45(set_test_backend):
     jones_matrix = jones_polarizer.calculate_matrix(rays)
 
     assert jones_matrix.shape == (1, 3, 3)
-    assert jones_matrix[:, 0, 0] == 0.5
-    assert jones_matrix[:, 0, 1] == 0.5
-    assert jones_matrix[:, 1, 0] == 0.5
-    assert jones_matrix[:, 1, 1] == 0.5
-    assert jones_matrix[:, 2, 2] == 1.0
+    assert_allclose(be.real(jones_matrix[0, 0, 0]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 0, 1]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 1, 0]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 1, 1]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 2, 2]), 1.0)
 
 
 def test_jones_polarizer_L135(set_test_backend):
@@ -132,11 +132,11 @@ def test_jones_polarizer_L135(set_test_backend):
     jones_matrix = jones_polarizer.calculate_matrix(rays)
 
     assert jones_matrix.shape == (1, 3, 3)
-    assert jones_matrix[:, 0, 0] == 0.5
-    assert jones_matrix[:, 0, 1] == -0.5
-    assert jones_matrix[:, 1, 0] == -0.5
-    assert jones_matrix[:, 1, 1] == 0.5
-    assert jones_matrix[:, 2, 2] == 1.0
+    assert_allclose(be.real(jones_matrix[0, 0, 0]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 0, 1]), -0.5)
+    assert_allclose(be.real(jones_matrix[0, 1, 0]), -0.5)
+    assert_allclose(be.real(jones_matrix[0, 1, 1]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 2, 2]), 1.0)
 
 
 def test_jones_polarizer_rcp(set_test_backend):
@@ -177,28 +177,31 @@ def test_jones_linear_diattenuator(set_test_backend):
     jones_diattenuator = jones.JonesLinearDiattenuator(t_min=0.0, t_max=1.0, theta=0.0)
     jones_matrix = jones_diattenuator.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert jones_matrix[0, 0, 0] == 1.0
-    assert jones_matrix[0, 0, 1] == 1.0
-    assert jones_matrix[0, 1, 0] == 1.0
-    assert jones_matrix[0, 2, 2] == 1.0
+    assert_allclose(be.real(jones_matrix[0, 0, 0]), 1.0)
+    assert_allclose(be.real(jones_matrix[0, 0, 1]), 0.0)
+    assert_allclose(be.real(jones_matrix[0, 1, 0]), 0.0)
+    assert_allclose(be.real(jones_matrix[0, 1, 1]), 0.0)
+    assert_allclose(be.real(jones_matrix[0, 2, 2]), 1.0)
 
     # Test with t_min = 0.0, t_max = 0.5, theta = 0.0
     jones_diattenuator = jones.JonesLinearDiattenuator(t_min=0.0, t_max=0.5, theta=0.0)
     jones_matrix = jones_diattenuator.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert jones_matrix[0, 0, 0] == 0.5
-    assert jones_matrix[0, 0, 1] == 0.5
-    assert jones_matrix[0, 1, 0] == 0.5
-    assert jones_matrix[0, 2, 2] == 1.0
+    assert_allclose(be.real(jones_matrix[0, 0, 0]), 0.5)
+    assert_allclose(be.real(jones_matrix[0, 0, 1]), 0.0)
+    assert_allclose(be.real(jones_matrix[0, 1, 0]), 0.0)
+    assert_allclose(be.real(jones_matrix[0, 1, 1]), 0.0)
+    assert_allclose(be.real(jones_matrix[0, 2, 2]), 1.0)
 
     # Test with t_min = 0.2, t_max = 1.0, theta = 0.5
     jones_diattenuator = jones.JonesLinearDiattenuator(t_min=0.2, t_max=1.0, theta=0.5)
     jones_matrix = jones_diattenuator.calculate_matrix(rays)
     assert jones_matrix.shape == (1, 3, 3)
-    assert jones_matrix[0, 0, 0] == 0.8161209223472559
-    assert jones_matrix[0, 0, 1] == 0.9158529015192103
-    assert jones_matrix[0, 1, 0] == 0.9158529015192103
-    assert jones_matrix[0, 2, 2] == 1.0
+    assert_allclose(be.real(jones_matrix[0, 0, 0]), 0.8161209223472559)
+    assert_allclose(be.real(jones_matrix[0, 0, 1]), 0.33658841225232696)
+    assert_allclose(be.real(jones_matrix[0, 1, 0]), 0.33658841225232696)
+    assert_allclose(be.real(jones_matrix[0, 1, 1]), 0.3838790776527441)
+    assert_allclose(be.real(jones_matrix[0, 2, 2]), 1.0)
 
 
 def test_jones_linear_retarder(set_test_backend):
