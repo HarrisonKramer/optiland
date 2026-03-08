@@ -11,7 +11,12 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
-from optiland.jones import BaseJones, JonesFresnel
+from optiland.jones import (
+    BaseJones,
+    JonesFresnel,
+    JonesLinearPolarizer,
+    JonesLinearRetarder,
+)
 from optiland.materials import BaseMaterial
 
 if TYPE_CHECKING:
@@ -402,4 +407,68 @@ class FresnelCoating(BaseCoatingPolarized):
         return cls(
             BaseMaterial.from_dict(data["material_pre"]),
             BaseMaterial.from_dict(data["material_post"]),
+        )
+
+
+class PolarizerCoating(BaseCoatingPolarized):
+    """Represents a linear polarizer coating.
+
+    Args:
+        axis (tuple | list | be.ndarray): A 3D vector representing the transmission
+            axis in global coordinates. Defaults to [1.0, 0.0, 0.0] (horizontal).
+    """
+
+    def __init__(self, axis=(1.0, 0.0, 0.0)):
+        self.axis = axis
+        self._jones = JonesLinearPolarizer(axis)
+
+    @property
+    def jones(self) -> JonesLinearPolarizer:
+        return self._jones
+
+    def to_dict(self):
+        """Converts the coating to a dictionary."""
+        return {
+            "type": self.__class__.__name__,
+            "axis": list(self.axis) if not isinstance(self.axis, list) else self.axis,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Creates a coating from a dictionary."""
+        return cls(axis=data.get("axis", (1.0, 0.0, 0.0)))
+
+
+class RetarderCoating(BaseCoatingPolarized):
+    """Represents a linear retarder coating.
+
+    Args:
+        retardance (float): The retardance of the coating in radians.
+        axis (tuple | list | be.ndarray): A 3D vector representing the fast axis
+            in global coordinates. Defaults to [1.0, 0.0, 0.0] (horizontal).
+    """
+
+    def __init__(self, retardance, axis=(1.0, 0.0, 0.0)):
+        self.retardance = retardance
+        self.axis = axis
+        self._jones = JonesLinearRetarder(retardance, axis)
+
+    @property
+    def jones(self) -> JonesLinearRetarder:
+        return self._jones
+
+    def to_dict(self):
+        """Converts the coating to a dictionary."""
+        return {
+            "type": self.__class__.__name__,
+            "retardance": self.retardance,
+            "axis": list(self.axis) if not isinstance(self.axis, list) else self.axis,
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        """Creates a coating from a dictionary."""
+        return cls(
+            retardance=data["retardance"],
+            axis=data.get("axis", (1.0, 0.0, 0.0)),
         )

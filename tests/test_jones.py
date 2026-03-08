@@ -9,6 +9,7 @@ from .utils import assert_allclose
 class TestJonesFresnel:
     def test_normal_incidence(self, set_test_backend):
         rays = RealRays(1.0, 2.0, 3.0, 0.0, 0.0, 1.0, 1.0, 1.0)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
         material_pre = materials.IdealMaterial(n=1.0)
         material_post = materials.IdealMaterial(n=1.5)
@@ -35,6 +36,7 @@ class TestJonesFresnel:
         M = -0.25
         N = np.sqrt(1 - L**2 - M**2)
         rays = RealRays(1.0, 2.0, 3.0, L, M, N, 1.0, 1.0)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
         material_pre = materials.IdealMaterial(n=1.0, k=0.0)
         material_post = materials.IdealMaterial(n=1.5, k=0.1)
@@ -68,6 +70,7 @@ def test_jones_polarizer_H(set_test_backend):
         [1.0, 1.0],
         [1.0, 1.0],
     )
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     jones_polarizer = jones.JonesPolarizerH()
     jones_matrix = jones_polarizer.calculate_matrix(rays)
@@ -92,6 +95,7 @@ def test_jones_polarizer_V(set_test_backend):
         [1.0, 1.0],
         [1.0, 1.0],
     )
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     jones_polarizer = jones.JonesPolarizerV()
     jones_matrix = jones_polarizer.calculate_matrix(rays)
@@ -107,6 +111,7 @@ def test_jones_polarizer_V(set_test_backend):
 
 def test_jones_polarizer_L45(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     jones_polarizer = jones.JonesPolarizerL45()
     jones_matrix = jones_polarizer.calculate_matrix(rays)
@@ -121,6 +126,7 @@ def test_jones_polarizer_L45(set_test_backend):
 
 def test_jones_polarizer_L135(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     jones_polarizer = jones.JonesPolarizerL135()
     jones_matrix = jones_polarizer.calculate_matrix(rays)
@@ -135,6 +141,7 @@ def test_jones_polarizer_L135(set_test_backend):
 
 def test_jones_polarizer_rcp(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     jones_polarizer = jones.JonesPolarizerRCP()
     jones_matrix = jones_polarizer.calculate_matrix(rays)
@@ -149,6 +156,7 @@ def test_jones_polarizer_rcp(set_test_backend):
 
 def test_jones_polarizer_lcp(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     jones_polarizer = jones.JonesPolarizerLCP()
     jones_matrix = jones_polarizer.calculate_matrix(rays)
@@ -163,6 +171,7 @@ def test_jones_polarizer_lcp(set_test_backend):
 
 def test_jones_linear_diattenuator(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     # Test with t_min = 0.0, t_max = 1.0, theta = 0.0
     jones_diattenuator = jones.JonesLinearDiattenuator(t_min=0.0, t_max=1.0, theta=0.0)
@@ -194,6 +203,7 @@ def test_jones_linear_diattenuator(set_test_backend):
 
 def test_jones_linear_retarder(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     # Test with retardance = 0.0, theta = 0.0
     jones_retarder = jones.JonesLinearRetarder(retardance=0.0, theta=0.0)
@@ -226,6 +236,7 @@ def test_jones_linear_retarder(set_test_backend):
 
 def test_jones_quarter_wave_retarder(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     # Test with theta = 0.0
     jones_retarder = jones.JonesQuarterWaveRetarder(theta=0.0)
@@ -250,6 +261,7 @@ def test_jones_quarter_wave_retarder(set_test_backend):
 
 def test_jones_half_wave_retarder(set_test_backend):
     rays = RealRays(1, 2, 3, 0, 0, 1, 1, 1)
+    rays.L0, rays.M0, rays.N0 = rays.L, rays.M, rays.N
 
     # Test with theta = 0.0
     jones_retarder = jones.JonesHalfWaveRetarder(theta=0.0)

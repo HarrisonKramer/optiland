@@ -204,6 +204,7 @@ class ChiefRayStrategy(ReferenceStrategy):
             opd=opd_wv,
             intensity=intensity,
             radius=geometry.radius,
+            jones_pupil=getattr(rays, "p", None),
         )
 
     def _create_reference_geometry(self, rays: RealRays) -> ReferenceGeometry:
@@ -339,6 +340,7 @@ class CentroidStrategy(ReferenceStrategy):
             opd=opd_waves,
             intensity=rays.i,
             radius=geometry.radius,
+            jones_pupil=getattr(rays, "p", None),
         )
 
     def _points_from_rays(self, rays: RealRays) -> tuple[be.ndarray, be.ndarray]:

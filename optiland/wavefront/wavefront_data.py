@@ -32,3 +32,4 @@ class WavefrontData(Generic[BEArrayT]):
     opd: BEArrayT
     intensity: BEArrayT
     radius: float
+    jones_pupil: BEArrayT | None = None

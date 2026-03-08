@@ -107,19 +107,20 @@ class PolarizedRays(RealRays):
                 / 2
             )
 
-    def update(self, jones_matrix: be.ndarray = None):
-        """Update polarization matrices after interaction with surface.
+    @staticmethod
+    def get_local_basis(
+        k0: be.ndarray, k1: be.ndarray
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
+        """Get the local s, p0, p1 vectors and transforming matrices.
 
         Args:
-            jones_matrix (be.ndarray, optional): Jones matrix representing the
-                interaction with the surface. If not provided, the
-                polarization matrix is computed assuming an identity matrix.
+            k0: (N, 3) array of pre-interaction ray directions.
+            k1: (N, 3) array of post-interaction ray directions.
 
+        Returns:
+            tuple: (s, p0, p1, o_in, o_out) where s, p0, p1 are (N, 3) vectors
+            and o_in, o_out are the projection matrices.
         """
-        # merge k-vector components into matrix for speed
-        k0 = be.stack([self.L0, self.M0, self.N0]).T
-        k1 = be.stack([self.L, self.M, self.N]).T
-
         # find s-component
         s = be.cross(k0, k1)
         mag = be.linalg.norm(s, axis=1)
@@ -131,10 +132,10 @@ class PolarizedRays(RealRays):
             p_fallback = be.cross(k0[mask], x)
 
             p_norms = be.linalg.norm(p_fallback, axis=1)
-            if be.any(p_norms == 0):
-                raise ValueError(
-                    "k-vector parallel to x-axis is not currently supported."
-                )
+            y = be.broadcast_to(be.array([0.0, 1.0, 0.0]), k0[mask].shape)
+            p_fallback = be.where(
+                be.unsqueeze_last(p_norms == 0), be.cross(k0[mask], y), p_fallback
+            )
 
             s[mask] = be.cross(p_fallback, k0[mask])
             mag = be.linalg.norm(s, axis=1)
@@ -148,6 +149,23 @@ class PolarizedRays(RealRays):
         # othogonal transformation matrices
         o_in = be.stack((s, p0, k0), axis=1)
         o_out = be.stack((s, p1, k1), axis=2)
+
+        return s, p0, p1, o_in, o_out
+
+    def update(self, jones_matrix: be.ndarray = None):
+        """Update polarization matrices after interaction with surface.
+
+        Args:
+            jones_matrix (be.ndarray, optional): Jones matrix representing the
+                interaction with the surface. If not provided, the
+                polarization matrix is computed assuming an identity matrix.
+
+        """
+        # merge k-vector components into matrix for speed
+        k0 = be.stack([self.L0, self.M0, self.N0]).T
+        k1 = be.stack([self.L, self.M, self.N]).T
+
+        s, p0, p1, o_in, o_out = self.get_local_basis(k0, k1)
 
         # compute polarization matrix for surface
         if jones_matrix is None:
