@@ -117,192 +117,91 @@ class JonesFresnel(BaseJones):
         return jones_matrix
 
 
-class JonesPolarizerH(BaseJones):
+class ConstantJones(BaseJones):
+    """Base class for constant Jones matrices.
+
+    Args:
+        j00 (complex): The (0, 0) element of the Jones matrix.
+        j01 (complex): The (0, 1) element of the Jones matrix.
+        j10 (complex): The (1, 0) element of the Jones matrix.
+        j11 (complex): The (1, 1) element of the Jones matrix.
+    """
+
+    def __init__(self, j00: complex, j01: complex, j10: complex, j11: complex):
+        self.j00 = j00
+        self.j01 = j01
+        self.j10 = j10
+        self.j11 = j11
+
+    def calculate_matrix(
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: be.ndarray = None,
+    ):
+        """Calculate the Jones matrix for the given rays.
+
+        Args:
+            rays (RealRays): Object representing the rays.
+            reflect (bool, optional): Indicates whether the rays are reflected
+                or not. Defaults to False.
+            aoi (be.ndarray, optional): Array representing the angle of
+                incidence. Defaults to None.
+
+        Returns:
+            be.ndarray: The calculated Jones matrix.
+
+        """
+        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
+        jones_matrix[:, 0, 0] = self.j00
+        jones_matrix[:, 0, 1] = self.j01
+        jones_matrix[:, 1, 0] = self.j10
+        jones_matrix[:, 1, 1] = self.j11
+        jones_matrix[:, 2, 2] = 1
+
+        return jones_matrix
+
+
+class JonesPolarizerH(ConstantJones):
     """Class representing the Jones matrix for a horizontal polarizer."""
 
-    def calculate_matrix(
-        self,
-        rays: RealRays,
-        reflect: bool = False,
-        aoi: be.ndarray = None,
-    ):
-        """Calculate the Jones matrix for the given rays.
-
-        Args:
-            rays (RealRays): Object representing the rays.
-            reflect (bool, optional): Indicates whether the rays are reflected
-                or not. Defaults to False.
-            aoi (be.ndarray, optional): Array representing the angle of
-                incidence. Defaults to None.
-
-        Returns:
-            be.ndarray: The calculated Jones matrix.
-
-        """
-        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
-        jones_matrix[:, 0, 0] = 1
-        jones_matrix[:, 1, 1] = 0
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+    def __init__(self):
+        super().__init__(1, 0, 0, 0)
 
 
-class JonesPolarizerV(BaseJones):
+class JonesPolarizerV(ConstantJones):
     """Class representing the Jones matrix for a vertical polarizer."""
 
-    def calculate_matrix(
-        self,
-        rays: RealRays,
-        reflect: bool = False,
-        aoi: be.ndarray = None,
-    ):
-        """Calculate the Jones matrix for the given rays.
-
-        Args:
-            rays (RealRays): Object representing the rays.
-            reflect (bool, optional): Indicates whether the rays are reflected
-                or not. Defaults to False.
-            aoi (be.ndarray, optional): Array representing the angle of
-                incidence. Defaults to None.
-
-        Returns:
-            be.ndarray: The calculated Jones matrix.
-
-        """
-        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
-        jones_matrix[:, 0, 0] = 0
-        jones_matrix[:, 1, 1] = 1
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+    def __init__(self):
+        super().__init__(0, 0, 0, 1)
 
 
-class JonesPolarizerL45(BaseJones):
+class JonesPolarizerL45(ConstantJones):
     """Class representing the Jones matrix for a linear polarizer at 45 degrees."""
 
-    def calculate_matrix(
-        self,
-        rays: RealRays,
-        reflect: bool = False,
-        aoi: be.ndarray = None,
-    ):
-        """Calculate the Jones matrix for the given rays.
-
-        Args:
-            rays (RealRays): Object representing the rays.
-            reflect (bool, optional): Indicates whether the rays are reflected
-                or not. Defaults to False.
-            aoi (be.ndarray, optional): Array representing the angle of
-                incidence. Defaults to None.
-
-        Returns:
-            be.ndarray: The calculated Jones matrix.
-
-        """
-        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
-        jones_matrix[:, 0, 0] = 0.5
-        jones_matrix[:, 0, 1] = 0.5
-        jones_matrix[:, 1, 0] = 0.5
-        jones_matrix[:, 1, 1] = 0.5
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+    def __init__(self):
+        super().__init__(0.5, 0.5, 0.5, 0.5)
 
 
-class JonesPolarizerL135(BaseJones):
+class JonesPolarizerL135(ConstantJones):
     """Class representing the Jones matrix for a linear polarizer at 135 degrees."""
 
-    def calculate_matrix(
-        self,
-        rays: RealRays,
-        reflect: bool = False,
-        aoi: be.ndarray = None,
-    ):
-        """Calculate the Jones matrix for the given rays.
-
-        Args:
-            rays (RealRays): Object representing the rays.
-            reflect (bool, optional): Indicates whether the rays are reflected
-                or not. Defaults to False.
-            aoi (be.ndarray, optional): Array representing the angle of
-                incidence. Defaults to None.
-
-        Returns:
-            be.ndarray: The calculated Jones matrix.
-
-        """
-        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
-        jones_matrix[:, 0, 0] = 0.5
-        jones_matrix[:, 0, 1] = -0.5
-        jones_matrix[:, 1, 0] = -0.5
-        jones_matrix[:, 1, 1] = 0.5
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+    def __init__(self):
+        super().__init__(0.5, -0.5, -0.5, 0.5)
 
 
-class JonesPolarizerRCP(BaseJones):
+class JonesPolarizerRCP(ConstantJones):
     """Class representing the Jones matrix for a right circular polarizer."""
 
-    def calculate_matrix(
-        self,
-        rays: RealRays,
-        reflect: bool = False,
-        aoi: be.ndarray = None,
-    ):
-        """Calculate the Jones matrix for the given rays.
-
-        Args:
-            rays (RealRays): Object representing the rays.
-            reflect (bool, optional): Indicates whether the rays are reflected
-                or not. Defaults to False.
-            aoi (be.ndarray, optional): Array representing the angle of
-                incidence. Defaults to None.
-
-        Returns:
-            be.ndarray: The calculated Jones matrix.
-
-        """
-        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
-        jones_matrix[:, 0, 0] = 0.5
-        jones_matrix[:, 0, 1] = 1j * 0.5
-        jones_matrix[:, 1, 0] = -1j * 0.5
-        jones_matrix[:, 1, 1] = 0.5
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+    def __init__(self):
+        super().__init__(0.5, 1j * 0.5, -1j * 0.5, 0.5)
 
 
-class JonesPolarizerLCP(BaseJones):
+class JonesPolarizerLCP(ConstantJones):
     """Class representing the Jones matrix for a left circular polarizer."""
 
-    def calculate_matrix(
-        self,
-        rays: RealRays,
-        reflect: bool = False,
-        aoi: be.ndarray = None,
-    ):
-        """Calculate the Jones matrix for the given rays.
-
-        Args:
-            rays (RealRays): Object representing the rays.
-            reflect (bool, optional): Indicates whether the rays are reflected
-                or not. Defaults to False.
-            aoi (be.ndarray, optional): Array representing the angle of
-                incidence. Defaults to None.
-
-        Returns:
-            be.ndarray: The calculated Jones matrix.
-
-        """
-        jones_matrix = be.to_complex(be.zeros((be.size(rays.x), 3, 3)))
-        jones_matrix[:, 0, 0] = 0.5
-        jones_matrix[:, 0, 1] = -1j * 0.5
-        jones_matrix[:, 1, 0] = 1j * 0.5
-        jones_matrix[:, 1, 1] = 0.5
-        jones_matrix[:, 2, 2] = 1
-
-        return jones_matrix
+    def __init__(self):
+        super().__init__(0.5, -1j * 0.5, 1j * 0.5, 0.5)
 
 
 class JonesLinearDiattenuator(BaseJones):
