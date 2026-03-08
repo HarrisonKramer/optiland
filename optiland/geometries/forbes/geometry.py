@@ -65,7 +65,9 @@ class ForbesSurfaceConfig:
     Attributes:
         radius (float): The vertex radius of curvature of the base surface.
         conic (float): The conic constant of the base surface.
-        norm_radius (float): The normalization radius for the polynomial terms.
+        norm_radius (float, optional): The normalization radius for the
+            polynomial terms. If None, the radius scales automatically
+            during paraxial updates. Defaults to None.
         terms (dict, optional): A dictionary of polynomial coefficients.
         The key format depends on the
             specific geometry type (e.g., `radial_terms` for Qbfs,
@@ -74,7 +76,7 @@ class ForbesSurfaceConfig:
 
     radius: float
     conic: float = 0.0
-    norm_radius: float = 1.0
+    norm_radius: float | None = None
     # either radial_terms or freeform_coeffs
     terms: dict[Any, float] | None = None
 
@@ -232,7 +234,13 @@ class ForbesQNormalSlopeGeometry(ForbesGeometryBase):
         else:
             self.radial_terms = self.surface_config.terms or {}
 
-        self.norm_radius = be.array(self.surface_config.norm_radius)
+        if self.surface_config.norm_radius is not None:
+            self.normalization_mode = "manual"
+            self.norm_radius = be.array(self.surface_config.norm_radius)
+        else:
+            self.normalization_mode = "auto"
+            self.norm_radius = be.array(1.0)
+
         self.is_symmetric = True
 
     def _prepare_coeffs(self):
@@ -418,11 +426,17 @@ class ForbesQNormalSlopeGeometry(ForbesGeometryBase):
         """
         super().scale(scale_factor)
         self.surface_config.radius = self.radius
-        self.surface_config.norm_radius *= scale_factor
-        self.norm_radius = be.array(self.surface_config.norm_radius)
+        if self.surface_config.norm_radius is not None:
+            self.surface_config.norm_radius *= scale_factor
+        self.norm_radius = self.norm_radius * scale_factor
 
         for key in self.radial_terms:
             self.radial_terms[key] = self.radial_terms[key] * scale_factor
+
+    def update_normalization(self, semi_aperture: float) -> None:
+        if self.normalization_mode == "auto":
+            self.norm_radius = be.array(semi_aperture * 1.25)
+            self.surface_config.norm_radius = float(self.norm_radius)
 
     def __str__(self):
         return "ForbesQNormalSlope"
@@ -472,7 +486,13 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
         else:
             self.freeform_coeffs = self.surface_config.terms or {}
 
-        self.norm_radius = be.array(self.surface_config.norm_radius)
+        if self.surface_config.norm_radius is not None:
+            self.normalization_mode = "manual"
+            self.norm_radius = be.array(self.surface_config.norm_radius)
+        else:
+            self.normalization_mode = "auto"
+            self.norm_radius = be.array(1.0)
+
         self.cm0_coeffs, self.ams_coeffs, self.bms_coeffs = [], [], []
         self._prepare_coeffs()
 
@@ -691,14 +711,20 @@ class ForbesQ2dGeometry(ForbesGeometryBase):
         """
         super().scale(scale_factor)
         self.surface_config.radius = self.radius
-        self.surface_config.norm_radius *= scale_factor
-        self.norm_radius = be.array(self.surface_config.norm_radius)
+        if self.surface_config.norm_radius is not None:
+            self.surface_config.norm_radius *= scale_factor
+        self.norm_radius = self.norm_radius * scale_factor
 
         for key in self.freeform_coeffs:
             self.freeform_coeffs[key] = self.freeform_coeffs[key] * scale_factor
 
         self.c = 1 / self.radius if self.radius != 0 else 0
         self._prepare_coeffs()
+
+    def update_normalization(self, semi_aperture: float) -> None:
+        if self.normalization_mode == "auto":
+            self.norm_radius = be.array(semi_aperture * 1.25)
+            self.surface_config.norm_radius = float(self.norm_radius)
 
     def __str__(self):
         return "ForbesQ2d"

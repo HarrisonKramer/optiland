@@ -233,7 +233,7 @@ class ChiefRayStrategy(ReferenceStrategy):
             SphericalReference: The spherical reference geometry.
         """
         R = be.sqrt(x**2 + y**2 + (z - self.pupil_z) ** 2)
-        return SphericalReference((float(x), float(y), float(z)), R.item())
+        return SphericalReference((x.item(), y.item(), z.item()), R.item())
 
     def _calculate_sphere_from_chief_ray(
         self, chief_ray: RealRays
@@ -267,7 +267,7 @@ class ChiefRayStrategy(ReferenceStrategy):
             PlanarReference: The planar reference geometry.
         """
         return PlanarReference(
-            (float(x), float(y), float(z)), (float(L), float(M), float(N))
+            (x.item(), y.item(), z.item()), (L.item(), M.item(), N.item())
         )
 
 

@@ -387,14 +387,16 @@ class Optic:
         """
         self._updater.set_material(material, surface_number)
 
-    def set_norm_radius(self, value: float, surface_number: int):
+    def set_norm_radius(self, value: float, surface_number: int, is_fixed: bool = True):
         """Set the normalization radius of a surface.
 
         Args:
             value (float): The value of the normalization radius.
             surface_number (int): The index of the surface.
+            is_fixed (bool, optional): Whether to lock the normalization radius
+                from automatic paraxial updates. Defaults to True.
         """
-        self._updater.set_norm_radius(value, surface_number)
+        self._updater.set_norm_radius(value, surface_number, is_fixed)
 
     def set_asphere_coeff(
         self, value: float, surface_number: int, aspher_coeff_idx: int

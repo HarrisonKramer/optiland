@@ -41,7 +41,7 @@ __all__ = [
 
 BEArrayT = TypeVar("BEArrayT", NDArray, "Tensor", Union[NDArray, "Tensor"])
 ScalarOrArrayT = TypeVar(
-    "ScalarOrArray", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
+    "ScalarOrArrayT", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
 )
 
 DistributionType = Literal[
