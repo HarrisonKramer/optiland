@@ -65,19 +65,22 @@ class PolarizedRays(RealRays):
         """
         return be.mult_p_E(self.p, E)
 
-    def update_intensity(self, state: PolarizationState):
-        """Update ray intensity based on polarization state.
+    def _compute_unscaled_exit_fields(
+        self, state: PolarizationState | None
+    ) -> list[be.ndarray]:
+        """Compute the unscaled exit electric field(s) for the rays.
 
         Args:
-            state (PolarizationState): The polarization state of the ray.
+            state (PolarizationState | None): The polarization state.
 
+        Returns:
+            list[be.ndarray]: A list of unscaled 3D electric field arrays.
         """
-        if state.is_polarized:
+        if state is not None and state.is_polarized:
             E0 = self._get_3d_electric_field(state)
             E1 = self.get_output_field(E0)
-            self.i = be.sum(be.abs(E1) ** 2, axis=1)
+            return [E1]
         else:
-            # Local x-axis field
             state_x = PolarizationState(
                 is_polarized=True,
                 Ex=1.0,
@@ -88,7 +91,6 @@ class PolarizedRays(RealRays):
             E0_x = self._get_3d_electric_field(state_x)
             E1_x = self.get_output_field(E0_x)
 
-            # Local y-axis field
             state_y = PolarizationState(
                 is_polarized=True,
                 Ex=0.0,
@@ -99,13 +101,36 @@ class PolarizedRays(RealRays):
             E0_y = self._get_3d_electric_field(state_y)
             E1_y = self.get_output_field(E0_y)
 
-            # average two orthogonal polarizations to get mean intensity,
-            # scale by initial ray intensity
-            self.i = (
-                (be.sum(be.abs(E1_x) ** 2, axis=1) + be.sum(be.abs(E1_y) ** 2, axis=1))
-                * self._i0
-                / 2
-            )
+            return [E1_x, E1_y]
+
+    def get_exit_fields(self, state: PolarizationState | None) -> list[be.ndarray]:
+        """Compute the exit electric field(s) for the rays.
+
+        Args:
+            state (PolarizationState | None): The polarization state.
+
+        Returns:
+            list[be.ndarray]: A list of 3D electric field arrays. For polarized
+            light, the list contains a single array. For unpolarized light, the
+            list contains two orthogonal, incoherently superimposed arrays, each
+            scaled down by 1/sqrt(2).
+        """
+        fields = self._compute_unscaled_exit_fields(state)
+        scale_factor = be.unsqueeze_last(be.sqrt(self._i0 / len(fields)))
+        return [E1 * scale_factor for E1 in fields]
+
+    def update_intensity(self, state: PolarizationState):
+        """Update ray intensity based on polarization state.
+
+        Args:
+            state (PolarizationState): The polarization state of the ray.
+
+        """
+        fields = self._compute_unscaled_exit_fields(state)
+        intensity = be.zeros_like(self.i)
+        for E1 in fields:
+            intensity = intensity + be.sum(be.abs(E1) ** 2, axis=1)
+        self.i = intensity * self._i0 / len(fields)
 
     @staticmethod
     def get_local_basis(

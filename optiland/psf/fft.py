@@ -39,8 +39,8 @@ def calculate_grid_size(num_rays) -> tuple[int, int]:
     return effective_pupil_sampling, grid_size
 
 
-class FFTPSF(BasePSF):
-    """Class representing the Fast Fourier Transform (FFT) PSF.
+class ScalarFFTPSF(BasePSF):
+    """Class representing the scalar Fast Fourier Transform (FFT) PSF.
 
     This class computes the PSF of an optical system by taking the Fourier
     Transform of the pupil function. It inherits common visualization and
@@ -291,3 +291,58 @@ class FFTPSF(BasePSF):
         y = be.to_numpy(image.shape[0] * dx)
 
         return x, y
+
+
+class FFTPSF:
+    """Factory class for generating either a Vectorial or Scalar FFT PSF.
+
+    This class inspects the optical system's polarization state to determine
+    which FFT PSF implementation to instantiate. If polarization is enabled,
+    it returns a `VectorialFFTPSF`. Otherwise, it returns a `ScalarFFTPSF`.
+
+    Args:
+        optic (Optic): The optical system object.
+        field (tuple): The field point.
+        wavelength (str | float): The wavelength of light.
+        num_rays (int, optional): The number of rays to trace. Defaults to 128.
+        grid_size (int, optional): The FFT grid size. Defaults to None.
+        strategy (str): The wavefront calculation strategy. Defaults to "chief_ray".
+        remove_tilt (bool): If True, removes tilt from OPD. Defaults to False.
+        **kwargs: Additional keyword arguments.
+    """
+
+    def __new__(
+        cls,
+        optic,
+        field,
+        wavelength: str | float,
+        num_rays=128,
+        grid_size=None,
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
+        if optic.polarization_state is not None:
+            from optiland.psf.vectorial_fft import VectorialFFTPSF
+
+            return VectorialFFTPSF(
+                optic=optic,
+                field=field,
+                wavelength=wavelength,
+                num_rays=num_rays,
+                grid_size=grid_size,
+                strategy=strategy,
+                remove_tilt=remove_tilt,
+                **kwargs,
+            )
+        else:
+            return ScalarFFTPSF(
+                optic=optic,
+                field=field,
+                wavelength=wavelength,
+                num_rays=num_rays,
+                grid_size=grid_size,
+                strategy=strategy,
+                remove_tilt=remove_tilt,
+                **kwargs,
+            )
