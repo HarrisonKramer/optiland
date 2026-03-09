@@ -152,7 +152,7 @@ def spectrum_to_xyz(
     Z_sum = 0.0
     k_sum = 0.0  # Normalization factor
 
-    d_lambda = 5.0  # Standard step defined in constants.py
+    d_lambda = float(WAVELENGTHS_STD[1] - WAVELENGTHS_STD[0])
 
     for i in range(len(std_wl)):
         r = interp_values[i]

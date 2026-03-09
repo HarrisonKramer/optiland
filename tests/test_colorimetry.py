@@ -27,11 +27,11 @@ def test_spectrum_to_xyz_white_reflectance():
     r, g, b = core.xyz_to_srgb(X, Y, Z)
 
     assert_allclose(Y, 100.0, rtol=1e-6, atol=1e-6)
-    assert abs(_as_float(x) - 0.3270924866130143) < 1e-6
-    assert abs(_as_float(y) - 0.33730940791054975) < 1e-6
-    assert _as_float(r) == 255
-    assert _as_float(g) == 252
-    assert _as_float(b) == 243
+    assert abs(_as_float(x) - 0.3127385736725134) < 1e-6
+    assert abs(_as_float(y) - 0.32905204701686674) < 1e-6
+    assert _as_float(r) == 254
+    assert _as_float(g) == 255
+    assert _as_float(b) == 254
 
 
 def test_spectrum_to_xyz_requires_visible_range():
@@ -96,6 +96,75 @@ def test_xyz_to_srgb_white_point():
     assert b_val == 254
 
 
+def test_xyz_to_xyY_packed_scalar_raises():
+    with pytest.raises(ValueError, match="Scalar input requires X, Y, Z arguments"):
+        core.xyz_to_xyY(1.0)
+
+
+def test_xyz_to_xyY_packed_first_axis_shape3():
+    xyz = be.array(
+        [
+            [41.24, 35.76],
+            [21.26, 71.52],
+            [1.93, 11.92],
+        ]
+    )
+
+    x, y, Y = core.xyz_to_xyY(xyz)
+
+    expected_x = xyz[0] / (xyz[0] + xyz[1] + xyz[2])
+    expected_y = xyz[1] / (xyz[0] + xyz[1] + xyz[2])
+
+    assert_allclose(x, expected_x)
+    assert_allclose(y, expected_y)
+    assert_allclose(Y, xyz[1])
+
+
+def test_xyz_to_xyY_packed_middle_axis_shape3():
+    xyz = be.array(
+        [
+            [
+                [41.24, 35.76],
+                [21.26, 71.52],
+                [1.93, 11.92],
+            ],
+            [
+                [19.01, 20.00],
+                [20.00, 21.00],
+                [21.99, 22.00],
+            ],
+        ]
+    )
+
+    x, y, Y = core.xyz_to_xyY(xyz)
+
+    X_expected = xyz[:, 0, :]
+    Y_expected = xyz[:, 1, :]
+    Z_expected = xyz[:, 2, :]
+    denom = X_expected + Y_expected + Z_expected
+
+    assert_allclose(x, X_expected / denom)
+    assert_allclose(y, Y_expected / denom)
+    assert_allclose(Y, Y_expected)
+
+
+def test_xyz_to_xyY_packed_without_axis_3_raises():
+    xyz = be.array([[1.0, 2.0], [3.0, 4.0]])
+    with pytest.raises(ValueError, match="dimension of size 3"):
+        core.xyz_to_xyY(xyz)
+
+
+def test_xyz_to_srgb_clip_fallback_without_astype(monkeypatch):
+    monkeypatch.setattr(core.be, "minimum", lambda a, b: min(a, b))
+    monkeypatch.setattr(core.be, "maximum", lambda a, b: max(a, b))
+
+    r, g, b = core.xyz_to_srgb(95.047, 100.0, 108.883)
+
+    assert 0 <= _as_float(r) <= 255
+    assert 0 <= _as_float(g) <= 255
+    assert 0 <= _as_float(b) <= 255
+
+
 def test_plot_cie_1931_diagram_no_legend():
     fig, ax = plot_cie_1931_chromaticity_diagram(show_legend=False)
     assert fig is not None
@@ -108,5 +177,22 @@ def test_plot_cie_1931_diagram_with_legend():
     fig, ax = plot_cie_1931_chromaticity_diagram(color="contour", show_legend=True)
     assert fig is not None
     assert ax is not None
+    assert ax.get_legend() is not None
+    plt.close(fig)
+
+
+def test_plot_cie_1931_diagram_fill_mode():
+    fig, ax = plot_cie_1931_chromaticity_diagram(color="fill", show_legend=False)
+    assert fig is not None
+    assert ax is not None
+    assert len(ax.images) == 1
+    plt.close(fig)
+
+
+def test_plot_cie_1931_diagram_no_mode_with_existing_axes():
+    fig, ax = plt.subplots(figsize=(6, 6))
+    fig2, ax2 = plot_cie_1931_chromaticity_diagram(ax=ax, color="no", show_legend=True)
+    assert fig2 is fig
+    assert ax2 is ax
     assert ax.get_legend() is not None
     plt.close(fig)
