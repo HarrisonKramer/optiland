@@ -78,6 +78,54 @@ class ThinFilmStack:
     reference_wl_um: float | None = None
     reference_AOI_deg: float | None = 0
 
+    def __str__(self):
+        """Return a concise summary of the stack structure."""
+        inc_name = getattr(
+            self.incident_material, "name", self.incident_material.__class__.__name__
+        )
+        sub_name = getattr(
+            self.substrate_material, "name", self.substrate_material.__class__.__name__
+        )
+
+        if not self.layers:
+            return (
+                f"ThinFilmStack(incident={inc_name}, substrate={sub_name}, layers=[])"
+            )
+
+        layer_lines: list[str] = []
+        for i, layer in enumerate(self.layers, start=1):
+            material_name = getattr(
+                layer.material, "name", layer.material.__class__.__name__
+            )
+            layer_lines.append(
+                f"  {i}. {material_name} ({layer.thickness_um * 1000:.1f} nm)"
+            )
+        layers_str = "\n".join(layer_lines)
+        total_th = sum(layer.thickness_um for layer in self.layers)
+        return (
+            f"ThinFilmStack Summary\n"
+            f"---------------------\n"
+            f"Incident:  {inc_name}\n"
+            f"Substrate: {sub_name}\n"
+            f"Layers:\n{layers_str}\n"
+            f"---------------------\n"
+            f"Total Thickness: {total_th * 1000:.1f} nm"
+        )
+
+    def copy(
+        self,
+        incident: BaseMaterial | None = None,
+        substrate: BaseMaterial | None = None,
+    ):
+        """Creates a copy of the stack with optionally new surrounding materials."""
+        return ThinFilmStack(
+            incident_material=incident if incident else self.incident_material,
+            substrate_material=substrate if substrate else self.substrate_material,
+            layers=self.layers.copy(),
+            reference_wl_um=self.reference_wl_um,
+            reference_AOI_deg=self.reference_AOI_deg,
+        )
+
     # ----- structure helpers -----
     def add_layer(
         self, material: BaseMaterial, thickness_um: float, name: str | None = None
@@ -180,6 +228,31 @@ class ThinFilmStack:
             T = 0.5 * (Ts + Tp)
             A = 0.5 * (As + Ap)
             # Return s-amplitudes for reference; intensities are averaged
+            return {"r": rs, "t": ts, "R": R, "T": T, "A": A}
+        else:
+            raise ValueError("polarization must be 's', 'p' or 'u'")
+
+    def compute_rtRTA_elementwise(
+        self,
+        wavelength_um: float | Array,
+        aoi_rad: float | Array = 0.0,
+        polarization: Pol = "u",
+    ) -> dict[str, Any]:
+        """Compute complex and power coefficients element-wise (no grid).
+
+        Use this when wavelength and aoi have matching shapes (e.g. per-ray).
+        """
+        wl = be.atleast_1d(wavelength_um)
+        th = be.atleast_1d(aoi_rad)
+        if polarization in ("s", "p"):
+            r, t, R, T, A = _tmm_coh(self, wl, th, polarization)
+            return {"r": r, "t": t, "R": R, "T": T, "A": A}
+        elif polarization == "u":
+            rs, ts, Rs, Ts, As = _tmm_coh(self, wl, th, "s")
+            rp, tp, Rp, Tp, Ap = _tmm_coh(self, wl, th, "p")
+            R = 0.5 * (Rs + Rp)
+            T = 0.5 * (Ts + Tp)
+            A = 0.5 * (As + Ap)
             return {"r": rs, "t": ts, "R": R, "T": T, "A": A}
         else:
             raise ValueError("polarization must be 's', 'p' or 'u'")

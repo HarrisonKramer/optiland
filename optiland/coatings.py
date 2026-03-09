@@ -144,6 +144,14 @@ class BaseCoating(ABC):
             "type": self.__class__.__name__,
         }
 
+    def adapt(self, material_pre, material_post):
+        """Adapts the coating to new surrounding materials if necessary.
+
+        By default, returns the coating itself. Subclasses like ThinFilmCoating
+        override this to update the stack's incident/substrate materials.
+        """
+        return self
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> BaseCoating:
         """Creates a coating from a dictionary.

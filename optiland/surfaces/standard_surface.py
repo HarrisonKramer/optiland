@@ -151,11 +151,9 @@ class Surface:
     @material_post.setter
     def material_post(self, material: BaseMaterial):
         self._material_post = material
-        # Update Fresnel-based coating for new material
-        if hasattr(self, "interaction_model") and isinstance(
-            getattr(self.interaction_model, "coating", None), FresnelCoating
-        ):
-            self.set_fresnel_coating()
+        # Update coating for new material
+        if self.coating is not None:
+            self.coating = self.coating.adapt(self.material_pre, self.material_post)
         for weakref_callback in self._listeners:
             weakref_callback()(self)
 
@@ -163,6 +161,11 @@ class Surface:
     def coating(self):
         if (interaction_model := getattr(self, "interaction_model", None)) is not None:
             return getattr(interaction_model, "coating", None)
+
+    @coating.setter
+    def coating(self, value):
+        if hasattr(self, "interaction_model"):
+            self.interaction_model.coating = value
 
     def flip(self):
         """Flips the surface, swapping materials and reversing geometry."""
