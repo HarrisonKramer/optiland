@@ -1,8 +1,9 @@
-import optiland.backend as be
-import pytest
+from __future__ import annotations
 
+import optiland.backend as be
 from optiland.optic import Optic
 from optiland.samples import objectives
+
 from .utils import assert_allclose
 
 
@@ -64,9 +65,9 @@ def test_field_definition_from_dict(set_test_backend):
     """Test that field definition from_dict method works."""
     from optiland.fields.field_types import (
         AngleField,
+        BaseFieldDefinition,
         ObjectHeightField,
         ParaxialImageHeightField,
-        BaseFieldDefinition,
     )
 
     field_defs = [AngleField(), ObjectHeightField(), ParaxialImageHeightField()]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pytest
 
 import optiland.backend as be
@@ -27,6 +29,7 @@ from optiland.samples.simple import (
     TelescopeDoublet,
 )
 from optiland.samples.telescopes import HubbleTelescope
+
 from .utils import assert_allclose
 
 # TODO: add tests for non-air object and image spaces

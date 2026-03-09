@@ -1,23 +1,25 @@
+from __future__ import annotations
+
 import os
 import tempfile
 from unittest.mock import mock_open, patch
 
 import pytest
 
+import optiland.backend as be
+from optiland.fileio import load_optiland_file, save_optiland_file
+from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.fileio.optiland_handler import load_obj_from_json, save_obj_to_json
-from optiland.fileio import save_optiland_file, load_optiland_file
 from optiland.fileio.zemax_handler import (
-    ZemaxDataModel,
     ZemaxDataParser,
     ZemaxFileSourceHandler,
     load_zemax_file,
 )
-from optiland.fileio.converters import ZemaxToOpticConverter
+from optiland.geometries import ToroidalGeometry
 from optiland.materials import Material
 from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
-from optiland.geometries import ToroidalGeometry
-import optiland.backend as be
+
 from .utils import assert_allclose
 
 
@@ -191,7 +193,7 @@ def test_save_load_optiland_file():
     with tempfile.NamedTemporaryFile(
         delete=False, mode="w", suffix=".json"
     ) as temp_file:
-        from optiland.fileio import save_optiland_file, load_optiland_file
+        from optiland.fileio import load_optiland_file, save_optiland_file
 
         save_optiland_file(lens, temp_file.name)
         lens2 = load_optiland_file(temp_file.name)
@@ -201,6 +203,7 @@ def test_save_load_optiland_file():
 def test_load_legacy_optiland_file_with_field_type():
     """Test loading an Optiland file with the legacy `field_type` key."""
     import json
+
     from optiland.fields import AngleField
     from optiland.fileio import load_optiland_file
 
@@ -233,8 +236,6 @@ def test_load_legacy_optiland_file_with_field_type():
 
 def test_save_load_optiland_file_with_tensor(set_test_backend):
     """Test saving and loading an Optiland file when the backend uses tensors."""
-    import optiland.backend as be
-    import numpy as np
 
     try:
         import torch
@@ -244,7 +245,7 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
         has_torch = True
     except ImportError:
         has_torch = False
-        tensor_val = float(1.23)
+        tensor_val = 1.23
         tensor_array = [1.23, 4.56]
 
     lens = HeliarLens()
@@ -283,7 +284,7 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
     with tempfile.NamedTemporaryFile(
         delete=False, mode="w", suffix=".json"
     ) as temp_file:
-        from optiland.fileio import save_optiland_file, load_optiland_file
+        from optiland.fileio import load_optiland_file, save_optiland_file
 
         # This should successfully serialize and not crash
         save_optiland_file(lens, temp_file.name)

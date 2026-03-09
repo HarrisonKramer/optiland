@@ -1,4 +1,4 @@
-import pytest
+from __future__ import annotations
 
 from optiland import backend as be
 from optiland.coordinate_system import CoordinateSystem

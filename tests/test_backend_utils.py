@@ -1,7 +1,9 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
+
 import optiland.backend.utils as utils
-from optiland.backend import torch_backend
 
 
 def test_to_numpy_scalar():

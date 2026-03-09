@@ -1,6 +1,9 @@
-import pytest
+from __future__ import annotations
+
 from unittest.mock import MagicMock, patch
-import numpy as np
+
+import pytest
+
 import optiland.backend as be
 from optiland.analysis import (
     angle_vs_height,
@@ -9,7 +12,6 @@ from optiland.analysis import (
     through_focus_mtf,
 )
 from optiland.samples.objectives import CookeTriplet
-from optiland.optic import Optic
 
 
 @pytest.fixture

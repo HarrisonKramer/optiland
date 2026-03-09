@@ -1,18 +1,18 @@
 """Tests for the visualization themes module."""
+from __future__ import annotations
 
+import matplotlib.pyplot as plt
 import pytest
 from matplotlib.colors import to_rgb
 
-import matplotlib.pyplot as plt
-
 from optiland.samples.simple import AsphericSinglet
+from optiland.visualization.palettes import light_palette
 from optiland.visualization.themes import (
     Theme,
     get_active_theme,
     set_theme,
     theme_context,
 )
-from optiland.visualization.palettes import light_palette
 
 
 def test_set_theme():

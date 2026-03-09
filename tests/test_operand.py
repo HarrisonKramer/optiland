@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import pytest
 
 import optiland.backend as be
 from optiland.optic import Optic
 from optiland.optimization import operand
-from optiland.optimization.operand import RayOperand, LensOperand
-from optiland.samples.telescopes import HubbleTelescope
+from optiland.optimization.operand import LensOperand, RayOperand
 from optiland.samples.objectives import CookeTriplet
+from optiland.samples.telescopes import HubbleTelescope
 
 from .utils import assert_allclose
 

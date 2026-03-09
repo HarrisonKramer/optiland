@@ -1,12 +1,13 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
 
 import optiland.backend as be
-from optiland.optic import Optic
-from optiland.analysis.spot_diagram import SpotDiagram, SpotReferenceType
+from optiland.analysis.spot_diagram import SpotDiagram
 from optiland.analysis.spot_diagram.reference import (
-    ChiefRayReference,
     CentroidReference,
+    ChiefRayReference,
 )
 from optiland.samples.objectives import CookeTriplet
 

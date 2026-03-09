@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import numpy as np
-import pytest
 
 from optiland.optic import Optic
 from optiland.rays.ray_aiming.initialization import (

@@ -1,7 +1,10 @@
-import pytest
-from unittest.mock import MagicMock, patch, mock_open
+from __future__ import annotations
+
+from unittest.mock import MagicMock, mock_open, patch
+
 import numpy as np
-import optiland.backend as be
+import pytest
+
 from optiland.materials import abbe, material_utils
 from optiland.materials.abbe import AbbeMaterial, AbbeMaterialE
 

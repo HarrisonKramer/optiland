@@ -1,17 +1,20 @@
-import pytest
-from unittest.mock import patch
-import optiland.backend as be
+from __future__ import annotations
 
-from optiland.apodization import UniformApodization, GaussianApodization
+from unittest.mock import patch
+
+import pytest
+
+import optiland.backend as be
 from optiland.aperture import Aperture
-from optiland.fields import FieldGroup, AngleField
+from optiland.apodization import GaussianApodization
+from optiland.fields import AngleField, FieldGroup
 from optiland.optic import Optic
 from optiland.rays import create_polarization
 from optiland.samples.objectives import HeliarLens
 from optiland.surfaces import SurfaceGroup
+from optiland.surfaces.factories.material_factory import MaterialFactory
 from optiland.wavelength import WavelengthGroup
 from tests.utils import assert_allclose
-from optiland.surfaces.factories.material_factory import MaterialFactory
 
 
 def singlet_infinite_object():

@@ -1,7 +1,9 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
+
 import optiland.backend as be
-from optiland.backend import numpy_backend
 
 
 def test_config(set_test_backend):
@@ -298,7 +300,7 @@ def test_ravel(set_test_backend):
 
 def test_rotations(set_test_backend):
     if not hasattr(be, "from_euler"):
-        pytest.skip(f"from_euler not implemented")
+        pytest.skip("from_euler not implemented")
     euler = be.array([0, 0, 0])
     rot = be.from_euler(euler)
     assert rot is not None

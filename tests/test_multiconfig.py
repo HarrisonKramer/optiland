@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import matplotlib
 import matplotlib.pyplot as plt
 import pytest
-from optiland.optic import Optic
-from optiland.multiconfig.multi_configuration import MultiConfiguration
 
+from optiland.multiconfig.multi_configuration import MultiConfiguration
+from optiland.optic import Optic
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

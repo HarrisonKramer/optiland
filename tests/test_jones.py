@@ -1,8 +1,11 @@
-import optiland.backend as be
-import pytest
+from __future__ import annotations
+
 import numpy as np
+
+import optiland.backend as be
 from optiland import jones, materials
 from optiland.rays import RealRays
+
 from .utils import assert_allclose
 
 
@@ -285,3 +288,51 @@ def test_jones_half_wave_retarder(set_test_backend):
     assert_allclose(be.real(jones_matrix[0, 1, 1]), 0.0)
     assert_allclose(be.imag(jones_matrix[0, 1, 1]), 0.5403023058681398)
     assert jones_matrix[0, 2, 2] == 1.0
+
+
+def test_jones_linear_diattenuator_axis_formats(set_test_backend):
+    # Test t_min=0.5, t_max=1.0 with no axis (falls to else)
+    d1 = jones.JonesLinearDiattenuator(t_min=0.5, t_max=1.0)
+    expected_axis = be.array([1.0, 0.0, 0.0])
+    assert_allclose(d1.axis, expected_axis)
+
+    # Test scalar axis
+    d2 = jones.JonesLinearDiattenuator(t_min=0.5, t_max=1.0, axis=0.5)
+    assert_allclose(d2.axis[0], be.cos(be.array(0.5)))
+    assert_allclose(d2.axis[1], be.sin(be.array(0.5)))
+
+    # Test tuple axis
+    d3 = jones.JonesLinearDiattenuator(t_min=0.5, t_max=1.0, axis=(0.0, 1.0, 0.0))
+    expected_axis3 = be.array([0.0, 1.0, 0.0])
+    assert_allclose(d3.axis, expected_axis3)
+
+
+def test_jones_linear_retarder_axis_formats(set_test_backend):
+    # Test retardance=1.0 with no axis (falls to else)
+    r1 = jones.JonesLinearRetarder(retardance=1.0)
+    expected_axis = be.array([1.0, 0.0, 0.0])
+    assert_allclose(r1.axis, expected_axis)
+
+    # Test scalar axis
+    r2 = jones.JonesLinearRetarder(retardance=1.0, axis=0.5)
+    assert_allclose(r2.axis[0], be.cos(be.array(0.5)))
+    assert_allclose(r2.axis[1], be.sin(be.array(0.5)))
+
+    # Test tuple axis
+    r3 = jones.JonesLinearRetarder(retardance=1.0, axis=(0.0, 1.0, 0.0))
+    expected_axis3 = be.array([0.0, 1.0, 0.0])
+    assert_allclose(r3.axis, expected_axis3)
+
+
+def test_jones_quarter_wave_retarder_defaults(set_test_backend):
+    # Test default args
+    q = jones.JonesQuarterWaveRetarder()
+    assert_allclose(q.axis[0], be.cos(be.array(0.0)))
+    assert_allclose(q.retardance, be.pi / 2)
+
+
+def test_jones_half_wave_retarder_defaults(set_test_backend):
+    # Test default args
+    h = jones.JonesHalfWaveRetarder()
+    assert_allclose(h.axis[0], be.cos(be.array(0.0)))
+    assert_allclose(h.retardance, be.pi)

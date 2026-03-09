@@ -1,13 +1,13 @@
 """Unit tests for the visualization interaction module."""
+from __future__ import annotations
 
-import pytest
-import time
 import matplotlib.pyplot as plt
-from matplotlib.backend_bases import MouseEvent, PickEvent
+import pytest
+from matplotlib.backend_bases import MouseEvent
 
 from optiland.samples import CookeTriplet
-from optiland.visualization.system.surface import Surface2D
 from optiland.visualization.system.optic_viewer import OpticViewer
+from optiland.visualization.system.surface import Surface2D
 
 
 @pytest.fixture

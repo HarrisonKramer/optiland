@@ -24,7 +24,6 @@ from optiland.physical_apertures import RectangularAperture
 from optiland.rays import RealRays
 from optiland.sources import BaseSource, SMFSource
 
-
 # ---------------------------------------------------------------------------
 # Helper fixtures
 # ---------------------------------------------------------------------------

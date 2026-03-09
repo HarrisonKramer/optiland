@@ -1,17 +1,19 @@
+from __future__ import annotations
+
+from contextlib import nullcontext as does_not_raise
 from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+
 import optiland.backend as be
-import pytest
-
-from contextlib import nullcontext as does_not_raise
-
 from optiland.psf import FFTPSF
 from optiland.psf.fft import calculate_grid_size
 from optiland.samples.objectives import CookeTriplet
+
 from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing

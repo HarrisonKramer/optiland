@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
 
 import optiland.backend as be
+from optiland.interactions import ThinLensInteractionModel
 from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
-from optiland.interactions import ThinLensInteractionModel
 from optiland.surfaces import (
     ParaxialToThickLensConverter,
     convert_to_thick_lens,

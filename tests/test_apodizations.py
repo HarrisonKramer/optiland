@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import pytest
+
 import optiland.backend as be
 from optiland.apodization import (
-    SuperGaussianApodization,
-    CosineSquaredApodization,
-    TukeyApodization,
-    PolynomialApodization,
-    HannApodization,
-    GaussianApodization,
-    UniformApodization,
     BaseApodization,
+    CosineSquaredApodization,
+    GaussianApodization,
+    HannApodization,
+    PolynomialApodization,
+    SuperGaussianApodization,
+    TukeyApodization,
 )
 from optiland.optic import Optic
 

@@ -1,11 +1,13 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
-from optiland.optic import Optic
-from optiland.surfaces import ObjectSurface
-from optiland.wavefront import Wavefront, PlanarReference, SphericalReference
+
+from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane
 from optiland.materials import IdealMaterial
-from optiland.coordinate_system import CoordinateSystem
+from optiland.optic import Optic
+from optiland.surfaces import ObjectSurface
+from optiland.wavefront import Wavefront
 
 
 def create_object_surface():

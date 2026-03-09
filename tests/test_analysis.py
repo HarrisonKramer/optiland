@@ -1,11 +1,13 @@
-from unittest.mock import patch, MagicMock
+from __future__ import annotations
+
+from unittest.mock import MagicMock, patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 import numpy as np
 import pytest
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 import optiland.backend as be
 from optiland import analysis

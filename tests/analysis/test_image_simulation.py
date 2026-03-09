@@ -1,9 +1,12 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
+
 import optiland.backend as be
 from optiland.analysis.image_simulation import (
-    ImageSimulationEngine,
     DistortionWarper,
+    ImageSimulationEngine,
     PSFBasisGenerator,
 )
 from optiland.samples.objectives import CookeTriplet

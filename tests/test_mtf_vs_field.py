@@ -1,13 +1,16 @@
-import pytest
+from __future__ import annotations
+
+from unittest.mock import patch
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+import optiland.backend as be
 from optiland.analysis import MTFvsField
 from optiland.samples.objectives import CookeTriplet
-import optiland.backend as be
-import numpy as np
-from unittest.mock import patch
 
 
 class TestMTFvsField:

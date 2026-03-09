@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 from importlib import resources
 from unittest.mock import MagicMock
 
-import optiland.backend as be
-import pytest
 import numpy as np
+import pytest
 
+import optiland.backend as be
 from optiland import materials
 from optiland.materials.base import BaseMaterial
 from optiland.optic import Optic
+
 from .utils import assert_allclose
 
 

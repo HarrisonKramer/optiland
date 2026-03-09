@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import pytest
+
 from optiland import backend as be
 from optiland.phase.interpolators import GridInterpolator
+
 from .utils import assert_allclose
 
 

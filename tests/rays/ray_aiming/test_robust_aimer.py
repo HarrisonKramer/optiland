@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import unittest
+
 import numpy as np
+
 import optiland.backend as be
 from optiland.materials.ideal import IdealMaterial
 from optiland.optic import Optic

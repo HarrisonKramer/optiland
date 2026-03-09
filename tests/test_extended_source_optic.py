@@ -1,8 +1,11 @@
-import pytest
-import optiland.backend as be
-from optiland.optic import Optic, ExtendedSourceOptic
-from optiland.sources import SMFSource
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
+import pytest
+
+import optiland.backend as be
+from optiland.optic import ExtendedSourceOptic, Optic
+from optiland.sources import SMFSource
 
 
 class TestExtendedSourceOptic:

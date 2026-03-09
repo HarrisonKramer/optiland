@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from contextlib import nullcontext as does_not_raise
+
 import numpy as np
 import pytest
 
 import optiland.backend as be
 from optiland import geometries
+from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     BiconicGeometry,
     ForbesQ2dGeometry,
@@ -12,8 +16,6 @@ from optiland.geometries import (
     ForbesSolverConfig,
     ForbesSurfaceConfig,
 )
-from optiland.coordinate_system import CoordinateSystem
-from optiland.geometries import BiconicGeometry
 from optiland.materials import IdealMaterial
 from optiland.materials.material import Material
 from optiland.optic import Optic
@@ -2410,8 +2412,8 @@ class TestForbesQbfsGeometry:
         """
         be.set_backend(backend_name)
         be.grad_mode.enable()
-        from optiland.physical_apertures import RectangularAperture
         from optiland.analysis import IncoherentIrradiance
+        from optiland.physical_apertures import RectangularAperture
 
         # 1. Create a simple optical system with a Forbes Q-bfs surface
         optic = Optic(name="Test Forbes Autodiff")
@@ -2745,8 +2747,8 @@ class TestForbesQ2dGeometry:
 
 
 from optiland.geometries.forbes.qpoly import (
-    q2d_nm_coeffs_to_ams_bms,
     compute_z_zprime_q2d,
+    q2d_nm_coeffs_to_ams_bms,
 )
 
 

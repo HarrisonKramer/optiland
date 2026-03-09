@@ -1,7 +1,9 @@
-import pytest
+from __future__ import annotations
+
 from optiland import backend as be
-from .utils import assert_allclose
 from optiland.phase.constant import ConstantPhaseProfile
+
+from .utils import assert_allclose
 
 
 def test_constant_phase_profile_init():

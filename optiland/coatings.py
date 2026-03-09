@@ -19,7 +19,7 @@ from optiland.jones import (
 )
 from optiland.materials import BaseMaterial
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from optiland.rays import RealRays
 
 
@@ -277,7 +277,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
     @abstractmethod
     def jones(self) -> BaseJones:
         """The Jones matrix model associated with the coating."""
-        pass
+        pass  # pragma: no cover
 
     def reflect(
         self,

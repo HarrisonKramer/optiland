@@ -1,10 +1,11 @@
-import pytest
-import numpy as np
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 import optiland.backend as be
-from optiland.samples.objectives import CookeTriplet
 from optiland.analysis.jones_pupil import JonesPupil
-from optiland.rays import PolarizationState
+from optiland.samples.objectives import CookeTriplet
 
 
 def test_jones_pupil_initialization(set_test_backend):

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import pytest
 
-from optiland.wavelength import Wavelength, WavelengthGroup, add_wavelengths
 import optiland.backend as be
+from optiland.wavelength import Wavelength, WavelengthGroup, add_wavelengths
 
 
 class TestWavelengths:

@@ -1,6 +1,8 @@
-import optiland.backend as be
+from __future__ import annotations
+
 import pytest
 
+import optiland.backend as be
 from optiland.rays import (
     BaseRays,
     ParaxialRays,

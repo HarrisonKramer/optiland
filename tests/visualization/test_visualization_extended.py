@@ -1,8 +1,12 @@
-import pytest
+from __future__ import annotations
+
 from unittest.mock import MagicMock, patch
+
 import matplotlib.pyplot as plt
-from optiland.visualization.system import interaction, lens, surface, ray_bundle
+import pytest
+
 from optiland.visualization.info import providers
+from optiland.visualization.system import interaction, lens, ray_bundle, surface
 
 
 @pytest.fixture

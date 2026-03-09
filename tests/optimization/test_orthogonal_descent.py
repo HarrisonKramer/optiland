@@ -1,9 +1,11 @@
-import pytest
-import numpy as np
+from __future__ import annotations
+
 from unittest.mock import MagicMock
+
+import numpy as np
+
 from optiland.optimization import OrthogonalDescent
 from optiland.optimization.problem import OptimizationProblem
-from optiland.optimization.variable import VariableManager
 
 
 class MockVariable:

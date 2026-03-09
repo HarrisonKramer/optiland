@@ -1,5 +1,8 @@
-import pytest
+from __future__ import annotations
+
 import gc
+
+import pytest
 
 import optiland.backend as be
 from optiland.coatings import FresnelCoating, SimpleCoating

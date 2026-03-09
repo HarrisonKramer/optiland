@@ -1,7 +1,9 @@
-import pytest
+from __future__ import annotations
+
 from optiland import backend as be
-from .utils import assert_allclose
 from optiland.phase.radial import RadialPhaseProfile
+
+from .utils import assert_allclose
 
 
 def test_radial_phase_profile_init():

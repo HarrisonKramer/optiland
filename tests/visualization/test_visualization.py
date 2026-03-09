@@ -1,12 +1,14 @@
 # import pkg_resources
+from __future__ import annotations
+
 from importlib import resources
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-import pytest
 
 import optiland.backend as be
 from optiland import fields
@@ -14,16 +16,16 @@ from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BaseGeometry, EvenAsphere
 from optiland.materials import AbbeMaterial, BaseMaterial, IdealMaterial, MaterialFile
 from optiland.optic import Optic
+from optiland.samples.microscopes import UVReflectingMicroscope
 from optiland.samples.objectives import ReverseTelephoto, TessarLens
 from optiland.samples.simple import Edmund_49_847
-from optiland.samples.microscopes import UVReflectingMicroscope
 from optiland.samples.telescopes import HubbleTelescope
-from optiland.visualization.base import BaseViewer
-from optiland.visualization.system import OpticViewer, OpticViewer3D
-from optiland.visualization.system.system import OpticalSystem
-from optiland.visualization.system.lens import Lens2D, Lens3D
-from optiland.visualization.info import LensInfoViewer
 from optiland.visualization.analysis import SurfaceSagViewer
+from optiland.visualization.base import BaseViewer
+from optiland.visualization.info import LensInfoViewer
+from optiland.visualization.system import OpticViewer, OpticViewer3D
+from optiland.visualization.system.lens import Lens2D, Lens3D
+from optiland.visualization.system.system import OpticalSystem
 
 matplotlib.use("Agg")  # use non-interactive backend for testing
 

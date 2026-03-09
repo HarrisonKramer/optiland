@@ -1,17 +1,18 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+
 import optiland.backend as be
-from optiland.samples.objectives import (
-    ReverseTelephoto,
-    CookeTriplet,
-    WideAngle100FOV,
-    ProjectionLens120FOV,
-    ProjectionLens160FOV,
-    WideAngle170FOV,
-)
 from optiland.optic import Optic
 from optiland.rays.ray_aiming.iterative import IterativeRayAimer
 from optiland.rays.ray_aiming.robust import RobustRayAimer
+from optiland.samples.objectives import (
+    ProjectionLens120FOV,
+    ProjectionLens160FOV,
+    ReverseTelephoto,
+    WideAngle100FOV,
+    WideAngle170FOV,
+)
 
 
 def test_iterative_aimer_infinite(set_test_backend):
@@ -63,7 +64,7 @@ def test_aimer_consistency(set_test_backend):
     res_iter = iter_aimer.aim_rays((Hx, Hy), wavelength, (Px, Py))
     res_robust = robust_aimer.aim_rays((Hx, Hy), wavelength, (Px, Py))
 
-    for r_i, r_r in zip(res_iter, res_robust):
+    for r_i, r_r in zip(res_iter, res_robust, strict=False):
         assert be.allclose(r_i, r_r, atol=1e-6)
 
 

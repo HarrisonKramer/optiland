@@ -1,7 +1,9 @@
-import pytest
-import numpy as np
-from matplotlib.axes import Axes
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+from matplotlib.axes import Axes
 
 from optiland.optic import Optic
 from optiland.samples import CookeTriplet

@@ -1,13 +1,18 @@
-import pytest
+from __future__ import annotations
+
 from unittest.mock import Mock
+
+import pytest
+
 from optiland import backend as be
-from optiland.phase.linear_grating import LinearGratingPhaseProfile
-from optiland.interactions.phase_interaction_model import PhaseInteractionModel
-from optiland.rays.real_rays import RealRays
-from optiland.geometries.plane import Plane
-from optiland.materials.ideal import IdealMaterial
-from optiland.surfaces.standard_surface import Surface
 from optiland.coordinate_system import CoordinateSystem
+from optiland.geometries.plane import Plane
+from optiland.interactions.phase_interaction_model import PhaseInteractionModel
+from optiland.materials.ideal import IdealMaterial
+from optiland.phase.linear_grating import LinearGratingPhaseProfile
+from optiland.rays.real_rays import RealRays
+from optiland.surfaces.standard_surface import Surface
+
 from .utils import assert_allclose
 
 

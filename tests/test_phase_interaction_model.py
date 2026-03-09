@@ -1,16 +1,20 @@
+from __future__ import annotations
+
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, PropertyMock
+
 from optiland import backend as be
-from .utils import assert_allclose
-from optiland.optic.optic import Optic
+from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries.plane import Plane
+from optiland.interactions.phase_interaction_model import PhaseInteractionModel
 from optiland.materials.ideal import IdealMaterial
 from optiland.phase.radial import RadialPhaseProfile
-from optiland.interactions.phase_interaction_model import PhaseInteractionModel
-from optiland.rays.real_rays import RealRays
 from optiland.rays.paraxial_rays import ParaxialRays
+from optiland.rays.real_rays import RealRays
 from optiland.surfaces.standard_surface import Surface
-from optiland.coordinate_system import CoordinateSystem
+
+from .utils import assert_allclose
 
 
 @pytest.fixture

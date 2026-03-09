@@ -5,6 +5,7 @@ instances can be serialized to a dictionary and deserialized back into
 fully functional objects, including the correct resolution of all
 internal dependencies.
 """
+from __future__ import annotations
 
 import pytest
 import yaml
@@ -18,7 +19,6 @@ from optiland.optic.optic import Optic
 from optiland.propagation.grin import GRINPropagation
 from optiland.propagation.homogeneous import HomogeneousPropagation
 from optiland.surfaces.standard_surface import Surface
-
 
 # --- Test Cases ---
 # Each tuple defines a test scenario: (material_instance, expected_propagation_model_class)

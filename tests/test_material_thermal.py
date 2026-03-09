@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland import materials
+
 from .utils import assert_allclose
 
 

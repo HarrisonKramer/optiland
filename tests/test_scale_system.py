@@ -1,25 +1,19 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+
 from optiland import optic
 from optiland.geometries import (
-    StandardGeometry,
-    EvenAsphere,
-    OddAsphere,
-    PolynomialGeometry,
-    ChebyshevPolynomialGeometry,
-    ZernikePolynomialGeometry,
-    GridSagGeometry,
     BiconicGeometry,
-    ToroidalGeometry,
+    EvenAsphere,
+    ForbesQ2dGeometry,
+    ForbesQNormalSlopeGeometry,
+    NurbsGeometry,
     Plane,
     PlaneGrating,
+    StandardGeometry,
     StandardGratingGeometry,
-    ForbesQNormalSlopeGeometry,
-    ForbesQ2dGeometry,
-    NurbsGeometry,
 )
-from optiland.geometries.forbes import ForbesSurfaceConfig
-import optiland.backend as be
 
 
 def test_scale_standard():

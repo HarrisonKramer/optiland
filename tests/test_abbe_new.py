@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import pytest
-import optiland.backend as be
+
 from optiland.materials import AbbeMaterial, AbbeMaterialE
 from optiland.materials.abbe import AbbePolynomialModel, BuchdahlDModel, BuchdahlEModel
+
 from .utils import assert_allclose
 
 

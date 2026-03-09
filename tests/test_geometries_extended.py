@@ -1,13 +1,14 @@
-import pytest
-from unittest.mock import MagicMock
+from __future__ import annotations
+
 import numpy as np
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
-from optiland.geometries.standard_grating import StandardGratingGeometry
-from optiland.geometries.plane_grating import PlaneGrating
-from optiland.rays import RealRays
 from optiland.geometries.forbes import jacobi
 from optiland.geometries.nurbs import nurbs_basis_functions
+from optiland.geometries.plane_grating import PlaneGrating
+from optiland.geometries.standard_grating import StandardGratingGeometry
+from optiland.rays import RealRays
 
 
 def test_standard_grating_init(set_test_backend):

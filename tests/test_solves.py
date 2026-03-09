@@ -1,19 +1,21 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
 
 import optiland.backend as be
 from optiland.samples.objectives import CookeTriplet
 from optiland.solves import (
     BaseSolve,
-    ThicknessSolve,
-    MarginalRayHeightThicknessSolve,
+    ChiefRayAngleCurvatureSolve,
     ChiefRayHeightThicknessSolve,
     CurvatureSolve,
     MarginalRayAngleCurvatureSolve,
-    ChiefRayAngleCurvatureSolve,
+    MarginalRayHeightThicknessSolve,
     QuickFocusSolve,
     SolveFactory,
     SolveManager,
+    ThicknessSolve,
 )
 
 from .utils import assert_allclose

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import pytest
-from optiland.optic import Optic
 
 import optiland.backend as be
+from optiland.optic import Optic
 
 
 @pytest.fixture

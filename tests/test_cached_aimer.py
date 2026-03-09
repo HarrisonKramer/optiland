@@ -1,10 +1,13 @@
-import pytest
+from __future__ import annotations
+
 from unittest.mock import MagicMock
-import optiland.backend as be
-from optiland.rays.ray_aiming.cached import CachedRayAimer
-from optiland.rays.ray_aiming.base import BaseRayAimer
-from optiland.rays.ray_aiming.robust import RobustRayAimer
+
+import pytest
+
 from optiland.optic import Optic
+from optiland.rays.ray_aiming.base import BaseRayAimer
+from optiland.rays.ray_aiming.cached import CachedRayAimer
+from optiland.rays.ray_aiming.robust import RobustRayAimer
 
 
 @pytest.fixture

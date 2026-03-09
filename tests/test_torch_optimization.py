@@ -1,11 +1,14 @@
-import warnings
+from __future__ import annotations
 
 import pytest
 
 import optiland.backend as be
-from optiland.optimization import TorchAdamOptimizer, TorchSGDOptimizer
+from optiland.optimization import (
+    OptimizationProblem,
+    TorchAdamOptimizer,
+    TorchSGDOptimizer,
+)
 from optiland.samples.objectives import CookeTriplet
-from optiland.optimization import OptimizationProblem
 
 
 def setup_problem(

@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.optic import Optic
-import pytest
 
 
 def create_simple_lens(infinite=True):

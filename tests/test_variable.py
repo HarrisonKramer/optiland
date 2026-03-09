@@ -1,31 +1,34 @@
-import optiland.backend as be
-import pytest
-from unittest.mock import patch
-import numpy as np
+from __future__ import annotations
 
-from optiland.optic import Optic
+from unittest.mock import patch
+
+import pytest
+
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
-    ForbesQbfsGeometry,
     ForbesQ2dGeometry,
+    ForbesQbfsGeometry,
+    ForbesSurfaceConfig,
     PolynomialGeometry,
     ZernikePolynomialGeometry,
-    ForbesSurfaceConfig,
 )
-from optiland.optimization import variable, OptimizationProblem, OptimizerGeneric
-from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
-from optiland.samples.simple import AsphericSinglet, Edmund_49_847
 from optiland.materials.abbe import AbbeMaterial
-from optiland.optimization.variable.material import MaterialVariable
+from optiland.optic import Optic
+from optiland.optimization import OptimizationProblem, OptimizerGeneric, variable
 from optiland.optimization.scaling.identity import IdentityScaler
 from optiland.optimization.variable import (
+    AsphereCoeffVariable,
     DecenterVariable,
     TiltVariable,
-    AsphereCoeffVariable,
-    ZernikeCoeffVariable,
     Variable,
+    ZernikeCoeffVariable,
 )
+from optiland.optimization.variable.material import MaterialVariable
+from optiland.samples.microscopes import Objective60x, UVReflectingMicroscope
+from optiland.samples.simple import AsphericSinglet, Edmund_49_847
+
 from .utils import assert_allclose
 
 

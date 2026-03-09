@@ -1,11 +1,11 @@
 """Unit tests for the HomogeneousPropagation model."""
-
-import pytest
+from __future__ import annotations
 
 from optiland import backend as be
 from optiland.materials.ideal import IdealMaterial
 from optiland.propagation.homogeneous import HomogeneousPropagation
 from optiland.rays.real_rays import RealRays
+
 from ..utils import assert_allclose
 
 
