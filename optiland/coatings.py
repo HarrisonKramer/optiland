@@ -8,7 +8,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Tuple, Optional, Dict, Any
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.jones import (
@@ -58,7 +58,7 @@ class BaseCoating(ABC):
             reflect (bool, optional): Flag indicating whether to perform
                 reflection (True) or transmission (False). Defaults to False.
             nx (be.ndarray, optional): The x-component of the surface normal vectors.
-                ny (be.ndarray, optional): The y-component of the surface normal vectors.
+            ny (be.ndarray, optional): The y-component of the surface normal vectors.
             nz (be.ndarray, optional): The z-component of the surface normal vectors.
 
         Returns:
@@ -69,7 +69,9 @@ class BaseCoating(ABC):
             return self.reflect(rays, nx, ny, nz)
         return self.transmit(rays, nx, ny, nz)
 
-    def _compute_aoi(self, rays: RealRays, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray) -> be.ndarray:
+    def _compute_aoi(
+        self, rays: RealRays, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray
+    ) -> be.ndarray:
         """Computes the angle of incidence for the given rays and surface normals.
 
         Args:
@@ -133,7 +135,7 @@ class BaseCoating(ABC):
         """
         # pragma: no cover
 
-    def to_dict(self) -> Dict[str, Any]:  # pragma: no cover
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover
         """Converts the coating to a dictionary.
 
         Returns:
@@ -153,7 +155,7 @@ class BaseCoating(ABC):
         return self
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> BaseCoating:
+    def from_dict(cls, data: dict[str, Any]) -> BaseCoating:
         """Creates a coating from a dictionary.
 
         Args:
@@ -242,7 +244,7 @@ class SimpleCoating(BaseCoating):
         rays.i = rays.i * self.transmittance
         return rays
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary.
 
         Returns:
@@ -256,7 +258,7 @@ class SimpleCoating(BaseCoating):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> SimpleCoating:
+    def from_dict(cls, data: dict[str, Any]) -> SimpleCoating:
         """Creates a coating from a dictionary.
 
         Args:
@@ -336,7 +338,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         rays.update(jones)
         return rays
 
-    def to_dict(self) -> Dict[str, Any]:  # pragma: no cover
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover
         """Converts the coating to a dictionary.
 
         Returns:
@@ -350,7 +352,9 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> BaseCoatingPolarized:  # pragma: no cover
+    def from_dict(
+        cls, data: dict[str, Any]
+    ) -> BaseCoatingPolarized:  # pragma: no cover
         """Creates a coating from a dictionary.
 
         Args:
@@ -389,7 +393,7 @@ class FresnelCoating(BaseCoatingPolarized):
     def jones(self) -> JonesFresnel:
         return self._jones
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary.
 
         Returns:
@@ -403,7 +407,7 @@ class FresnelCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> FresnelCoating:
+    def from_dict(cls, data: dict[str, Any]) -> FresnelCoating:
         """Creates a coating from a dictionary.
 
         Args:
@@ -427,7 +431,10 @@ class PolarizerCoating(BaseCoatingPolarized):
             axis in global coordinates. Defaults to [1.0, 0.0, 0.0] (horizontal).
     """
 
-    def __init__(self, axis: Tuple[float, float, float] | List[float] | be.ndarray = (1.0, 0.0, 0.0)):
+    def __init__(
+        self,
+        axis: tuple[float, float, float] | list[float] | be.ndarray = (1.0, 0.0, 0.0),
+    ):
         self.axis = axis
         self._jones = JonesLinearPolarizer(axis)
 
@@ -435,7 +442,7 @@ class PolarizerCoating(BaseCoatingPolarized):
     def jones(self) -> JonesLinearPolarizer:
         return self._jones
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary."""
         return {
             "type": self.__class__.__name__,
@@ -443,7 +450,7 @@ class PolarizerCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> PolarizerCoating:
+    def from_dict(cls, data: dict[str, Any]) -> PolarizerCoating:
         """Creates a coating from a dictionary."""
         return cls(axis=data.get("axis", (1.0, 0.0, 0.0)))
 
@@ -457,7 +464,11 @@ class RetarderCoating(BaseCoatingPolarized):
             in global coordinates. Defaults to [1.0, 0.0, 0.0] (horizontal).
     """
 
-    def __init__(self, retardance: float, axis: Tuple[float, float, float] | List[float] | be.ndarray = (1.0, 0.0, 0.0)):
+    def __init__(
+        self,
+        retardance: float,
+        axis: tuple[float, float, float] | list[float] | be.ndarray = (1.0, 0.0, 0.0),
+    ):
         self.retardance = retardance
         self.axis = axis
         self._jones = JonesLinearRetarder(retardance, axis)
@@ -466,7 +477,7 @@ class RetarderCoating(BaseCoatingPolarized):
     def jones(self) -> JonesLinearRetarder:
         return self._jones
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary."""
         return {
             "type": self.__class__.__name__,
@@ -475,11 +486,10 @@ class RetarderCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> RetarderCoating:
+    def from_dict(cls, data: dict[str, Any]) -> RetarderCoating:
         """Creates a coating from a dictionary."""
         return cls(
-            retardance=data["retardance"],
-            axis=data.get("axis", (1.0, 0.0, 0.0))
+            retardance=data["retardance"], axis=data.get("axis", (1.0, 0.0, 0.0))
         )
 
 
@@ -524,7 +534,9 @@ class JonesThinFilm(BaseJones):
             jones[:, 2, 2] = 1.0
         return jones
 
-    def _coeffs_amp(self, wl_um: be.ndarray, th_rad: be.ndarray, pol: str, reflect: bool) -> Tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
+    def _coeffs_amp(
+        self, wl_um: be.ndarray, th_rad: be.ndarray, pol: str, reflect: bool
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
         # Use internal helpers returning amplitudes from the stack TMM
         # We compute on per-ray vectors so shapes are (N,)
         # Reshape to (N,1) to reuse stack’s 2D API, then squeeze back
@@ -552,7 +564,7 @@ class ThinFilmCoating(BaseCoatingPolarized):
         self,
         material_pre: BaseMaterial,
         material_post: BaseMaterial,
-        layers: List[Tuple[BaseMaterial, float, Optional[str]]] | None = None,
+        layers: list[tuple[BaseMaterial, float, str | None]] | None = None,
     ):
         self.material_pre = material_pre
         self.material_post = material_post
@@ -567,7 +579,7 @@ class ThinFilmCoating(BaseCoatingPolarized):
         """The Jones matrix model associated with the thin-film coating."""
         return self._jones
 
-    def to_dict(self) -> Dict[str, Any]:  # pragma: no cover
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover
         return {
             "type": self.__class__.__name__,
             "material_pre": self.material_pre.to_dict(),
@@ -583,7 +595,7 @@ class ThinFilmCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> ThinFilmCoating:  # pragma: no cover
+    def from_dict(cls, data: dict[str, Any]) -> ThinFilmCoating:  # pragma: no cover
         mats = []
         for d in data.get("layers", []):
             mats.append(
