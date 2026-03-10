@@ -66,6 +66,27 @@ class SpectralAnalyzer:
         ]
         return styles[pol_idx % len(styles)]
 
+    @staticmethod
+    def _plot_array(values):
+        """Convert backend arrays/tensors to matplotlib-safe array-like values."""
+        try:
+            return be.to_numpy(values)
+        except Exception:
+            if hasattr(values, "detach") and hasattr(values, "cpu"):
+                return values.detach().cpu().tolist()
+            return values
+
+    @staticmethod
+    def _plot_scalar(value) -> float:
+        """Convert backend scalar/tensor to plain python float for plotting."""
+        try:
+            return float(value)
+        except Exception:
+            arr = SpectralAnalyzer._plot_array(value)
+            if isinstance(arr, list):
+                return float(arr[0])
+            return float(arr)
+
     def _convert_to_wavelength_um(
         self, values: float | Array, unit: WavelengthUnit
     ) -> Array:
@@ -187,6 +208,7 @@ class SpectralAnalyzer:
 
         # Convert wavelength back for plotting x-axis
         x_values = self._convert_wavelength_for_plotting(wl_um, wavelength_unit)
+        x_plot = self._plot_array(x_values)
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -206,15 +228,15 @@ class SpectralAnalyzer:
                 line_style = self._get_line_style(pol_idx)
 
                 ax.plot(
-                    x_values,
-                    rta_data[quantity].flatten(),
+                    x_plot,
+                    self._plot_array(rta_data[quantity].flatten()),
                     label=f"{quantity}, {pol}-pol, AOI={aoi}{aoi_unit}",
                     **line_style,
                 )
 
         ax.set_xlabel(self._get_wavelength_axis_label(wavelength_unit))
         ax.set_ylabel("Power fraction")
-        ax.set_xlim(float(x_values.min()), float(x_values.max()))
+        ax.set_xlim(self._plot_scalar(min(x_plot)), self._plot_scalar(max(x_plot)))
         ax.set_ylim(0, 1)
         ax.grid(True, alpha=0.3)
         ax.legend()
@@ -258,6 +280,7 @@ class SpectralAnalyzer:
 
         # Convert angles back for plotting x-axis
         x_values = be.atleast_1d(aoi_values)
+        x_plot = self._plot_array(x_values)
 
         if ax is None:
             fig, ax = plt.subplots()
@@ -281,8 +304,8 @@ class SpectralAnalyzer:
                 wl_symbol = wl_axis_label.split("(")[0].strip()
 
                 ax.plot(
-                    x_values,
-                    rta_data[quantity].flatten(),
+                    x_plot,
+                    self._plot_array(rta_data[quantity].flatten()),
                     label=f"{quantity}, {pol}-pol, {wl_symbol}={wavelength}",
                     **line_style,
                 )
@@ -290,7 +313,7 @@ class SpectralAnalyzer:
         xlabel = r"AOI (°)" if aoi_unit == "deg" else r"AOI (rad)"
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Power fraction")
-        ax.set_xlim(float(x_values.min()), float(x_values.max()))
+        ax.set_xlim(self._plot_scalar(min(x_plot)), self._plot_scalar(max(x_plot)))
         ax.set_ylim(0, 1)
         ax.grid(True, alpha=0.3)
         ax.legend()
@@ -345,8 +368,11 @@ class SpectralAnalyzer:
         wl_plot = self._convert_wavelength_for_plotting(wl_um, wavelength_unit)
         aoi_plot = be.atleast_1d(aoi_values)
 
-        # Create meshgrid for plotting
-        WL, AOI = be.meshgrid(wl_plot, aoi_plot, indexing="ij")
+        # Create meshgrid for plotting with backend-agnostic ij indexing
+        _aoi_grid, _wl_grid = be.meshgrid(aoi_plot, wl_plot)
+        WL, AOI = _wl_grid, _aoi_grid
+        WL_plot = self._plot_array(WL)
+        AOI_plot = self._plot_array(AOI)
 
         # Create figure and axes
         if fig is None or axs is None:
@@ -380,9 +406,9 @@ class SpectralAnalyzer:
 
                 ax_i = axs[qty_idx][pol_idx]
                 im = ax_i.pcolormesh(
-                    WL,
-                    AOI,
-                    rta_data[quantity],
+                    WL_plot,
+                    AOI_plot,
+                    self._plot_array(rta_data[quantity]),
                     shading="auto",
                     vmin=0,
                     vmax=1,
@@ -537,11 +563,15 @@ class SpectralAnalyzer:
             observer=observer,
             illuminant=illuminant,
         )
-        ax.plot(x, y, marker=marker, markersize=marker_size, color=marker_color)
+        x_plot = self._plot_scalar(x)
+        y_plot = self._plot_scalar(y)
+        ax.plot(
+            x_plot, y_plot, marker=marker, markersize=marker_size, color=marker_color
+        )
         ax.text(
-            x + 0.02,
-            y + 0.02,
-            f"x={x:.4f}, y={y:.4f}",
+            x_plot + 0.02,
+            y_plot + 0.02,
+            f"x={x_plot:.4f}, y={y_plot:.4f}",
             fontsize=9,
             ha="left",
             va="bottom",

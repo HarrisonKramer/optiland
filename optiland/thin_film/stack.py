@@ -377,6 +377,13 @@ class ThinFilmStack:
 
         color_cycle = list(mcolors.TABLEAU_COLORS.values())
 
+        def _to_float(value) -> float:
+            if hasattr(value, "detach") and hasattr(value, "cpu"):
+                value = value.detach().cpu()
+            if hasattr(value, "item"):
+                return float(value.item())
+            return float(value)
+
         def _get_name(obj):
             """
             Get the name of a material or layer, or its refractive index if it's an
@@ -385,10 +392,12 @@ class ThinFilmStack:
             """
             name = getattr(obj, "name", "") or ""
             if isinstance(obj, IdealMaterial):
-                name = f"$n$ = {obj.index[0]}"
+                name = f"$n$ = {_to_float(obj.index[0])}"
             return name
 
         def _add_rect(y, height, color, label, text=None):
+            y = _to_float(y)
+            height = _to_float(height)
             ax.add_patch(
                 plt.Rectangle((0, y), 1, height, color=color, label=label, alpha=0.7)
             )
@@ -413,6 +422,7 @@ class ThinFilmStack:
             for i, name in enumerate(dict.fromkeys(material_names))
         }
         total_layer_thickness = sum(layer.thickness_um for layer in self.layers)
+        total_layer_thickness = _to_float(total_layer_thickness)
 
         # Ensure minimum thickness for visualization (avoid singular ylim
         # on empty stacks)
@@ -446,7 +456,7 @@ class ThinFilmStack:
                 label=label,
                 text=None,
             )
-            y += layer.thickness_um
+            y += _to_float(layer.thickness_um)
 
         # Incident medium (top)
         _add_rect(
@@ -503,10 +513,17 @@ class ThinFilmStack:
         ax.grid(True, alpha=0.3)
         color_cycle = list(mcolors.TABLEAU_COLORS.values())
 
+        def _to_float(value) -> float:
+            if hasattr(value, "detach") and hasattr(value, "cpu"):
+                value = value.detach().cpu()
+            if hasattr(value, "item"):
+                return float(value.item())
+            return float(value)
+
         def _get_name(obj):
             name = getattr(obj, "name", "") or ""
             if isinstance(obj, IdealMaterial):
-                name = f"$n$ = {obj.index[0]}"
+                name = f"$n$ = {_to_float(obj.index[0])}"
             return name
 
         material_names = [_get_name(layer.material) for layer in self.layers]
@@ -515,7 +532,7 @@ class ThinFilmStack:
             for i, name in enumerate(dict.fromkeys(material_names))
         }
         colors = [unique_materials[_get_name(layer.material)] for layer in self.layers]
-        thicknesses_nm = [layer.thickness_um * 1000 for layer in self.layers]
+        thicknesses_nm = [_to_float(layer.thickness_um * 1000) for layer in self.layers]
         labels = [layer.name or _get_name(layer.material) for layer in self.layers]
 
         indices = list(range(len(self.layers)))

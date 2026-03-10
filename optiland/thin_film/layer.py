@@ -44,8 +44,12 @@ class Layer:
 
     def n_complex(self, wavelength_um):
         """Complex index n~ = n + i k for one or multiple wavelengths."""
-        n = self.material.n(wavelength_um)
-        k = self.material.k(wavelength_um)
+        if be.get_backend() == "torch" and hasattr(wavelength_um, "detach"):
+            n = self.material._calculate_n(wavelength_um)
+            k = self.material._calculate_k(wavelength_um)
+        else:
+            n = self.material.n(wavelength_um)
+            k = self.material.k(wavelength_um)
         # S'assurer que n et k sont des arrays broadcastables
         n = be.atleast_1d(n)
         k = be.atleast_1d(k)

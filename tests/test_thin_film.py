@@ -11,6 +11,19 @@ from .utils import assert_allclose
 from optiland.thin_film.analysis import SPEED_OF_LIGHT, PLANCK_EV
 
 
+@pytest.fixture(autouse=True)
+def skip_torch_without_numpy_bridge(set_test_backend):
+    if be.get_backend() != "torch":
+        return
+
+    import torch
+
+    try:
+        _ = torch.tensor([0.0]).numpy()
+    except Exception as exc:
+        pytest.skip(f"Torch backend unavailable in this env: {exc}")
+
+
 @pytest.fixture
 def air():
     return IdealMaterial(n=1.0)
@@ -63,61 +76,9 @@ def multilayer_stack(air, bk7, sio2, tio2):
 
 
 @pytest.fixture
-def thin_film_torch_compat(set_test_backend, monkeypatch):
-    """Compatibility shim for backend API signature differences in thin-film tests."""
-    original_ones_like = be.ones_like
-    original_zeros_like = be.zeros_like
-    original_meshgrid = be.meshgrid
-
-    previous_grad = None
-    if be.get_backend() == "torch":
-        previous_grad = be.grad_mode.requires_grad
-        be.grad_mode.disable()
-
-    def _cast_dtype(arr, dtype):
-        if dtype is None:
-            return arr
-        try:
-            return arr.to(dtype=dtype)
-        except Exception:
-            try:
-                return arr.astype(dtype)
-            except Exception:
-                return be.array(arr, dtype=dtype)
-
-    def _ones_like_compat(x, dtype=None, **kwargs):
-        try:
-            if dtype is None and not kwargs:
-                return original_ones_like(x)
-            return original_ones_like(x, dtype=dtype, **kwargs)
-        except TypeError:
-            return _cast_dtype(original_ones_like(x), dtype)
-
-    def _zeros_like_compat(x, dtype=None, **kwargs):
-        try:
-            if dtype is None and not kwargs:
-                return original_zeros_like(x)
-            return original_zeros_like(x, dtype=dtype, **kwargs)
-        except TypeError:
-            return _cast_dtype(original_zeros_like(x), dtype)
-
-    def _meshgrid_compat(*arrays, indexing="xy"):
-        try:
-            return original_meshgrid(*arrays, indexing=indexing)
-        except TypeError:
-            if indexing == "xy" and len(arrays) == 2:
-                grid_b, grid_a = original_meshgrid(arrays[1], arrays[0])
-                return grid_a, grid_b
-            return original_meshgrid(*arrays)
-
-    monkeypatch.setattr(be, "ones_like", _ones_like_compat)
-    monkeypatch.setattr(be, "zeros_like", _zeros_like_compat)
-    monkeypatch.setattr(be, "meshgrid", _meshgrid_compat)
-
+def thin_film_torch_compat():
+    """No-op fixture kept for backward compatibility of test markers."""
     yield
-
-    if previous_grad:
-        be.grad_mode.enable()
 
 
 class TestImports:

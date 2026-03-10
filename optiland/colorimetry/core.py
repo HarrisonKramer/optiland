@@ -238,7 +238,7 @@ def xyz_to_srgb(
         linear_part = 12.92 * v
 
         # Protection against negative numbers before pow
-        v_safe = be.maximum(v, 0.0)
+        v_safe = be.where(v < 0.0, 0.0, v)
         power_part = 1.055 * be.power(v_safe, 1.0 / 2.4) - 0.055
 
         return be.where(mask, linear_part, power_part)
@@ -250,12 +250,14 @@ def xyz_to_srgb(
     # 4. Clipping [0, 1] and conversion 0-255
     def clip_and_scale(v):
         # Clip to 0-1
-        v_clipped = be.minimum(be.maximum(v, 0.0), 1.0)
+        v_clipped = be.where(v < 0.0, 0.0, be.where(v > 1.0, 1.0, v))
         scaled = v_clipped * 255
         # Try to cast to int if backend supports it (like numpy)
         try:
             return scaled.astype(int)
         except AttributeError:
+            if hasattr(scaled, "to"):
+                return scaled.to(dtype=be._lib.int64)
             return scaled
 
     return (clip_and_scale(r), clip_and_scale(g), clip_and_scale(b))

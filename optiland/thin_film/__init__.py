@@ -11,10 +11,18 @@ from __future__ import annotations
 
 # flake8: noqa
 
+import importlib
+
 from .analysis import SpectralAnalyzer
 from .layer import Layer
 from .stack import ThinFilmStack
-from . import optimization
+
+
+def __getattr__(name):
+    if name == "optimization":
+        return importlib.import_module(".optimization", __name__)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "SpectralAnalyzer",

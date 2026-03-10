@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Literal
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.collections import LineCollection
 from matplotlib.path import Path
 from scipy.interpolate import interp1d
@@ -14,6 +15,23 @@ from scipy.interpolate import interp1d
 import optiland.backend as be
 
 from .constants import CIE_1931_2DEG, WAVELENGTHS_STD
+
+
+def _to_numpy_safe(x):
+    try:
+        return be.to_numpy(x)
+    except Exception:
+        if hasattr(x, "detach") and hasattr(x, "cpu"):
+            return x.detach().cpu().numpy()
+        return x
+
+
+def _to_float_safe(x) -> float:
+    if hasattr(x, "detach") and hasattr(x, "cpu"):
+        x = x.detach().cpu()
+    if hasattr(x, "item"):
+        return float(x.item())
+    return float(x)
 
 
 def plot_cie_1931_chromaticity_diagram(
@@ -57,8 +75,13 @@ def plot_cie_1931_chromaticity_diagram(
     # Interpolate CMFs (Cubic)
     # We use scipy for cubic interpolation as requested
     def cubic_interp(x, y, x_new):
-        f = interp1d(x, y, kind="cubic", fill_value="extrapolate")
-        return be.asarray(f(x_new))
+        f = interp1d(
+            _to_numpy_safe(x),
+            _to_numpy_safe(y),
+            kind="cubic",
+            fill_value="extrapolate",
+        )
+        return be.asarray(f(_to_numpy_safe(x_new)))
 
     x_bar = cubic_interp(wls_raw, x_bar_raw, wl_fine)
     y_bar = cubic_interp(wls_raw, y_bar_raw, wl_fine)
@@ -84,15 +107,16 @@ def plot_cie_1931_chromaticity_diagram(
 
         # Gamma
         def gamma(v):
+            v_safe = be.where(v < 0.0, 0.0, v)
             return be.where(
                 v <= 0.0031308,
                 12.92 * v,
-                1.055 * be.power(be.maximum(v, 0.0), 1.0 / 2.4) - 0.055,
+                1.055 * be.power(v_safe, 1.0 / 2.4) - 0.055,
             )
 
         # Clip 0-1
         def clip(v):
-            return be.minimum(be.maximum(v, 0.0), 1.0)
+            return be.where(v < 0.0, 0.0, be.where(v > 1.0, 1.0, v))
 
         return (
             clip(gamma(r_l)),
@@ -109,7 +133,7 @@ def plot_cie_1931_chromaticity_diagram(
     Z_loc = ((1 - x_locus - y_locus) / y_locus_safe) * Y_const
 
     r_loc, g_loc, b_loc = _get_rgb_float(X_loc, be.ones_like(X_loc) * Y_const, Z_loc)
-    rgb_locus = be.transpose(be.array([r_loc, g_loc, b_loc]))
+    rgb_locus = be.transpose(be.stack([r_loc, g_loc, b_loc], axis=0))
 
     # Polygon for filling/masking (closed loop)
     x_poly = be.concatenate((x_locus, be.atleast_1d(x_locus[0])))
@@ -125,12 +149,13 @@ def plot_cie_1931_chromaticity_diagram(
         y_grid = be.linspace(y_min, y_max, res)
         X_grid, Y_grid = be.meshgrid(x_grid, y_grid)
 
-        xf, yf = be.reshape(X_grid, (-1,)), be.reshape(Y_grid, (-1,))
+        xf = be._lib.reshape(X_grid, (-1,))
+        yf = be._lib.reshape(Y_grid, (-1,))
 
         # Mask points inside locus
-        verts = be.transpose(be.array([x_poly, y_poly]))
+        verts = _to_numpy_safe(be.transpose(be.stack([x_poly, y_poly], axis=0)))
         path = Path(verts)
-        points = be.transpose(be.array([xf, yf]))
+        points = _to_numpy_safe(be.transpose(be.stack([xf, yf], axis=0)))
         mask = path.contains_points(points)
 
         # Compute colors (Y=50 for reasonable brightness)
@@ -144,27 +169,34 @@ def plot_cie_1931_chromaticity_diagram(
 
         # Create RGBA image
         alpha = be.asarray(mask, dtype=float)
-        img_flat = be.transpose(be.array([R, G, B, alpha]))
+        img_flat = be.transpose(be.stack([R, G, B, alpha], axis=0))
         img = be.reshape(img_flat, (res, res, 4))
 
         ax.imshow(
-            img,
+            _to_numpy_safe(img),
             extent=[x_min, x_max, y_min, y_max],
             origin="lower",
             interpolation="bilinear",
         )
-        ax.plot(x_locus, y_locus, "k-", linewidth=1.5)
+        ax.plot(_to_numpy_safe(x_locus), _to_numpy_safe(y_locus), "k-", linewidth=1.5)
         # Purple line (black dashed for fill mode to define boundary)
         ax.plot(
-            [x_locus[-1], x_locus[0]], [y_locus[-1], y_locus[0]], "k--", linewidth=1
+            [_to_float_safe(x_locus[-1]), _to_float_safe(x_locus[0])],
+            [_to_float_safe(y_locus[-1]), _to_float_safe(y_locus[0])],
+            "k--",
+            linewidth=1,
         )
 
     elif color == "contour":
         # 1. Spectral Locus (Colored)
-        points = be.reshape(be.transpose(be.array([x_locus, y_locus])), (-1, 1, 2))
-        segments = be.concatenate((points[:-1], points[1:]), axis=1)
+        points = _to_numpy_safe(
+            be.reshape(be.transpose(be.stack([x_locus, y_locus], axis=0)), (-1, 1, 2))
+        )
+        segments = np.concatenate((points[:-1], points[1:]), axis=1)
 
-        lc = LineCollection(segments, colors=rgb_locus[:-1], linewidth=2)
+        lc = LineCollection(
+            segments, colors=_to_numpy_safe(rgb_locus[:-1]), linewidth=2
+        )
         ax.add_collection(lc)
 
         # 2. Purple Line (Colored Gradient)
@@ -179,13 +211,18 @@ def plot_cie_1931_chromaticity_diagram(
         Z_p = ((1 - x_p - y_p) / y_p_safe) * Y_const
 
         r_p, g_p, b_p = _get_rgb_float(X_p, be.ones_like(X_p) * Y_const, Z_p)
-        rgb_purple = be.transpose(be.array([r_p, g_p, b_p]))
+        rgb_purple = be.transpose(be.stack([r_p, g_p, b_p], axis=0))
 
-        points_p = be.reshape(be.transpose(be.array([x_p, y_p])), (-1, 1, 2))
-        segments_p = be.concatenate((points_p[:-1], points_p[1:]), axis=1)
+        points_p = _to_numpy_safe(
+            be.reshape(be.transpose(be.stack([x_p, y_p], axis=0)), (-1, 1, 2))
+        )
+        segments_p = np.concatenate((points_p[:-1], points_p[1:]), axis=1)
 
         lc_p = LineCollection(
-            segments_p, colors=rgb_purple[:-1], linewidth=2, linestyle="--"
+            segments_p,
+            colors=_to_numpy_safe(rgb_purple[:-1]),
+            linewidth=2,
+            linestyle="--",
         )
         ax.add_collection(lc_p)
 
@@ -195,29 +232,35 @@ def plot_cie_1931_chromaticity_diagram(
             ax.plot([], [], "--", color="gray", linewidth=2, label="Purple Line")
 
         # Light fill
-        ax.fill(x_poly, y_poly, "k", alpha=0.05)
+        ax.fill(_to_numpy_safe(x_poly), _to_numpy_safe(y_poly), "k", alpha=0.05)
 
     else:  # "no"
-        ax.plot(x_locus, y_locus, "k-", linewidth=1.5, label="Spectral Locus")
         ax.plot(
-            [x_locus[-1], x_locus[0]],
-            [y_locus[-1], y_locus[0]],
+            _to_numpy_safe(x_locus),
+            _to_numpy_safe(y_locus),
+            "k-",
+            linewidth=1.5,
+            label="Spectral Locus",
+        )
+        ax.plot(
+            [_to_float_safe(x_locus[-1]), _to_float_safe(x_locus[0])],
+            [_to_float_safe(y_locus[-1]), _to_float_safe(y_locus[0])],
             "k--",
             linewidth=1,
             label="Purple Line",
         )
-        ax.fill(x_poly, y_poly, "k", alpha=0.05)
+        ax.fill(_to_numpy_safe(x_poly), _to_numpy_safe(y_poly), "k", alpha=0.05)
 
     # 3. Add Wavelength Markers
     target_wls = [450, 480, 520, 560, 600, 620, 700]
 
     for wl in target_wls:
         # Find closest index in fine grid
-        idx = be.argmin(be.abs(wl_fine - wl))
+        idx = int(be.argmin(be.abs(wl_fine - wl)))
 
         # Check if we are close enough (within 1nm)
         if abs(wl_fine[idx] - wl) < 1.0:
-            x, y = x_locus[idx], y_locus[idx]
+            x, y = _to_float_safe(x_locus[idx]), _to_float_safe(y_locus[idx])
             ax.plot(x, y, "ko", markersize=3)
 
             # Offset text slightly towards outside
