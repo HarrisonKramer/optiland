@@ -62,6 +62,56 @@ def multilayer_stack(air, bk7, sio2, tio2):
     return stack
 
 
+@pytest.fixture
+def thin_film_torch_compat(set_test_backend, monkeypatch):
+    """Compatibility shim for torch backend API differences used by thin-film tests.
+
+    This fixture is local to this test module and avoids changing global backend code.
+    """
+    if be.get_backend() != "torch":
+        yield
+        return
+
+    import torch
+
+    previous_grad = be.grad_mode.requires_grad
+    be.grad_mode.disable()
+
+    def _as_tensor(value):
+        return value if isinstance(value, torch.Tensor) else be.array(value)
+
+    def _ones_like_compat(x, dtype=None, requires_grad=None):
+        base = _as_tensor(x)
+        req_grad = be.grad_mode.requires_grad if requires_grad is None else requires_grad
+        return torch.ones_like(
+            base,
+            dtype=base.dtype if dtype is None else dtype,
+            requires_grad=req_grad,
+        )
+
+    def _zeros_like_compat(x, dtype=None, requires_grad=None):
+        base = _as_tensor(x)
+        req_grad = be.grad_mode.requires_grad if requires_grad is None else requires_grad
+        return torch.zeros_like(
+            base,
+            dtype=base.dtype if dtype is None else dtype,
+            requires_grad=req_grad,
+        )
+
+    def _meshgrid_compat(*arrays, indexing="xy"):
+        tensors = [_as_tensor(arr) for arr in arrays]
+        return torch.meshgrid(*tensors, indexing=indexing)
+
+    monkeypatch.setattr(be, "ones_like", _ones_like_compat)
+    monkeypatch.setattr(be, "zeros_like", _zeros_like_compat)
+    monkeypatch.setattr(be, "meshgrid", _meshgrid_compat)
+
+    yield
+
+    if previous_grad:
+        be.grad_mode.enable()
+
+
 class TestImports:
     """Test that all components can be imported."""
 
@@ -163,6 +213,7 @@ class TestThinFilmStackLayerManipulation:
         assert len(stack) == 2
 
 
+@pytest.mark.usefixtures("thin_film_torch_compat")
 class TestThinFilmStackCalculations:
     """Test optical calculations."""
 
@@ -314,6 +365,7 @@ class TestThinFilmStackUnitHelpers:
         assert_allclose(result, expected)
 
 
+@pytest.mark.usefixtures("thin_film_torch_compat")
 class TestThinFilmStackVisualization:
     """Test plotting methods."""
 
@@ -487,6 +539,7 @@ class TestSpectralAnalyzerUnitConversions:
         assert_allclose(wl_wavenumber, expected_wavenumber, rtol=1e-10)
 
 
+@pytest.mark.usefixtures("thin_film_torch_compat")
 class TestSpectralAnalyzer:
     """Test SpectralAnalyzer functionality."""
 
@@ -1020,6 +1073,7 @@ class TestSpectralAnalyzer:
         )
 
 
+@pytest.mark.usefixtures("thin_film_torch_compat")
 class TestThinFilmStackComplex:
     """Test more complex scenarios."""
 
@@ -1052,6 +1106,7 @@ class TestThinFilmStackComplex:
             assert be.all(values <= 1), f"{quantity} has values > 1"
 
 
+@pytest.mark.usefixtures("thin_film_torch_compat")
 class TestEdgeCasesAndErrors:
     """Test edge cases and error handling."""
 
