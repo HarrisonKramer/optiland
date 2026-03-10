@@ -64,43 +64,51 @@ def multilayer_stack(air, bk7, sio2, tio2):
 
 @pytest.fixture
 def thin_film_torch_compat(set_test_backend, monkeypatch):
-    """Compatibility shim for torch backend API differences used by thin-film tests.
+    """Compatibility shim for backend API signature differences in thin-film tests."""
+    original_ones_like = be.ones_like
+    original_zeros_like = be.zeros_like
+    original_meshgrid = be.meshgrid
 
-    This fixture is local to this test module and avoids changing global backend code.
-    """
-    if be.get_backend() != "torch":
-        yield
-        return
+    previous_grad = None
+    if be.get_backend() == "torch":
+        previous_grad = be.grad_mode.requires_grad
+        be.grad_mode.disable()
 
-    import torch
+    def _cast_dtype(arr, dtype):
+        if dtype is None:
+            return arr
+        try:
+            return arr.to(dtype=dtype)
+        except Exception:
+            try:
+                return arr.astype(dtype)
+            except Exception:
+                return be.array(arr, dtype=dtype)
 
-    previous_grad = be.grad_mode.requires_grad
-    be.grad_mode.disable()
+    def _ones_like_compat(x, dtype=None, **kwargs):
+        try:
+            if dtype is None and not kwargs:
+                return original_ones_like(x)
+            return original_ones_like(x, dtype=dtype, **kwargs)
+        except TypeError:
+            return _cast_dtype(original_ones_like(x), dtype)
 
-    def _as_tensor(value):
-        return value if isinstance(value, torch.Tensor) else be.array(value)
-
-    def _ones_like_compat(x, dtype=None, requires_grad=None):
-        base = _as_tensor(x)
-        req_grad = be.grad_mode.requires_grad if requires_grad is None else requires_grad
-        return torch.ones_like(
-            base,
-            dtype=base.dtype if dtype is None else dtype,
-            requires_grad=req_grad,
-        )
-
-    def _zeros_like_compat(x, dtype=None, requires_grad=None):
-        base = _as_tensor(x)
-        req_grad = be.grad_mode.requires_grad if requires_grad is None else requires_grad
-        return torch.zeros_like(
-            base,
-            dtype=base.dtype if dtype is None else dtype,
-            requires_grad=req_grad,
-        )
+    def _zeros_like_compat(x, dtype=None, **kwargs):
+        try:
+            if dtype is None and not kwargs:
+                return original_zeros_like(x)
+            return original_zeros_like(x, dtype=dtype, **kwargs)
+        except TypeError:
+            return _cast_dtype(original_zeros_like(x), dtype)
 
     def _meshgrid_compat(*arrays, indexing="xy"):
-        tensors = [_as_tensor(arr) for arr in arrays]
-        return torch.meshgrid(*tensors, indexing=indexing)
+        try:
+            return original_meshgrid(*arrays, indexing=indexing)
+        except TypeError:
+            if indexing == "xy" and len(arrays) == 2:
+                grid_b, grid_a = original_meshgrid(arrays[1], arrays[0])
+                return grid_a, grid_b
+            return original_meshgrid(*arrays)
 
     monkeypatch.setattr(be, "ones_like", _ones_like_compat)
     monkeypatch.setattr(be, "zeros_like", _zeros_like_compat)
@@ -1312,4 +1320,4 @@ class TestEdgeCasesAndErrors:
         assert_allclose(wl_nm_r, wl_nm_t, rtol=1e-10)
 
         # Values should be different (most likely)
-        assert not be.allclose(vals_r, vals_t)
+        assert not np.allclose(be.to_numpy(vals_r), be.to_numpy(vals_t))
