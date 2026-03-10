@@ -50,15 +50,13 @@ class VectorialFFTPSF(ScalarFFTPSF):
 
             for E_exit in wavefront_data.E_exits:
                 # E_exit has shape (N, 3)
-                # Compute normalization factor based on mean magnitude
-                total_intensity = be.sum(be.abs(E_exit) ** 2, axis=-1)
-                valid_E = be.sqrt(total_intensity[total_intensity > 0])
-                mean_E = be.mean(valid_E) if be.size(valid_E) > 0 else 1.0
-
                 # Create Cartesian component grids
+                is_valid = wavefront_data.intensity > 0
                 for i in range(3):
                     P = be.to_complex(be.zeros_like(x))
-                    amplitude = E_exit[..., i] / mean_E
+                    amplitude = be.where(
+                        is_valid, E_exit[..., i], be.zeros_like(E_exit[..., i])
+                    )
                     P[R2 <= 1] = be.to_complex(
                         amplitude * be.exp(-1j * 2 * be.pi * wavefront_data.opd)
                     )
@@ -72,16 +70,7 @@ class VectorialFFTPSF(ScalarFFTPSF):
 
         The normalization factor scales the PSF such that a diffraction limited
         system with the same aperture and uniform illumination has a peak of 100.
-        By summing the magnitude of the 3 components of the first incoherent state
-        at the pupil, we find the equivalent unaberrated peak.
         """
-        # We need to calculate the peak intensity = sum(|P_x|)^2 +
-        # sum(|P_y|)^2 + sum(|P_z|)^2 for a uniform phase pupil.
-        peak_intensity = 0.0
-        for i in range(3):
-            peak_intensity += be.sum(be.abs(self.pupils[i])) ** 2
-
-        # Scale back by the number of incoherent states evaluated to match
-        # an overall peak of 100
-        num_states = len(self.pupils) // (3 * len(self.wavelengths))
-        return peak_intensity * len(self.wavelengths) * num_states
+        mask = be.abs(self.pupils[0]) + be.abs(self.pupils[1]) + be.abs(self.pupils[2])
+        area = be.sum(mask > 0)
+        return (area**2) * len(self.wavelengths)
