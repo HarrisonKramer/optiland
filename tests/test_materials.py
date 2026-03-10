@@ -1,13 +1,16 @@
+from __future__ import annotations
+
 from importlib import resources
 from unittest.mock import MagicMock
 
-import optiland.backend as be
-import pytest
 import numpy as np
+import pytest
 
+import optiland.backend as be
 from optiland import materials
 from optiland.materials.base import BaseMaterial
 from optiland.optic import Optic
+
 from .utils import assert_allclose
 
 
@@ -55,6 +58,7 @@ class TestBaseMaterial:
             # and a cache hit
             material.n(wavelength_torch_2, temperature=25)
             assert material._calculate_n.call_count == 3
+
     def test_detach_if_tensor_plain_value(self, set_test_backend):
         """_detach_if_tensor returns plain values unchanged."""
         assert BaseMaterial._detach_if_tensor(1.5) == 1.5
@@ -220,7 +224,6 @@ class TestBaseMaterialTorchCaching:
         assert mat.absorp.grad is not None
 
 
-
 def build_model(material: BaseMaterial):
     lens = Optic()
 
@@ -281,19 +284,16 @@ class TestAbbeMaterial:
         value = abbe_material.n(wavelength)
         assert_allclose(value, 1.4999167964912952)
 
-
     def test_extinction_coefficient(self, set_test_backend):
         abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
         wavelength = 0.58756  # in microns
         assert abbe_material.k(wavelength) == 0
-
 
     def test_coefficients(self, set_test_backend):
         abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
         # Access the private method on the underlying model (AbbePolynomialModel)
         coefficients = abbe_material.model._get_coefficients()
         assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
-
 
     def test_abbe_to_dict(self, set_test_backend):
         abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
@@ -306,13 +306,11 @@ class TestAbbeMaterial:
             "propagation_model": {"class": "HomogeneousPropagation"},
         }
 
-
     def test_abbe_from_dict(self, set_test_backend):
         abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
         abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
         assert abbe_material.index == 1.5
         assert abbe_material.abbe == 50
-
 
     def test_abbe_out_of_bounds_wavelength(self, set_test_backend):
         abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
@@ -708,6 +706,7 @@ def test_plot_nk():
     assert isinstance(axes, tuple)
     assert len(axes) == 2
 
+
 def test___eq__():
     ideal1 = materials.IdealMaterial(1.0, 0.0)
     ideal2 = materials.IdealMaterial(1.0, 0.0)
@@ -716,4 +715,3 @@ def test___eq__():
     assert ideal1 == ideal2
     assert ideal1 != ideal3
     assert abbe != ideal1
-

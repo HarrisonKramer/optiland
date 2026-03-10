@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import pytest
 
 import optiland.backend as be
-from optiland.optic import Optic
 from optiland import aperture
+from optiland.optic import Optic
+
 from .utils import assert_allclose
 
 

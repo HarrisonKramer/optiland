@@ -1,4 +1,5 @@
-import optiland.backend as be
+from __future__ import annotations
+
 import pytest
 
 from optiland.samples.simple import Edmund_49_847

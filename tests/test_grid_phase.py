@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import pytest
+
 from optiland import backend as be
-from .utils import assert_allclose
 from optiland.phase.grid import GridPhaseProfile
+
+from .utils import assert_allclose
 
 
 @pytest.fixture
@@ -35,9 +39,7 @@ def test_grid_phase_profile_get_gradient(grid_data):
     x, y, phase_grid = grid_data
     profile = GridPhaseProfile(x, y, phase_grid)
 
-    grad_x, grad_y, grad_z = profile.get_gradient(
-        be.array([0.5]), be.array([1.0])
-    )
+    grad_x, grad_y, grad_z = profile.get_gradient(be.array([0.5]), be.array([1.0]))
 
     assert_allclose(grad_x, be.array([1.0]), atol=1e-2)
     assert_allclose(grad_y, be.array([3.0]), atol=1e-2)

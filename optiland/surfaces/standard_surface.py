@@ -104,7 +104,7 @@ class Surface:
 
         # Handle the changes. Right now, we're only interested in a change in refractive
         # index. If this surface's interaction model has a Fresnel coating, update it:
-        if self.coating is not None:
+        if isinstance(getattr(self.interaction_model, "coating", None), FresnelCoating):
             self.set_fresnel_coating()
 
     def _register_callback(self, callback: Callable):

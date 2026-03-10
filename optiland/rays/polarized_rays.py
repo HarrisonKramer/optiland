@@ -107,6 +107,51 @@ class PolarizedRays(RealRays):
                 / 2
             )
 
+    @staticmethod
+    def get_local_basis(
+        k0: be.ndarray, k1: be.ndarray
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
+        """Get the local s, p0, p1 vectors and transforming matrices.
+
+        Args:
+            k0: (N, 3) array of pre-interaction ray directions.
+            k1: (N, 3) array of post-interaction ray directions.
+
+        Returns:
+            tuple: (s, p0, p1, o_in, o_out) where s, p0, p1 are (N, 3) vectors
+            and o_in, o_out are the projection matrices.
+        """
+        # find s-component
+        s = be.cross(k0, k1)
+        mag = be.linalg.norm(s, axis=1)
+
+        # handle case when mag = 0 (i.e., k0 parallel to k1)
+        mask = mag == 0
+        if be.any(mask):
+            x = be.broadcast_to(be.array([1.0, 0.0, 0.0]), k0[mask].shape)
+            p_fallback = be.cross(k0[mask], x)
+
+            p_norms = be.linalg.norm(p_fallback, axis=1)
+            y = be.broadcast_to(be.array([0.0, 1.0, 0.0]), k0[mask].shape)
+            p_fallback = be.where(
+                be.unsqueeze_last(p_norms == 0), be.cross(k0[mask], y), p_fallback
+            )
+
+            s[mask] = be.cross(p_fallback, k0[mask])
+            mag = be.linalg.norm(s, axis=1)
+
+        s = s / be.unsqueeze_last(mag)
+
+        # find p-component pre and post surface
+        p0 = be.cross(k0, s)
+        p1 = be.cross(k1, s)
+
+        # othogonal transformation matrices
+        o_in = be.stack((s, p0, k0), axis=1)
+        o_out = be.stack((s, p1, k1), axis=2)
+
+        return s, p0, p1, o_in, o_out
+
     def update(self, jones_matrix: be.ndarray = None):
         """Update polarization matrices after interaction with surface.
 
@@ -120,26 +165,7 @@ class PolarizedRays(RealRays):
         k0 = be.stack([self.L0, self.M0, self.N0]).T
         k1 = be.stack([self.L, self.M, self.N]).T
 
-        # find s-component
-        s = be.cross(k0, k1)
-        mag = be.linalg.norm(s, axis=1)
-
-        # handle case when mag = 0 (i.e., k0 parallel to k1)
-        mask = mag == 0
-        if be.any(mask):
-            fallback = be.broadcast_to(be.array([1.0, 0.0, 0.0]), k0[mask].shape)
-            s[mask] = be.cross(k0[mask], fallback)
-            mag = be.linalg.norm(s, axis=1)
-
-        s = s / be.unsqueeze_last(mag)
-
-        # find p-component pre and post surface
-        p0 = be.cross(k0, s)
-        p1 = be.cross(k1, s)
-
-        # othogonal transformation matrices
-        o_in = be.stack((s, p0, k0), axis=1)
-        o_out = be.stack((s, p1, k1), axis=2)
+        s, p0, p1, o_in, o_out = self.get_local_basis(k0, k1)
 
         # compute polarization matrix for surface
         if jones_matrix is None:

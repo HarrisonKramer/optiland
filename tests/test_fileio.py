@@ -1,23 +1,25 @@
+from __future__ import annotations
+
 import os
 import tempfile
 from unittest.mock import mock_open, patch
 
 import pytest
 
+import optiland.backend as be
+from optiland.fileio import load_optiland_file, save_optiland_file
+from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.fileio.optiland_handler import load_obj_from_json, save_obj_to_json
-from optiland.fileio import save_optiland_file, load_optiland_file
 from optiland.fileio.zemax_handler import (
-    ZemaxDataModel,
     ZemaxDataParser,
     ZemaxFileSourceHandler,
     load_zemax_file,
 )
-from optiland.fileio.converters import ZemaxToOpticConverter
+from optiland.geometries import ToroidalGeometry
 from optiland.materials import Material
 from optiland.optic import Optic
 from optiland.samples.objectives import HeliarLens
-from optiland.geometries import ToroidalGeometry
-import optiland.backend as be
+
 from .utils import assert_allclose
 
 
@@ -191,7 +193,7 @@ def test_save_load_optiland_file():
     with tempfile.NamedTemporaryFile(
         delete=False, mode="w", suffix=".json"
     ) as temp_file:
-        from optiland.fileio import save_optiland_file, load_optiland_file
+        from optiland.fileio import load_optiland_file, save_optiland_file
 
         save_optiland_file(lens, temp_file.name)
         lens2 = load_optiland_file(temp_file.name)
@@ -201,6 +203,7 @@ def test_save_load_optiland_file():
 def test_load_legacy_optiland_file_with_field_type():
     """Test loading an Optiland file with the legacy `field_type` key."""
     import json
+
     from optiland.fields import AngleField
     from optiland.fileio import load_optiland_file
 
@@ -233,21 +236,26 @@ def test_load_legacy_optiland_file_with_field_type():
 
 def test_save_load_optiland_file_with_tensor(set_test_backend):
     """Test saving and loading an Optiland file when the backend uses tensors."""
-    import optiland.backend as be
-    import numpy as np
-    
+
     try:
         import torch
+
         tensor_val = torch.tensor(1.23)
         tensor_array = torch.tensor([1.23, 4.56])
         has_torch = True
     except ImportError:
         has_torch = False
-        tensor_val = float(1.23)
+        tensor_val = 1.23
         tensor_array = [1.23, 4.56]
-        
+
     lens = HeliarLens()
-    lens.add_surface(index=2, surface_type="even_asphere", radius=10.0, conic=-1.0, coefficients=[1.23, 1.23])
+    lens.add_surface(
+        index=2,
+        surface_type="even_asphere",
+        radius=10.0,
+        conic=-1.0,
+        coefficients=[1.23, 1.23],
+    )
 
     # Manually insert a tensor after creation to simulate a backend mismatch or torch active state
     if has_torch:
@@ -259,31 +267,36 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
         class MockTensor:
             def __init__(self, val):
                 self.val = val
+
             def tolist(self):
                 return self.val if isinstance(self.val, list) else [self.val]
+
             def item(self):
                 return self.val
-        
+
         lens.surface_group.surfaces[1].thickness = MockTensor(1.23)
         lens.surface_group.surfaces[1].geometry.radius = MockTensor(1.23)
-        lens.surface_group.surfaces[2].geometry.coefficients = [MockTensor(1.23), MockTensor(1.23)]
+        lens.surface_group.surfaces[2].geometry.coefficients = [
+            MockTensor(1.23),
+            MockTensor(1.23),
+        ]
 
     with tempfile.NamedTemporaryFile(
         delete=False, mode="w", suffix=".json"
     ) as temp_file:
-        from optiland.fileio import save_optiland_file, load_optiland_file
+        from optiland.fileio import load_optiland_file, save_optiland_file
 
         # This should successfully serialize and not crash
         save_optiland_file(lens, temp_file.name)
-        
+
         # Reloading should read the json file which stores floats
         lens2 = load_optiland_file(temp_file.name)
-    
+
     # Assert values loaded properly
     assert abs(lens2.surface_group.surfaces[1].thickness - 1.23) < 1e-6
     assert abs(lens2.surface_group.surfaces[1].geometry.radius - 1.23) < 1e-6
     assert abs(lens2.surface_group.surfaces[2].geometry.coefficients[0] - 1.23) < 1e-6
-    
+
     os.remove(temp_file.name)
 
 
@@ -352,7 +365,14 @@ class TestZemaxToOpticConverterExtended:
     def test_configure_aperture_floating_stop_no_diameter(self):
         zemax_data = {
             "surfaces": {
-                0: {"type": "standard", "is_stop": True, "radius": 0.0, "conic": 0.0, "thickness": 0.0, "material": "Air"},
+                0: {
+                    "type": "standard",
+                    "is_stop": True,
+                    "radius": 0.0,
+                    "conic": 0.0,
+                    "thickness": 0.0,
+                    "material": "Air",
+                },
             },
             "aperture": {"floating_stop": True},
             "fields": {"type": "angle", "x": [0], "y": [0]},
@@ -361,8 +381,11 @@ class TestZemaxToOpticConverterExtended:
         converter = ZemaxToOpticConverter(zemax_data)
         converter.optic = Optic()
         converter._configure_surfaces()
-        
-        with pytest.raises(ValueError, match="Floating stop aperture specified but no stop diameter found"):
+
+        with pytest.raises(
+            ValueError,
+            match="Floating stop aperture specified but no stop diameter found",
+        ):
             converter._configure_aperture()
 
     def test_configure_aperture_no_valid_type(self):
@@ -374,7 +397,7 @@ class TestZemaxToOpticConverterExtended:
         }
         converter = ZemaxToOpticConverter(zemax_data)
         converter.optic = Optic()
-        
+
         with pytest.raises(ValueError, match="No valid aperture type found"):
             converter._configure_aperture()
 
@@ -388,9 +411,11 @@ class TestZemaxToOpticConverterExtended:
             "wavelengths": {"primary_index": 0, "data": [0.55]},
         }
         converter = ZemaxToOpticConverter(zemax_data)
-        
+
         with pytest.raises(ValueError, match="Unsupported Zemax surface type"):
-            converter._configure_surface_coefficients({"type": "unsupported_surface_type"})
+            converter._configure_surface_coefficients(
+                {"type": "unsupported_surface_type"}
+            )
 
     def test_configure_fields_vignette_warning(self, capsys):
         zemax_data = {
@@ -401,14 +426,14 @@ class TestZemaxToOpticConverterExtended:
                 "x": [0],
                 "y": [0],
                 "vignette_decenter_x": [0.1],
-                "vignette_decenter_y": [0.0]
+                "vignette_decenter_y": [0.0],
             },
             "wavelengths": {"primary_index": 0, "data": [0.55]},
         }
         converter = ZemaxToOpticConverter(zemax_data)
         converter.optic = Optic()
         converter._configure_fields()
-        
+
         captured = capsys.readouterr()
         assert "Warning: Vignette decentering is not supported." in captured.out
 
@@ -417,12 +442,12 @@ class TestZemaxToOpticConverterExtended:
             "surfaces": {
                 0: {
                     "type": "coordinate_break",
-                    "param_0": 1.0, # dx
-                    "param_1": 2.0, # dy
-                    "thickness": 5.0, # dz (thickness)
-                    "param_2": 10.0, # rx deg
-                    "param_3": 20.0, # ry deg
-                    "param_4": 30.0, # rz deg
+                    "param_0": 1.0,  # dx
+                    "param_1": 2.0,  # dy
+                    "thickness": 5.0,  # dz (thickness)
+                    "param_2": 10.0,  # rx deg
+                    "param_3": 20.0,  # ry deg
+                    "param_4": 30.0,  # rz deg
                     "conic": 0.0,
                 },
                 1: {
@@ -430,8 +455,8 @@ class TestZemaxToOpticConverterExtended:
                     "radius": 100.0,
                     "thickness": 10.0,
                     "conic": 0.0,
-                    "material": "N-BK7"
-                }
+                    "material": "N-BK7",
+                },
             },
             "aperture": {"EPD": 10},
             "fields": {"type": "angle", "x": [0], "y": [0]},
@@ -439,24 +464,31 @@ class TestZemaxToOpticConverterExtended:
         }
         converter = ZemaxToOpticConverter(zemax_data)
         optic = converter.convert()
-        
+
         surf = optic.surface_group.surfaces[0]
         assert surf.geometry.radius == 100.0
-        
+
         cs = surf.geometry.cs
-        assert cs.x != 0 or cs.y != 0 or cs.z != 0 or cs.rx != 0 or cs.ry != 0 or cs.rz != 0
+        assert (
+            cs.x != 0
+            or cs.y != 0
+            or cs.z != 0
+            or cs.rx != 0
+            or cs.ry != 0
+            or cs.rz != 0
+        )
 
     def test_configure_surfaces_toroidal(self):
         zemax_data = {
             "surfaces": {
                 0: {
                     "type": "toroidal",
-                    "radius": 50.0,       # radius_y
-                    "param_1": 60.0,      # radius_x
-                    "param_2": 0.1,       # coeff start
+                    "radius": 50.0,  # radius_y
+                    "param_1": 60.0,  # radius_x
+                    "param_2": 0.1,  # coeff start
                     "thickness": 5.0,
                     "conic": 0.0,
-                    "material": "Air"
+                    "material": "Air",
                 }
             },
             "aperture": {"EPD": 10},
@@ -465,7 +497,7 @@ class TestZemaxToOpticConverterExtended:
         }
         converter = ZemaxToOpticConverter(zemax_data)
         optic = converter.convert()
-        
+
         surf = optic.surface_group.surfaces[0]
         assert isinstance(surf.geometry, ToroidalGeometry)
         assert surf.geometry.R_yz == 50.0
@@ -479,7 +511,7 @@ class TestZemaxToOpticConverterExtended:
                     "radius": be.inf,
                     "thickness": be.inf,
                     "conic": 0.0,
-                    "material": "Air"
+                    "material": "Air",
                 }
             },
             "aperture": {"EPD": 10},
@@ -488,6 +520,6 @@ class TestZemaxToOpticConverterExtended:
         }
         converter = ZemaxToOpticConverter(zemax_data)
         optic = converter.convert()
-        
+
         surf = optic.surface_group.surfaces[0]
         assert be.isinf(surf.thickness)

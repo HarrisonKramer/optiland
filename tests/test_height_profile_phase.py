@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import pytest
+
 from optiland import backend as be
-from optiland.phase.height_profile import HeightProfile
 from optiland.materials.ideal import IdealMaterial
+from optiland.phase.height_profile import HeightProfile
+
 from .utils import assert_allclose
 
 

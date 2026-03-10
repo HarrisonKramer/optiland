@@ -26,10 +26,10 @@ def test_distortion_warper(set_test_backend):
     """Test distortion map generation and image warping."""
     optic = ReverseTelephoto()
     warper = DistortionWarper(optic)
-    
+
     img_size = 128
     wavelength = 0.55
-    
+
     # Generate Map
     d_map = warper.generate_distortion_map(wavelength, (img_size, img_size))
     assert d_map.shape == (1, img_size, img_size, 2)
@@ -37,11 +37,10 @@ def test_distortion_warper(set_test_backend):
     assert be.max(d_map) <= 1.05
     assert be.min(d_map) >= -1.05
 
-    
     # Warp Image
     input_img = be.array(create_grid_image(img_size))
     warped_img = warper.warp_image(input_img, d_map)
-    
+
     assert warped_img.shape == (img_size, img_size)
     assert warped_img.dtype == input_img.dtype
 
@@ -50,21 +49,17 @@ def test_psf_basis_generator(set_test_backend):
     """Test PSF basis generation."""
     optic = Telephoto()
     gen = PSFBasisGenerator(
-        optic=optic,
-        wavelength=0.55,
-        grid_shape=(3, 3),
-        num_rays=32,
-        psf_grid_size=32
+        optic=optic, wavelength=0.55, grid_shape=(3, 3), num_rays=32, psf_grid_size=32
     )
-    
+
     n_components = 2
     eigen_psfs, coeffs, mean_psf = gen.generate_basis(n_components=n_components)
-    
+
     # Check shapes
     assert eigen_psfs.shape == (n_components, 32, 32)
     assert coeffs.shape == (n_components, 3, 3)
     assert mean_psf.shape == (32, 32)
-    
+
     # Check resizing
     target_shape = (64, 64)
     coeffs_resized = gen.resize_coefficient_map(coeffs, target_shape)
@@ -74,18 +69,18 @@ def test_psf_basis_generator(set_test_backend):
 def test_spatially_variable_simulator(set_test_backend):
     """Test the convolution simulator."""
     sim = SpatiallyVariableSimulator()
-    
+
     H, W = 64, 64
     P = 16
     K = 2
-    
+
     source = be.ones((H, W))
-    eigen_psfs = be.ones((K, P, P)) / (P*P) # simple kernels
+    eigen_psfs = be.ones((K, P, P)) / (P * P)  # simple kernels
     coeffs = be.ones((K, H, W)) * 0.5
-    mean_psf = be.ones((P, P)) / (P*P)
-    
+    mean_psf = be.ones((P, P)) / (P * P)
+
     result = sim.simulate(source, eigen_psfs, coeffs, mean_psf)
-    
+
     assert result.shape == (H, W)
     assert be.all(result >= 0)
 
@@ -94,8 +89,8 @@ def test_image_simulation_engine_run(set_test_backend):
     """Test the full engine pipeline."""
     optic = Telephoto()
     source_np = create_grid_image(64)
-    source_rgb = np.stack([source_np]*3, axis=-1) # (64, 64, 3)
-    
+    source_rgb = np.stack([source_np] * 3, axis=-1)  # (64, 64, 3)
+
     engine = ImageSimulationEngine(
         optic=optic,
         source_image=source_rgb,
@@ -106,11 +101,11 @@ def test_image_simulation_engine_run(set_test_backend):
             "num_rays": 32,
             "n_components": 2,
             "oversample": 1,
-            "padding": 16
-        }
+            "padding": 16,
+        },
     )
-    
+
     result = engine.run()
-    
+
     assert result.shape == (64, 64, 3)
     assert not be.any(be.isnan(result))

@@ -1,4 +1,4 @@
-﻿jones
+jones
 =====
 
 .. automodule:: jones
@@ -9,6 +9,7 @@
    .. autosummary::
    
       BaseJones
+      ConstantJones
       JonesFresnel
       JonesHalfWaveRetarder
       JonesLinearDiattenuator

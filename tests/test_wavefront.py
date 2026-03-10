@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.figure import Figure
 import pytest
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
 
 import optiland.backend as be
 from optiland import distribution

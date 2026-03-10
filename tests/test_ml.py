@@ -90,9 +90,9 @@ class TestOpticalSystemModule:
 
         with pytest.warns(UserWarning, match="Gradient tracking is enabled"):
             _ = OpticalSystemModule(lens, problem)
-        
+
         assert be.grad_mode.requires_grad
-        be.grad_mode.enable() # Ensure it's enabled for subsequent tests
+        be.grad_mode.enable()  # Ensure it's enabled for subsequent tests
 
     def test_init_parameter_creation(self):
         """
@@ -103,7 +103,7 @@ class TestOpticalSystemModule:
 
         assert isinstance(module.params, nn.ParameterList)
         assert len(module.params) == len(problem.variables)
-        
+
         initial_val = problem.variables[0].value
         assert be.isclose(module.params[0].data, be.array(initial_val))
 
@@ -113,10 +113,10 @@ class TestOpticalSystemModule:
         """
         problem, lens = setup_problem()
         module = OpticalSystemModule(lens, problem)
-        
+
         expected_loss = problem.sum_squared()
         actual_loss = module._default_loss()
-        
+
         assert be.isclose(expected_loss, actual_loss)
 
     def test_sync_params_to_problem_and_bounds(self):
@@ -131,10 +131,10 @@ class TestOpticalSystemModule:
         # Test clamping to the maximum bound
         with torch.no_grad():
             module.params[0].data.fill_(20.0)
-        
+
         module._sync_params_to_problem()
         module.apply_bounds()
-        
+
         assert be.isclose(module.params[0].data, be.array(max_b))
 
         # Test clamping to the minimum bound
@@ -143,7 +143,7 @@ class TestOpticalSystemModule:
 
         module._sync_params_to_problem()
         module.apply_bounds()
-        
+
         assert be.isclose(module.params[0].data, be.array(min_b))
 
     def test_forward_pass_and_optimization(self):
@@ -176,11 +176,11 @@ class TestOpticalSystemModule:
         Test that a custom objective function is used correctly in the forward pass.
         """
         problem, lens = setup_problem()
-        
+
         # A simple custom objective that returns a constant
         custom_fn = lambda: torch.tensor(123.45, dtype=torch.float64)
-        
+
         module = OpticalSystemModule(lens, problem, objective_fn=custom_fn)
-        
+
         loss = module.forward()
         assert be.isclose(loss, torch.tensor(123.45, dtype=torch.float64))

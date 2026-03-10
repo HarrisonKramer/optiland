@@ -1,10 +1,13 @@
-import optiland.backend as be
+from __future__ import annotations
+
 import pytest
 
+import optiland.backend as be
 from optiland.aberrations import Aberrations
 from optiland.optic import Optic
 from optiland.samples.objectives import DoubleGauss
 from optiland.samples.simple import Edmund_49_847, SingletStopSurf2
+
 from .utils import assert_allclose
 
 

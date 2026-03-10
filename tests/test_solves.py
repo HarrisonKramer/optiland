@@ -1,19 +1,21 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
 
 import optiland.backend as be
 from optiland.samples.objectives import CookeTriplet
 from optiland.solves import (
     BaseSolve,
-    ThicknessSolve,
-    MarginalRayHeightThicknessSolve,
+    ChiefRayAngleCurvatureSolve,
     ChiefRayHeightThicknessSolve,
     CurvatureSolve,
     MarginalRayAngleCurvatureSolve,
-    ChiefRayAngleCurvatureSolve,
+    MarginalRayHeightThicknessSolve,
     QuickFocusSolve,
     SolveFactory,
     SolveManager,
+    ThicknessSolve,
 )
 
 from .utils import assert_allclose
@@ -39,12 +41,12 @@ class TestMarginalRayHeightThicknessSolve:
 
         # Paraxial trace
         ya, ua = optic.paraxial.marginal_ray()
-        
+
         # Incident slope is ua[surface_idx-1] (or ua[0] if surface_idx=0)
         u_incident = ua[0] if surface_idx == 0 else ua[surface_idx - 1]
-        
+
         offset = (height - ya[surface_idx]) / u_incident
-        
+
         surf = optic.surface_group.surfaces[surface_idx]
         z_orig = be.copy(surf.geometry.cs.z)
 
@@ -72,7 +74,11 @@ class TestMarginalRayHeightThicknessSolve:
 
     def test_from_dict(self, set_test_backend):
         optic = CookeTriplet()
-        data = {"type": "MarginalRayHeightThicknessSolve", "surface_idx": 7, "height": 0.5}
+        data = {
+            "type": "MarginalRayHeightThicknessSolve",
+            "surface_idx": 7,
+            "height": 0.5,
+        }
 
         solve = BaseSolve.from_dict(optic, data)
 
@@ -100,7 +106,7 @@ class TestChiefRayHeightThicknessSolve:
         height = 0.2
 
         yc, uc = optic.paraxial.chief_ray()
-        
+
         # Incident slope
         u_incident = uc[0] if surface_idx == 0 else uc[surface_idx - 1]
 
@@ -129,9 +135,9 @@ class TestMarginalRayAngleCurvatureSolve:
         optic = CookeTriplet()
         surface_idx = 3
         angle = -0.05
-        
+
         solve = MarginalRayAngleCurvatureSolve(optic, surface_idx, angle)
-        
+
         assert solve.optic == optic
         assert solve.surface_idx == surface_idx
         assert solve.angle == angle
@@ -142,10 +148,10 @@ class TestMarginalRayAngleCurvatureSolve:
         # Choose a curved surface, e.g., surface 1 (first lens front)
         surface_idx = 1
         target_angle = -0.1
-        
+
         # Initial state
         y, u = optic.paraxial.marginal_ray()
-        
+
         # Target angle is the EXIT slope u[surface_idx] (slope after surface_idx)
         # u[i] output from paraxial trace corresponds to slope AFTER surface i.
         # u[surface_idx] is the slope we modified.
@@ -153,14 +159,14 @@ class TestMarginalRayAngleCurvatureSolve:
             a = be.to_numpy(u[surface_idx])
             b = be.to_numpy(target_angle)
             assert not np.isclose(a, b, atol=1e-4)
-        
+
         # Apply solve
         solve = MarginalRayAngleCurvatureSolve(optic, surface_idx, target_angle)
         solve.apply()
-        
+
         # Re-trace and verify
         y_new, u_new = optic.paraxial.marginal_ray()
-        
+
         if surface_idx < len(u_new):
             assert_allclose(u_new[surface_idx], target_angle, atol=1e-4)
 
@@ -170,9 +176,9 @@ class TestChiefRayAngleCurvatureSolve:
         optic = CookeTriplet()
         surface_idx = 3
         angle = -0.05
-        
+
         solve = ChiefRayAngleCurvatureSolve(optic, surface_idx, angle)
-        
+
         assert solve.optic == optic
         assert solve.surface_idx == surface_idx
         assert solve.angle == angle
@@ -183,22 +189,22 @@ class TestChiefRayAngleCurvatureSolve:
         # Choose a surface
         surface_idx = 2
         target_angle = 0.4
-        
+
         # Initial state
         y, u = optic.paraxial.chief_ray()
-        
+
         if surface_idx < len(u):
             a = be.to_numpy(u[surface_idx])
             b = be.to_numpy(target_angle)
             assert not np.isclose(a, b, atol=1e-4)
-        
+
         # Apply solve
         solve = ChiefRayAngleCurvatureSolve(optic, surface_idx, target_angle)
         solve.apply()
-        
+
         # Re-trace and verify
         y_new, u_new = optic.paraxial.chief_ray()
-        
+
         if surface_idx < len(u_new):
             assert_allclose(u_new[surface_idx], target_angle, atol=1e-4)
 
@@ -206,13 +212,17 @@ class TestChiefRayAngleCurvatureSolve:
 class TestQuickfocusSolve:
     def test_quick_focus_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[-1].geometry.cs.z - be.array(10)
+        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[
+            -1
+        ].geometry.cs.z - be.array(10)
         solve = QuickFocusSolve(optic)
         assert solve.optic == optic
 
     def test_quick_focus_solve_apply(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[-1].geometry.cs.z - be.array(10)
+        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[
+            -1
+        ].geometry.cs.z - be.array(10)
         thickness = 42.21812063592369
         solve = QuickFocusSolve(optic)
         solve.apply()
@@ -240,7 +250,9 @@ class TestSolveFactory:
 
     def test_create_solve_new_names(self, set_test_backend):
         optic = CookeTriplet()
-        solve = SolveFactory.create_solve(optic, "marginal_ray_height_thickness", 7, 0.5)
+        solve = SolveFactory.create_solve(
+            optic, "marginal_ray_height_thickness", 7, 0.5
+        )
         assert isinstance(solve, MarginalRayHeightThicknessSolve)
 
         solve = SolveFactory.create_solve(optic, "chief_ray_height_thickness", 6, 0.5)
@@ -263,10 +275,10 @@ class TestSolveManager:
         optic = CookeTriplet()
         manager = SolveManager(optic)
         assert len(manager) == 0
-        
+
         manager.add("marginal_ray_height", 7, 0.5)
         assert len(manager) == 1
         assert isinstance(manager.solves[0], MarginalRayHeightThicknessSolve)
-        
+
         manager.clear()
         assert len(manager) == 0

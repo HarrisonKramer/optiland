@@ -24,7 +24,6 @@ from optiland.physical_apertures import RectangularAperture
 from optiland.rays import RealRays
 from optiland.sources import BaseSource, SMFSource
 
-
 # ---------------------------------------------------------------------------
 # Helper fixtures
 # ---------------------------------------------------------------------------
@@ -64,9 +63,7 @@ def _simple_singlet_with_detector():
     lens.add_surface(index=2, radius=-46.2795, thickness=50)
     lens.add_surface(
         index=3,
-        aperture=RectangularAperture(
-            x_min=-15, x_max=15, y_min=-15, y_max=15
-        ),
+        aperture=RectangularAperture(x_min=-15, x_max=15, y_min=-15, y_max=15),
     )
     lens.set_aperture(aperture_type="EPD", value=25)
     lens.set_field_type(field_type="angle")
@@ -225,9 +222,7 @@ class TestSMFSource:
 
     def test_position_offset_applied(self):
         """Rays from an offset source should have shifted coordinates."""
-        src_origin = SMFSource(
-            mfd_um=10.0, wavelength_um=0.55, is_point_source=True
-        )
+        src_origin = SMFSource(mfd_um=10.0, wavelength_um=0.55, is_point_source=True)
         src_offset = SMFSource(
             mfd_um=10.0,
             wavelength_um=0.55,
@@ -446,9 +441,7 @@ class TestExtendedSourceOptic:
 
     def test_set_thickness_through_wrapper(self, optic, ext_optic):
         ext_optic.set_thickness(99.0, surface_number=1)
-        assert optic.surface_group.get_thickness(1).item() == (
-            pytest.approx(99.0)
-        )
+        assert optic.surface_group.get_thickness(1).item() == (pytest.approx(99.0))
 
     def test_paraxial_calculations_through_wrapper(self, ext_optic):
         """Paraxial data should be accessible through the wrapper."""
@@ -530,9 +523,7 @@ class TestExtendedSourceOptic:
         plt.close(fig)
 
     def test_draw_with_limits(self, ext_optic):
-        fig, ax = ext_optic.draw(
-            num_rays=8, xlim=(-10, 100), ylim=(-20, 20)
-        )
+        fig, ax = ext_optic.draw(num_rays=8, xlim=(-10, 100), ylim=(-20, 20))
         assert ax.get_xlim() == pytest.approx((-10, 100))
         assert ax.get_ylim() == pytest.approx((-20, 20))
         plt.close(fig)
@@ -786,4 +777,3 @@ class TestStandardAnalysesThroughWrapper:
     def test_update_through_wrapper(self, ext_optic):
         """update() does not raise through the wrapper."""
         ext_optic.update()
-

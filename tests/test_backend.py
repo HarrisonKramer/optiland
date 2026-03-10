@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import types
+
 import pytest
+
 from optiland import backend as be
 
 
@@ -72,7 +76,7 @@ def test_getattr_fallback_priority(monkeypatch):
 
 def test_get_backend_after_set(monkeypatch):
     dummy_backend = type("DummyBackend", (), {})()
-    setattr(dummy_backend, "dummy_attr", "dummy_value")
+    dummy_backend.dummy_attr = "dummy_value"
     monkeypatch.setitem(be.__getattr__.__globals__["_backends"], "dummy", dummy_backend)
     be.set_backend("dummy")
     assert be.get_backend() == "dummy"

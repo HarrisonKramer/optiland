@@ -71,7 +71,8 @@ Welcome to the Optiland Learning Guide! This guide walks you through key concept
         - Impact of coatings on system performance
     - [Tutorial 6b - Introduction to Polarization](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6b_Introduction_to_Polarization.ipynb)
         - Basics of polarization in Optiland
-        - Analyzing polarization performance
+        - Analyzing polarization performance using exact matrix formalisms
+        - Modeling polarizer and retarder coatings
 7. **Advanced Optical Design**
     - [Tutorial 7a - Lithographic Projection System](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7a_Lithographic_Projection_System.ipynb)
         - Optimizing and Analyzing a Complex Lithography System

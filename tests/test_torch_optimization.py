@@ -1,11 +1,14 @@
-import warnings
+from __future__ import annotations
 
 import pytest
 
 import optiland.backend as be
-from optiland.optimization import TorchAdamOptimizer, TorchSGDOptimizer
+from optiland.optimization import (
+    OptimizationProblem,
+    TorchAdamOptimizer,
+    TorchSGDOptimizer,
+)
 from optiland.samples.objectives import CookeTriplet
-from optiland.optimization import OptimizationProblem
 
 
 def setup_problem(
@@ -102,22 +105,25 @@ class TestTorchBaseOptimizerSetup:
         """
         # Create the problem first. This may enable grad mode.
         problem, _ = setup_problem()
-        
+
         # Now, explicitly disable grad mode to test the optimizer's __init__.
         if hasattr(be.grad_mode, "disable"):
-             be.grad_mode.disable()
+            be.grad_mode.disable()
         assert not be.grad_mode.requires_grad
 
         # The optimizer's __init__ should now issue a warning and enable grad mode.
-        with pytest.warns(UserWarning, match="Gradient tracking is enabled for PyTorch"):
-             optimizer = TorchAdamOptimizer(problem)
-        
+        with pytest.warns(
+            UserWarning, match="Gradient tracking is enabled for PyTorch"
+        ):
+            optimizer = TorchAdamOptimizer(problem)
+
         # Check that gradients are now enabled by the optimizer
         assert be.grad_mode.requires_grad
-        
+
         # Cleanup: Ensure grad mode is enabled for subsequent tests
         if hasattr(be.grad_mode, "enable"):
             be.grad_mode.enable()
+
 
 @pytest.mark.parametrize("optimizer_class", [TorchAdamOptimizer, TorchSGDOptimizer])
 class TestTorchOptimizers:
@@ -175,7 +181,6 @@ class TestTorchOptimizers:
         final_param_val = problem.variables[0].variable.get_value()
         assert be.isclose(initial_param_val, final_param_val)
 
-
     def test_callback_is_invoked_at_each_step(self, optimizer_class):
         """
         Ensures the callback function is called exactly n_steps times with the
@@ -195,11 +200,15 @@ class TestTorchOptimizers:
         for i, (step, loss) in enumerate(history):
             assert step == i
             assert isinstance(loss, float)
-            if i > 0: # Loss is not guaranteed to decrease every step for all optimizers
+            if (
+                i > 0
+            ):  # Loss is not guaranteed to decrease every step for all optimizers
                 assert loss >= 0.0
 
     @pytest.mark.parametrize("disp, should_have_output", [(True, True), (False, False)])
-    def test_display_output_controlled_by_disp_flag(self, capsys, optimizer_class, disp, should_have_output):
+    def test_display_output_controlled_by_disp_flag(
+        self, capsys, optimizer_class, disp, should_have_output
+    ):
         """
         Tests that console output is correctly controlled by the 'disp' flag.
         """
@@ -213,7 +222,7 @@ class TestTorchOptimizers:
         else:
             assert "Loss" not in captured.out
 
-            
+
 class TestTorchOptimizerScaledSpace:
     """
     Tests that verify the Torch optimizers work in scaled parameter space,
@@ -285,12 +294,8 @@ class TestTorchOptimizerScaledSpace:
         optimizer = TorchAdamOptimizer(problem)
         result = optimizer.optimize(n_steps=20, disp=False)
 
-        assert not math.isnan(result.fun), (
-            f"Loss should not be NaN, got {result.fun}"
-        )
-        assert result.fun >= 0.0, (
-            f"Loss should be non-negative, got {result.fun}"
-        )
+        assert not math.isnan(result.fun), f"Loss should not be NaN, got {result.fun}"
+        assert result.fun >= 0.0, f"Loss should be non-negative, got {result.fun}"
 
     def test_bounded_variable_stays_in_physical_range(self):
         """
@@ -333,7 +338,11 @@ class TestTorchOptimizerScaledSpace:
         lens = Optic()
         lens.add_surface(index=0, thickness=be.inf)
         lens.add_surface(
-            index=1, thickness=7, radius=15, material="N-BK7", is_stop=True,
+            index=1,
+            thickness=7,
+            radius=15,
+            material="N-BK7",
+            is_stop=True,
         )
         lens.add_surface(index=2, thickness=30, radius=-1000)
         lens.add_surface(index=3)
@@ -344,11 +353,17 @@ class TestTorchOptimizerScaledSpace:
 
         problem = OptimizationProblem()
         problem.add_operand(
-            operand_type="f2", target=50, weight=1,
+            operand_type="f2",
+            target=50,
+            weight=1,
             input_data={"optic": lens},
         )
         problem.add_variable(
-            lens, "radius", surface_number=1, min_val=10, max_val=30,
+            lens,
+            "radius",
+            surface_number=1,
+            min_val=10,
+            max_val=30,
         )
         problem.add_variable(lens, "thickness", surface_number=2)
 

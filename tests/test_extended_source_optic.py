@@ -1,8 +1,12 @@
-import pytest
-import optiland.backend as be
-from optiland.optic import Optic, ExtendedSourceOptic
-from optiland.sources import SMFSource
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
+import pytest
+
+import optiland.backend as be
+from optiland.optic import ExtendedSourceOptic, Optic
+from optiland.sources import SMFSource
+
 
 class TestExtendedSourceOptic:
     @pytest.fixture
@@ -27,20 +31,19 @@ class TestExtendedSourceOptic:
     def test_divergence_calculation(self):
         """Test that divergence is calculated if not provided."""
         import math
+
         src = SMFSource(mfd_um=10.4, wavelength_um=1.55)
-        
+
         # Check calculation against known formula: theta_half = wavelength / (pi * w0)
         w0 = 10.4 / 2.0
         expected_rad = 1.55 / (math.pi * w0)
         expected_deg = 2 * math.degrees(expected_rad)
-        
+
         assert abs(src.divergence_deg_1e2 - expected_deg) < 1e-4
 
         # Test override
         src_override = SMFSource(
-            mfd_um=10.4, 
-            wavelength_um=1.55, 
-            divergence_deg_1e2=20.0
+            mfd_um=10.4, wavelength_um=1.55, divergence_deg_1e2=20.0
         )
         assert src_override.divergence_deg_1e2 == 20.0
 
@@ -53,11 +56,11 @@ class TestExtendedSourceOptic:
         """Test initialization and attribute delegation."""
         assert ext_optic.optic is optic
         assert ext_optic.source is source
-        
+
         # Test delegation
         assert ext_optic.name == optic.name
         assert ext_optic.surface_group is optic.surface_group
-        
+
         # Test setting attribute on optic via wrapper (should affect optic)
         ext_optic.name = "New Name"
         assert optic.name == "New Name"
@@ -66,13 +69,13 @@ class TestExtendedSourceOptic:
         """Test trace method."""
         num_rays = 100
         traced_rays, ray_path = ext_optic.trace(num_rays=num_rays)
-        
+
         # Sobol sampler rounds up to nearest power of 2
         assert be.size(traced_rays.x) > 0
         assert "x" in ray_path
         assert "y" in ray_path
         assert "z" in ray_path
-        
+
         # Check shapes of ray path arrays
         num_surfaces = ext_optic.optic.surface_group.num_surfaces
         actual_num_rays = be.size(traced_rays.x)

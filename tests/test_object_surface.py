@@ -1,7 +1,9 @@
-import optiland.backend as be
-import pytest
-import numpy as np
+from __future__ import annotations
 
+import numpy as np
+import pytest
+
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane
 from optiland.materials import IdealMaterial

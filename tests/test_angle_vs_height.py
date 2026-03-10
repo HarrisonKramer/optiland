@@ -1,19 +1,20 @@
 """Tests for the Incident Angle vs. Height Plot Analysis module."""
+from __future__ import annotations
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 import numpy as np
 import pytest
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 import optiland.backend as be
 from optiland.analysis.angle_vs_height import (
+    BaseAngleVsHeightAnalysis,
     FieldIncidentAngleVsHeight,
     PupilIncidentAngleVsHeight,
-    BaseAngleVsHeightAnalysis,
 )
 from optiland.samples.objectives import CookeTriplet
 

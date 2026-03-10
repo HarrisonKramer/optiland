@@ -1,16 +1,18 @@
-import pytest
+from __future__ import annotations
+
 import numpy as np
+import pytest
 
 from optiland import backend as be
 from optiland.distribution import (
     CrossDistribution,
+    GaussianQuadrature,
     HexagonalDistribution,
-    RandomDistribution,
-    UniformDistribution,
-    RingDistribution,
     LineXDistribution,
     LineYDistribution,
-    GaussianQuadrature,
+    RandomDistribution,
+    RingDistribution,
+    UniformDistribution,
 )
 
 

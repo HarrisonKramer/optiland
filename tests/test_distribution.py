@@ -1,14 +1,14 @@
-from unittest.mock import patch
-
-import optiland.backend as be
-import pytest
-
-from optiland import distribution
-from .utils import assert_allclose
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+
+import optiland.backend as be
+from optiland import distribution
+
+from .utils import assert_allclose
 
 
 @pytest.mark.parametrize("num_points", [10, 25, 106, 512])

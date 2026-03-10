@@ -1,15 +1,25 @@
+from __future__ import annotations
 
-import pytest
 import numpy as np
+import pytest
+
 import optiland.backend as be
-from optiland.backend import numpy_backend
+
 
 def test_config(set_test_backend):
     # Test setting device/precision (mostly for torch)
     if be.get_backend() == "torch":
         # Check current settings
         assert be.get_device() in ["cpu", "cuda"]
-        assert be.get_precision() in [float, np.float32, np.float64, "float32", "float64", be.torch.float32, be.torch.float64]
+        assert be.get_precision() in [
+            float,
+            np.float32,
+            np.float64,
+            "float32",
+            "float64",
+            be.torch.float32,
+            be.torch.float64,
+        ]
 
         # Test changing precision
         be.set_precision("float32")
@@ -20,6 +30,7 @@ def test_config(set_test_backend):
         # Test complex precision
         c_prec = be.get_complex_precision()
         assert c_prec == be.torch.complex128
+
 
 def test_creation_zeros_ones_full(set_test_backend):
     shape = (2, 3)
@@ -48,6 +59,7 @@ def test_creation_zeros_ones_full(set_test_backend):
     assert fl.shape == shape
     assert be.all(fl == 3.0)
 
+
 def test_linspace_arange(set_test_backend):
     l = be.linspace(0, 1, 5)
     assert len(l) == 5
@@ -60,7 +72,8 @@ def test_linspace_arange(set_test_backend):
     assert a[-1] == 4
 
     a2 = be.arange(0, 5, 2)
-    assert len(a2) == 3 # 0, 2, 4
+    assert len(a2) == 3  # 0, 2, 4
+
 
 def test_shape_manipulation(set_test_backend):
     x = be.zeros((2, 3))
@@ -100,6 +113,7 @@ def test_shape_manipulation(set_test_backend):
         assert xx.shape == (2, 3)
         assert yy.shape == (2, 3)
 
+
 def test_math_ops(set_test_backend):
     x = be.array([-1.0, 0.0, 1.0])
 
@@ -122,7 +136,7 @@ def test_math_ops(set_test_backend):
     assert be.max(x) == 1.0
 
     # nanmax
-    x_nan = be.array([1.0, float('nan'), 2.0])
+    x_nan = be.array([1.0, float("nan"), 2.0])
     if hasattr(be, "nanmax"):
         assert be.nanmax(x_nan) == 2.0
 
@@ -133,16 +147,20 @@ def test_math_ops(set_test_backend):
     m = be.maximum(be.array([1, 5]), be.array([2, 3]))
     val1 = m[0]
     val2 = m[1]
-    if hasattr(val1, "item"): val1 = val1.item()
-    if hasattr(val2, "item"): val2 = val2.item()
+    if hasattr(val1, "item"):
+        val1 = val1.item()
+    if hasattr(val2, "item"):
+        val2 = val2.item()
     assert val1 == 2
     assert val2 == 5
 
     # where
     w = be.where(x > 0, 1.0, -1.0)
     val = w[2]
-    if hasattr(val, "item"): val = val.item()
+    if hasattr(val, "item"):
+        val = val.item()
     assert val == 1.0
+
 
 def test_all_any(set_test_backend):
     t = be.array([True, True])
@@ -152,12 +170,14 @@ def test_all_any(set_test_backend):
     assert be.any(f)
     assert not be.any(be.array([False, False]))
 
+
 def test_cross_product(set_test_backend):
     if hasattr(be, "cross"):
         a = be.array([1.0, 0.0, 0.0])
         b = be.array([0.0, 1.0, 0.0])
         c = be.cross(a, b)
         assert be.allclose(c, be.array([0.0, 0.0, 1.0]))
+
 
 def test_histogram2d(set_test_backend):
     if hasattr(be, "histogram2d"):
@@ -170,6 +190,7 @@ def test_histogram2d(set_test_backend):
         assert H[0, 0] == 1
         assert H[1, 1] == 1
 
+
 def test_poly(set_test_backend):
     if hasattr(be, "polyfit") and hasattr(be, "polyval"):
         x = be.array([0.0, 1.0, 2.0])
@@ -178,8 +199,10 @@ def test_poly(set_test_backend):
 
         # Test consistency
         val = be.polyval(coeffs, 3.0)
-        if hasattr(val, "item"): val = val.item()
+        if hasattr(val, "item"):
+            val = val.item()
         assert abs(val - 3.0) < 1e-5
+
 
 def test_pad(set_test_backend):
     if hasattr(be, "pad"):
@@ -188,17 +211,21 @@ def test_pad(set_test_backend):
         p = be.pad(x, ((1, 1), (1, 1)))
         assert p.shape == (4, 4)
         val = p[0, 0]
-        if hasattr(val, "item"): val = val.item()
-        assert val == 0 # Default constant 0
+        if hasattr(val, "item"):
+            val = val.item()
+        assert val == 0  # Default constant 0
+
 
 def test_vectorize(set_test_backend):
     if hasattr(be, "vectorize"):
+
         def my_func(x):
             return x + 1
 
         v_func = be.vectorize(my_func)
         res = v_func(be.array([1, 2, 3]))
         assert be.all(res == be.array([2, 3, 4]))
+
 
 def test_interp(set_test_backend):
     if hasattr(be, "interp"):
@@ -208,20 +235,24 @@ def test_interp(set_test_backend):
         res = be.interp(x, xp, fp)
         assert be.allclose(res, be.array([0.5, 0.5]))
 
+
 def test_copy_to(set_test_backend):
     if hasattr(be, "copy_to"):
         src = be.array([1.0])
         dst = be.array([0.0])
         be.copy_to(src, dst)
         val = dst[0]
-        if hasattr(val, "item"): val = val.item()
+        if hasattr(val, "item"):
+            val = val.item()
         assert val == 1.0
+
 
 def test_arange_indices(set_test_backend):
     res = be.arange_indices(0, 5, 1)
     if be.get_backend() == "numpy":
         assert be.is_array_like(res)
     assert len(res) == 5
+
 
 def test_cast(set_test_backend):
     arr = be.array([1, 2, 3])
@@ -231,27 +262,33 @@ def test_cast(set_test_backend):
     else:
         assert "float" in str(casted.dtype)
 
+
 def test_array_creation(set_test_backend):
     arr = be.array([1, 2, 3])
     assert be.is_array_like(arr)
     assert len(arr) == 3
+
 
 def test_transpose(set_test_backend):
     arr = be.array([[1, 2], [3, 4]])
     transposed = be.transpose(arr)
     assert transposed.shape == (2, 2)
     val = transposed[0, 1]
-    if hasattr(val, "item"): val = val.item()
+    if hasattr(val, "item"):
+        val = val.item()
     assert val == 3
+
 
 def test_atleast_1d(set_test_backend):
     scalar = 5.0
     arr = be.atleast_1d(scalar)
     assert len(arr) == 1
 
+
 def test_as_array_1d(set_test_backend):
     res = be.as_array_1d(5.0)
     assert res.shape == (1,)
+
 
 def test_ravel(set_test_backend):
     if be.get_backend() == "torch" and not hasattr(be, "ravel"):
@@ -260,12 +297,14 @@ def test_ravel(set_test_backend):
     raveled = be.ravel(arr)
     assert raveled.shape == (4,)
 
+
 def test_rotations(set_test_backend):
     if not hasattr(be, "from_euler"):
-        pytest.skip(f"from_euler not implemented")
+        pytest.skip("from_euler not implemented")
     euler = be.array([0, 0, 0])
     rot = be.from_euler(euler)
     assert rot is not None
+
 
 def test_random_functions(set_test_backend):
     u = be.random_uniform(0, 1, size=(2, 2))
@@ -275,20 +314,25 @@ def test_random_functions(set_test_backend):
     r = be.rand(2, 2)
     assert r.shape == (2, 2)
 
+
 def test_nearest_nd_interpolator(set_test_backend):
     points = be.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
     values = be.array([0.0, 1.0, 2.0, 3.0])
     x = be.array([0.1])
     y = be.array([0.1])
     res = be.nearest_nd_interpolator(points, values, x, y)
-    if hasattr(res, "item"): val = res.item()
-    else: val = res[0]
+    if hasattr(res, "item"):
+        val = res.item()
+    else:
+        val = res[0]
     assert val == 0.0
+
 
 def test_unsqueeze_last(set_test_backend):
     arr = be.array([[1, 2], [3, 4]])
     unsqueezed = be.unsqueeze_last(arr)
     assert unsqueezed.shape == (2, 2, 1)
+
 
 def test_to_complex(set_test_backend):
     arr = be.array([1.0, 2.0])
@@ -297,6 +341,7 @@ def test_to_complex(set_test_backend):
         assert np.iscomplexobj(comp)
     else:
         assert comp.is_complex()
+
 
 def test_batched_chain_matmul3(set_test_backend):
     N = 2
@@ -314,26 +359,33 @@ def test_batched_chain_matmul3(set_test_backend):
     res = be.batched_chain_matmul3(A, B, C)
     assert res.shape == (N, 3, 3)
 
+
 def test_factorial(set_test_backend):
     res = be.factorial(be.array([3.0]))
     val = res[0]
-    if hasattr(val, "item"): val = val.item()
+    if hasattr(val, "item"):
+        val = val.item()
     assert abs(val - 6.0) < 1e-5
+
 
 def test_path_contains_points(set_test_backend):
     vertices = be.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
     points = be.array([[0.5, 0.5], [1.5, 1.5]])
     mask = be.path_contains_points(vertices, points)
-    if hasattr(mask, "cpu"): mask = mask.detach().cpu().numpy()
+    if hasattr(mask, "cpu"):
+        mask = mask.detach().cpu().numpy()
     assert mask[0] == True
     assert mask[1] == False
+
 
 def test_lstsq(set_test_backend):
     A = be.array([[1.0], [2.0], [3.0]])
     B = be.array([2.0, 4.0, 6.0])
     res = be.lstsq(A, B)
-    if hasattr(res, "cpu"): res = res.detach().cpu().numpy()
+    if hasattr(res, "cpu"):
+        res = res.detach().cpu().numpy()
     assert np.allclose(res.flatten(), np.array([2.0]), atol=1e-4)
+
 
 def test_fftconvolve(set_test_backend):
     in1 = be.array([1.0, 2.0, 3.0])
@@ -348,6 +400,7 @@ def test_fftconvolve(set_test_backend):
     res = be.fftconvolve(in1, in2, mode="valid")
     assert res.shape[0] == 1
 
+
 def test_grid_sample(set_test_backend):
     data = np.zeros((1, 1, 4, 4), dtype=float)
     data[0, 0, 1, 1] = 1.0
@@ -356,6 +409,7 @@ def test_grid_sample(set_test_backend):
     grid = be.array(grid_data)
     res = be.grid_sample(input_tensor, grid, align_corners=False)
     assert res.shape == (1, 1, 1, 1)
+
 
 def test_get_bilinear_weights(set_test_backend):
     if hasattr(be, "get_bilinear_weights"):
