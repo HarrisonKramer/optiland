@@ -549,11 +549,11 @@ def min(x: ArrayLike) -> int | float:
 
 
 def maximum(a: ArrayLike, b: ArrayLike) -> Tensor:
-    return torch.maximum(array(a), array(b))
+    return torch.maximum(cast(a), cast(b))
 
 
 def minimum(a: ArrayLike, b: ArrayLike) -> Tensor:
-    return torch.minimum(array(a), array(b))
+    return torch.minimum(cast(a), cast(b))
 
 
 def nanmax(
