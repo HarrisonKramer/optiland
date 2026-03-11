@@ -539,19 +539,21 @@ rad2deg = degrees
 
 
 def max(x: ArrayLike) -> int | float:
-    if isinstance(x, torch.Tensor):
-        return x.detach().cpu().max().item()
-    return np.max(x)
+    t = array(x)
+    return t.detach().cpu().max().item()
 
 
 def min(x: ArrayLike) -> int | float:
-    if isinstance(x, torch.Tensor):
-        return x.detach().cpu().min().item()
-    return np.min(x)
+    t = array(x)
+    return t.detach().cpu().min().item()
 
 
 def maximum(a: ArrayLike, b: ArrayLike) -> Tensor:
     return torch.maximum(array(a), array(b))
+
+
+def minimum(a: ArrayLike, b: ArrayLike) -> Tensor:
+    return torch.minimum(array(a), array(b))
 
 
 def nanmax(
@@ -1082,6 +1084,7 @@ __all__ = [
     "max",
     "min",
     "maximum",
+    "minimum",
     "mean",
     "all",
     "any",
