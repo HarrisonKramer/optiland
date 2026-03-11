@@ -191,7 +191,7 @@ class ScalarFFTPSF(BasePSF):
         psf = []
         for pupil in pupils:
             amp = be.fft.fftshift(be.fft.fft2(pupil))
-            psf.append(amp * be.conj(amp))
+            psf.append(be.real(amp * be.conj(amp)))
         psf = be.stack(psf)
 
         return be.real(be.sum(psf, axis=0)) / norm_factor * 100

@@ -68,9 +68,15 @@ class VectorialFFTPSF(ScalarFFTPSF):
     def _get_normalization(self):
         """Calculates the normalization factor for the PSF.
 
-        The normalization factor scales the PSF such that a diffraction limited
-        system with the same aperture and uniform illumination has a peak of 100.
+        The normalization factor scales the PSF such that a diffraction-limited
+        system with the same aperture and amplitude distribution has a peak of 100.
+
+        For each pupil component P_i, the ideal (unaberrated) FFT peak is
+        sum(|P_i|). Summing the squares of these ideal peaks across all pupils
+        gives the diffraction-limited PSF peak, which is used as the
+        normalization factor.
         """
-        mask = be.abs(self.pupils[0]) + be.abs(self.pupils[1]) + be.abs(self.pupils[2])
-        area = be.sum(mask > 0)
-        return (area**2) * len(self.wavelengths)
+        norm = 0.0
+        for pupil in self.pupils:
+            norm = norm + be.sum(be.abs(pupil)) ** 2
+        return norm
