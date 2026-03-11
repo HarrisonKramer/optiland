@@ -167,10 +167,7 @@ def test_xyz_to_xyY_packed_without_axis_3_raises():
         core.xyz_to_xyY(xyz)
 
 
-def test_xyz_to_srgb_clip_fallback_without_astype(monkeypatch):
-    monkeypatch.setattr(core.be, "minimum", lambda a, b: min(a, b))
-    monkeypatch.setattr(core.be, "maximum", lambda a, b: max(a, b))
-
+def test_xyz_to_srgb_clip_fallback_without_astype():
     r, g, b = core.xyz_to_srgb(95.047, 100.0, 108.883)
 
     assert 0 <= _as_float(r) <= 255
