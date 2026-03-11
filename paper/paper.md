@@ -43,7 +43,7 @@ Further documentation is available online [@optiland-docs].
 
 Optiland addresses the need for a comprehensive open-source optical design package that unifies traditional lens design with modern, differentiable workflows. It enables a wide range of optical design, analysis, and optimization tasks that previously required costly commercial software, serving a target audience of students, educators, and researchers. By offering a fully differentiable PyTorch backend, Optiland enables computational optics research where optical systems can be embedded directly into neural networks. This capability is essential for emerging fields such as end-to-end optimization of optical systems and learned inverse design. The PyTorch backend also provides substantial performance improvements through GPU acceleration. By leveraging modern hardware, workloads that would otherwise take minutes or hours on CPUs can be reduced to seconds on GPUs.
 
-# State of the field
+# State of the Field
 
 The field of optical design has long been dominated by commercial software tools such as OpticStudio [@zemax] and CODE V [@codev]. While powerful, these proprietary tools often carry high license costs that create significant barriers for students, educators, and researchers. Furthermore, integrating these closed-source tools into modern deep-learning pipelines is often cumbersome, typically relying on slow external APIs that break the gradient chain required for backpropagation.
 
