@@ -269,7 +269,7 @@ class HuygensPSF(BasePSF):
             data.pupil_x,
             data.pupil_y,
             data.pupil_z,
-            data.intensity,
+            be.ones_like(data.intensity),
             pupil_opd_ideal,
             self.wavelengths[0] * 1e-3,
             data.radius,
@@ -287,7 +287,7 @@ class HuygensPSF(BasePSF):
 
         # Extract pupil data
         pupil_x, pupil_y, pupil_z = data.pupil_x, data.pupil_y, data.pupil_z
-        pupil_amp = data.intensity
+        pupil_amp = be.sqrt(data.intensity)
         pupil_opd = data.opd * wavelength_mm  # waves to mm
         Rp = data.radius  # Radius of curvature of exit pupil
 
