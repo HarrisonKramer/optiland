@@ -72,3 +72,6 @@ dev = [
 ]
 gui = ["PySide6", "qtconsole"]
 torch = ["torch"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
