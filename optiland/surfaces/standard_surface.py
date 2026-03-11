@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 from weakref import WeakMethod
 
 import optiland.backend as be
-from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.coatings import BaseCoating, FresnelCoating, ThinFilmCoating
 from optiland.geometries import BaseGeometry
 from optiland.interactions.base import BaseInteractionModel
 from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
@@ -107,6 +107,11 @@ class Surface:
         # index. If this surface's interaction model has a Fresnel coating, update it:
         if isinstance(getattr(self.interaction_model, "coating", None), FresnelCoating):
             self.set_fresnel_coating()
+        elif isinstance(
+            getattr(self.interaction_model, "coating", None), ThinFilmCoating
+        ):
+            self.coating.stack.incident_material = self.material_pre
+            self.coating.stack.substrate_material = self.material_post
 
     def _register_callback(self, callback: Callable):
         if callback not in self._listeners:
@@ -151,9 +156,14 @@ class Surface:
     @material_post.setter
     def material_post(self, material: BaseMaterial):
         self._material_post = material
+
         # Update coating for new material
-        if self.coating is not None:
-            self.coating = self.coating.adapt(self.material_pre, self.material_post)
+        if isinstance(self.coating, FresnelCoating):
+            self.set_fresnel_coating()
+        elif isinstance(self.coating, ThinFilmCoating):
+            self.coating.stack.incident_material = self.material_pre
+            self.coating.stack.substrate_material = self.material_post
+
         for weakref_callback in self._listeners:
             weakref_callback()(self)
 

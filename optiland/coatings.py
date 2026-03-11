@@ -146,14 +146,6 @@ class BaseCoating(ABC):
             "type": self.__class__.__name__,
         }
 
-    def adapt(self, material_pre, material_post):
-        """Adapts the coating to new surrounding materials if necessary.
-
-        By default, returns the coating itself. Subclasses like ThinFilmCoating
-        override this to update the stack's incident/substrate materials.
-        """
-        return self
-
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> BaseCoating:
         """Creates a coating from a dictionary.
@@ -516,22 +508,26 @@ class JonesThinFilm(BaseJones):
         aoi: be.ndarray = None,
     ) -> be.ndarray:
         # wavelengths: rays.w is in microns in Optiland
-        wl_um = rays.w
-        th = aoi if aoi is not None else be.zeros_like(rays.w)
+        wl_um = be.atleast_1d(rays.w)
+        th = be.atleast_1d(aoi if aoi is not None else be.zeros_like(rays.w))
 
         # Compute s/p amplitudes per-ray; expect broadcasting over (N,)
         r_s, t_s, _, _ = self._coeffs_amp(wl_um, th, pol="s", reflect=reflect)
         r_p, t_p, _, _ = self._coeffs_amp(wl_um, th, pol="p", reflect=reflect)
 
-        jones = be.to_complex(be.zeros((be.shape(rays.x)[0], 3, 3)))
+        z = be.zeros_like(r_s)
+        o = be.ones_like(r_s)
+
         if reflect:
-            jones[:, 0, 0] = r_s
-            jones[:, 1, 1] = -r_p
-            jones[:, 2, 2] = -1.0
+            col0 = be.stack([r_s, z, z], axis=-1)
+            col1 = be.stack([z, -r_p, z], axis=-1)
+            col2 = be.stack([z, z, -o], axis=-1)
         else:
-            jones[:, 0, 0] = t_s
-            jones[:, 1, 1] = t_p
-            jones[:, 2, 2] = 1.0
+            col0 = be.stack([t_s, z, z], axis=-1)
+            col1 = be.stack([z, t_p, z], axis=-1)
+            col2 = be.stack([z, z, o], axis=-1)
+
+        jones = be.stack([col0, col1, col2], axis=-2)
         return jones
 
     def _coeffs_amp(
@@ -539,12 +535,9 @@ class JonesThinFilm(BaseJones):
     ) -> tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
         # Use internal helpers returning amplitudes from the stack TMM
         # We compute on per-ray vectors so shapes are (N,)
-        # Reshape to (N,1) to reuse stack’s 2D API, then squeeze back
-        wl2 = wl_um.reshape((-1, 1))
-        th2 = th_rad.reshape((-1, 1))
-        out = self.stack.compute_rtRTA(wl2, th2, pol)
-        r, t = out["r"].squeeze(), out["t"].squeeze()
-        R, T = out["R"].squeeze(), out["T"].squeeze()
+        out = self.stack.compute_rtRTA_elementwise(wl_um, th_rad, pol)
+        r, t = out["r"], out["t"]
+        R, T = out["R"], out["T"]
         return r, t, R, T
 
 
