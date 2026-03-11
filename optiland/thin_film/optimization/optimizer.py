@@ -230,25 +230,20 @@ class ThinFilmOptimizer:
         weight: float = 1.0,
         polarization: str = "s",
     ) -> ThinFilmOptimizer:
-        """
-        Convenience method to add an angular target with multiple AOI values.
+        """Convenience method to add an angular target with multiple AOI values.
 
-        Parameters:
-        -----------
-        property : str
-            Property to optimize ("R", "T", "A")
-        wavelength_nm : float
-            Single wavelength value in nm
-        aoi_deg_range : list[float]
-            List of angles of incidence in degrees
-        target_type : str
-            Type of target ("equal", "over", "below")
-        value : float or list[float]
-            Target value(s) - single value or list matching aoi_deg_range length
-        weight : float, optional
-            Target weight for optimization
-        polarization : str, optional
-            Polarization state ("s", "p", "u")
+        Args:
+            property: Property to optimize ("R", "T", "A").
+            wavelength_nm: Single wavelength value in nm.
+            aoi_deg_range: List of angles of incidence in degrees.
+            target_type: Type of target ("equal", "over", "below").
+            value: Target value(s). Single value or list matching
+                aoi_deg_range length.
+            weight: Target weight for optimization. Defaults to 1.0.
+            polarization: Polarization state ("s", "p", "u"). Defaults to "s".
+
+        Returns:
+            ThinFilmOptimizer: self for method chaining.
         """
         return self.add_target(
             property=property,
@@ -270,25 +265,19 @@ class ThinFilmOptimizer:
         aoi_deg: float = 0.0,
         polarization: str = "s",
     ) -> ThinFilmOptimizer:
-        """
-        Convenience method to add an interpolated spectral target.
+        """Convenience method to add an interpolated spectral target.
 
-        Parameters:
-        -----------
-        property : str
-            Property to optimize ("R", "T", "A")
-        wavelength_nm : list[float]
-            List of wavelength values in nm
-        target_type : str
-            Type of target ("equal", "over", "below")
-        value : list[float]
-            List of target values matching wavelength_nm length
-        weight : float, optional
-            Target weight for optimization
-        aoi_deg : float, optional
-            Angle of incidence in degrees
-        polarization : str, optional
-            Polarization state ("s", "p", "u")
+        Args:
+            property: Property to optimize ("R", "T", "A").
+            wavelength_nm: List of wavelength values in nm.
+            target_type: Type of target ("equal", "over", "below").
+            value: List of target values matching wavelength_nm length.
+            weight: Target weight for optimization. Defaults to 1.0.
+            aoi_deg: Angle of incidence in degrees. Defaults to 0.0.
+            polarization: Polarization state ("s", "p", "u"). Defaults to "s".
+
+        Returns:
+            ThinFilmOptimizer: self for method chaining.
         """
         return self.add_target(
             property=property,

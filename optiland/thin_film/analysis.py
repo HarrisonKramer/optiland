@@ -480,7 +480,21 @@ class SpectralAnalyzer:
         observer: Literal["2deg", "10deg"] = "2deg",
         illuminant: list[float] | None = None,
     ) -> tuple[float, float, float]:
-        """Compute xyY chromaticity from a normalized power spectrum."""
+        """Compute xyY chromaticity from a normalized power spectrum.
+
+        Args:
+            wavelength_values: Wavelength values in the specified unit.
+            wavelength_unit: Unit of wavelength values.
+            aoi: Angle of incidence (scalar).
+            aoi_unit: Unit of the angle.
+            polarization: Polarization type(s).
+            quantity: Quantity to analyze ('R' or 'T').
+            observer: CIE standard observer ('2deg' or '10deg').
+            illuminant: Optional custom illuminant spectrum.
+
+        Returns:
+            tuple[float, float, float]: (x, y, Y) chromaticity coordinates.
+        """
         wavelengths_nm, values = self._get_rt_spectrum(
             wavelength_values=wavelength_values,
             wavelength_unit=wavelength_unit,
@@ -510,7 +524,21 @@ class SpectralAnalyzer:
         observer: Literal["2deg", "10deg"] = "2deg",
         illuminant: list[float] | None = None,
     ) -> dict[str, tuple[float, float, float] | tuple[int, int, int]]:
-        """Return XYZ, xyY, and sRGB for a thin-film spectrum."""
+        """Return XYZ, xyY, and sRGB for a thin-film spectrum.
+
+        Args:
+            wavelength_values: Wavelength values in the specified unit.
+            wavelength_unit: Unit of wavelength values.
+            aoi: Angle of incidence (scalar).
+            aoi_unit: Unit of the angle.
+            polarization: Polarization type(s).
+            quantity: Quantity to analyze ('R' or 'T').
+            observer: CIE standard observer ('2deg' or '10deg').
+            illuminant: Optional custom illuminant spectrum.
+
+        Returns:
+            dict: Dictionary containing 'xyz', 'xyY', and 'sRGB' values.
+        """
         wavelengths_nm, values = self._get_rt_spectrum(
             wavelength_values=wavelength_values,
             wavelength_unit=wavelength_unit,

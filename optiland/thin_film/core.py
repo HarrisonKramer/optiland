@@ -35,8 +35,17 @@ def _complex_index(material: BaseMaterial, wavelength_um: float | Array) -> Arra
 
 def _snell_cos(n0, theta0, n):
     """Transmitted angle cosine with forward-branch selection.
-    Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
-    Hugh Angus CRC Press, Ch2.6
+
+    Calculation follows 'Thin-Film Optical Filters, Fifth Edition, Macleod,
+    Hugh Angus CRC Press, Ch2.6.
+
+    Args:
+        n0 (complex): Incident medium complex refractive index.
+        theta0 (float): Angle of incidence in radians.
+        n (complex): Medium complex refractive index.
+
+    Returns:
+        complex: Transmitted angle cosine.
     """
     nr = n.real
     k = n.imag
@@ -45,8 +54,17 @@ def _snell_cos(n0, theta0, n):
 
 def _admittance(n: complex, cos_t: complex, pol: PolSP):
     """Admittance η = sqrt(ε/μ) * n * cos(θ) for s and p polarizations.
-    Calculation is following 'Thin-Film Optical Filters, Fifth Edition, Macleod,
-    Hugh Angus CRC Press, Ch2.6
+
+    Calculation follows 'Thin-Film Optical Filters, Fifth Edition, Macleod,
+    Hugh Angus CRC Press, Ch2.6.
+
+    Args:
+        n (complex): Medium complex refractive index.
+        cos_t (complex): Cosine of the angle of propagation in the medium.
+        pol (PolSP): Polarization state ('s' or 'p').
+
+    Returns:
+        complex: Optical admittance.
     """
     sqrt_eps_mu = 0.002654418729832701370374020517935  # S
     eta_s = sqrt_eps_mu * n * cos_t
@@ -61,19 +79,33 @@ def _admittance(n: complex, cos_t: complex, pol: PolSP):
 
 
 def _tmm_coh(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
-    """
-    Compute the reflection and transmission coefficients for
-    a thin film stack. Based on Abelès Matrix.
-    Calculation is vectorized over wavelength and angle of incidence.
+    """Compute the reflection and transmission coefficients for a thin film stack.
 
-    Ref :
-    - Chap 13. Polarized Light and Optical Systems, Russell
-        A. Chipman, Wai-Sze Tiffany Lam, and Garam Young
-    - F. Abelès, Researches sur la propagation des ondes électromagnétiques
-        sinusoïdales dans les milieus stratifies.
-        Applications aux couches minces, Ann. Phys. Paris,
-        12ième Series 5 (1950): 596–640.
-    - Chap 2. Thin-Film Optical Filters, Fifth Edition, Macleod, Hugh Angus CRC Press
+    Calculation is vectorized over wavelength and angle of incidence.
+    Based on Abelès Matrix.
+
+    Ref:
+        - Chap 13. Polarized Light and Optical Systems, Russell
+          A. Chipman, Wai-Sze Tiffany Lam, and Garam Young.
+        - F. Abelès, Researches sur la propagation des ondes électromagnétiques
+          sinusoïdales dans les milieus stratifies. Applications aux couches
+          minces, Ann. Phys. Paris, 12ième Series 5 (1950): 596–640.
+        - Chap 2. Thin-Film Optical Filters, Fifth Edition, Macleod, Hugh Angus
+          CRC Press.
+
+    Args:
+        stack (ThinFilmStack): The thin film stack to compute.
+        wavelength_um (float | Array): Wavelength(s) in microns.
+        theta0_rad (float | Array): Angle(s) of incidence in radians.
+        pol (PolSP): Polarization state ('s' or 'p').
+
+    Returns:
+        tuple[Array, Array, Array, Array, Array]: (r, t, R, T, A) where:
+            r: Complex reflection coefficient.
+            t: Complex transmission coefficient.
+            R: Reflectance.
+            T: Transmittance.
+            A: Absorptance.
     """
     n0 = _complex_index(stack.incident_material, wavelength_um)
     ns = _complex_index(stack.substrate_material, wavelength_um)

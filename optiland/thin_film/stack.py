@@ -44,32 +44,28 @@ class ThinFilmStack:
     - AOI in radians internally; convenience helpers accept degrees.
     - Layers are ordered from the incident side to the substrate side.
 
-    Parameters
-    ----------
-    incident : BaseMaterial
-        Incident medium (e.g., air).
-    substrate : BaseMaterial
-        Substrate medium (e.g., glass).
-    layers : list[Layer], optional
-        Ordered layers between incident and substrate, default empty.
-    reference_wl_um : float | None, optional
-        Reference wavelength for thickness quarter-wave calculations, by default None.
-    reference_AOI_deg : float | None, optional
-        Reference angle of incidence in degrees for thickness quarter-wave
-        calculations, by default 0 degrees (normal incidence).
+    Args:
+        incident_material (BaseMaterial): Incident medium (e.g., air).
+        substrate_material (BaseMaterial): Substrate medium (e.g., glass).
+        layers (list[Layer], optional): Ordered layers between incident and
+            substrate. Defaults to None.
+        reference_wl_um (float | None, optional): Reference wavelength for
+            thickness quarter-wave calculations. Defaults to None.
+        reference_AOI_deg (float | None, optional): Reference angle of
+            incidence in degrees for thickness quarter-wave calculations.
+            Defaults to 0 (normal incidence).
 
-    Examples
-    --------
-    >>> from optiland.materials import IdealMaterial, Material
-    >>> from optiland.thin_film import ThinFilmStack
-    >>> air, glass = IdealMaterial(1.0), IdealMaterial(1.52)
-    >>> tf = ThinFilmStack(incident_material=air, substrate_material=glass)
-    >>> # 100 nm SiO2 on glass
-    >>> SiO2 = Material("SiO2", reference="Gao")
-    >>> tf.add_layer_nm(SiO2, 100.0)
-    >>> R = tf.reflectance_nm_deg([550.0], [0.0], polarization="s")
-    >>> T = tf.transmittance_nm_deg([550.0], [0.0], polarization="s")
-    >>> A = tf.absorptance_nm_deg([550.0], [0.0], polarization="s")
+    Examples:
+        >>> from optiland.materials import IdealMaterial, Material
+        >>> from optiland.thin_film import ThinFilmStack
+        >>> air, glass = IdealMaterial(1.0), IdealMaterial(1.52)
+        >>> tf = ThinFilmStack(incident_material=air, substrate_material=glass)
+        >>> # 100 nm SiO2 on glass
+        >>> SiO2 = Material("SiO2", reference="Gao")
+        >>> tf.add_layer_nm(SiO2, 100.0)
+        >>> R = tf.reflectance_nm_deg([550.0], [0.0], polarization="s")
+        >>> T = tf.transmittance_nm_deg([550.0], [0.0], polarization="s")
+        >>> A = tf.absorptance_nm_deg([550.0], [0.0], polarization="s")
     """
 
     incident_material: BaseMaterial
@@ -361,15 +357,14 @@ class ThinFilmStack:
         The substrate is plotted at the bottom, followed by the stack layers,
         and the incident medium at the top. Material names or refractive indices
         are used as labels in the legend.
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            The axes on which to plot the structure. If None, a new figure and
-            axes are created.
-        Returns
-        -------
-        tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]
-            The matplotlib Figure and Axes objects containing the plot.
+
+        Args:
+            ax (plt.Axes, optional): The axes on which to plot the structure.
+                If None, a new figure and axes are created.
+
+        Returns:
+            tuple[plt.Figure, plt.Axes]: The matplotlib Figure and Axes objects
+                containing the plot.
         """
         if ax is None:
             fig, ax = plt.subplots()
@@ -493,17 +488,13 @@ class ThinFilmStack:
         thickness in nanometers.
         Bars are colored according to the material of each layer, and a legend is
         provided to identify materials.
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            The matplotlib Axes object to plot on. If None, a new figure and axes
-            will be created.
-        Returns
-        -------
-        fig : matplotlib.figure.Figure
-            The matplotlib Figure object containing the plot.
-        ax : matplotlib.axes.Axes
-            The matplotlib Axes object containing the plot.
+        Args:
+            ax (plt.Axes, optional): The matplotlib Axes object to plot on.
+                If None, a new figure and axes will be created.
+
+        Returns:
+            tuple[plt.Figure, plt.Axes]: The matplotlib Figure and Axes objects
+                containing the plot.
         """
 
         if ax is None:

@@ -21,21 +21,17 @@ if TYPE_CHECKING:
 class Layer:
     """Represents a thin-film layer.
 
-    Parameters
-    ----------
-    material : BaseMaterial
-        Optiland material providing ``n(wavelength)`` and ``k(wavelength)``.
-    thickness_um : float
-        Layer thickness in microns (µm).
-    name : str | None
-        Optional label for display.
+    Args:
+        material (BaseMaterial): Optiland material providing ``n(wavelength)``
+            and ``k(wavelength)``.
+        thickness_um (float): Layer thickness in microns (µm).
+        name (str | None): Optional label for display.
 
-    Examples
-    --------
-    >>> from optiland.materials import IdealMaterial
-    >>> from optiland.thin_film import Layer
-    >>> sio2 = IdealMaterial(1.46)
-    >>> layer = Layer(sio2, thickness_um=0.1, name="SiO2 100 nm")
+    Examples:
+        >>> from optiland.materials import IdealMaterial
+        >>> from optiland.thin_film import Layer
+        >>> sio2 = IdealMaterial(1.46)
+        >>> layer = Layer(sio2, thickness_um=0.1, name="SiO2 100 nm")
     """
 
     material: BaseMaterial
@@ -73,15 +69,11 @@ class Layer:
     def update_thickness(self, new_thickness_um: float) -> Layer:
         """Update the layer thickness.
 
-        Parameters
-        ----------
-        new_thickness_um : float
-            New layer thickness in microns (µm).
+        Args:
+            new_thickness_um (float): New layer thickness in microns (µm).
 
-        Returns
-        -------
-        Layer
-            self for chaining.
+        Returns:
+            Layer: self for chaining.
         """
         self.thickness_um = new_thickness_um
         return self
