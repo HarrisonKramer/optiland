@@ -51,3 +51,4 @@ from fast Fourier transforms to more rigorous diffraction calculations.
    psf.fft
    psf.huygens_fresnel
    psf.mmdft
+   psf.vectorial_fft

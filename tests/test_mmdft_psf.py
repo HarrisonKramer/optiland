@@ -10,7 +10,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 import optiland.backend as be
-from optiland.psf import FFTPSF, MMDFTPSF
+from optiland.psf import ScalarFFTPSF, MMDFTPSF
 from optiland.samples.objectives import CookeTriplet
 
 from .utils import assert_allclose
@@ -56,7 +56,7 @@ def make_mmdftpsf_and_fftpsf(set_test_backend):
         optic = CookeTriplet()
         if tweak_optic:
             tweak_optic(optic)
-        fftpsf = FFTPSF(
+        fftpsf = ScalarFFTPSF(
             optic, field, wavelength, num_rays=num_rays, grid_size=image_size
         )
         dx = (

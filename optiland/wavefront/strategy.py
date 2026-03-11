@@ -197,6 +197,15 @@ class ChiefRayStrategy(ReferenceStrategy):
         pupil_y = rays.y - t * rays.M
         pupil_z = rays.z - t * rays.N
 
+        # 6. Handle polarization data if available
+        kwargs = {}
+        prt_matrix = getattr(rays, "p", None)
+        exit_fields = getattr(rays, "get_exit_fields", None)
+
+        if prt_matrix is not None and exit_fields:
+            kwargs["prt_matrix"] = prt_matrix
+            kwargs["E_exits"] = exit_fields(self.optic.polarization_state)
+
         return WavefrontData(
             pupil_x=pupil_x,
             pupil_y=pupil_y,
@@ -204,7 +213,7 @@ class ChiefRayStrategy(ReferenceStrategy):
             opd=opd_wv,
             intensity=intensity,
             radius=geometry.radius,
-            jones_pupil=getattr(rays, "p", None),
+            **kwargs,
         )
 
     def _create_reference_geometry(self, rays: RealRays) -> ReferenceGeometry:
@@ -333,6 +342,15 @@ class CentroidStrategy(ReferenceStrategy):
         pupil_y = rays.y - t * rays.M
         pupil_z = rays.z - t * rays.N
 
+        # 7. Handle polarization data if available
+        kwargs = {}
+        prt_matrix = getattr(rays, "p", None)
+        exit_fields = getattr(rays, "get_exit_fields", None)
+
+        if prt_matrix is not None and exit_fields:
+            kwargs["prt_matrix"] = prt_matrix
+            kwargs["E_exits"] = exit_fields(self.optic.polarization_state)
+
         return WavefrontData(
             pupil_x=pupil_x,
             pupil_y=pupil_y,
@@ -340,7 +358,7 @@ class CentroidStrategy(ReferenceStrategy):
             opd=opd_waves,
             intensity=rays.i,
             radius=geometry.radius,
-            jones_pupil=getattr(rays, "p", None),
+            **kwargs,
         )
 
     def _points_from_rays(self, rays: RealRays) -> tuple[be.ndarray, be.ndarray]:
