@@ -54,7 +54,7 @@ class RadiusVariable(VariableBehavior):
             new_value (float): The new value of the radius.
 
         """
-        self.optic.set_radius(new_value, self.surface_number)
+        self.optic.updater.set_radius(new_value, self.surface_number)
 
     def __str__(self):
         """Return a string representation of the variable.

@@ -10,6 +10,7 @@ import optiland.backend as be
 from .base import BaseFieldDefinition
 
 
+@BaseFieldDefinition.register("object_height")
 class ObjectHeightField(BaseFieldDefinition):
     """Defines fields by height on the object surface."""
 

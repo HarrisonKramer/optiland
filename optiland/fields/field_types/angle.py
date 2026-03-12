@@ -10,6 +10,7 @@ import optiland.backend as be
 from .base import BaseFieldDefinition
 
 
+@BaseFieldDefinition.register("angle")
 class AngleField(BaseFieldDefinition):
     """Defines fields by angle (in degrees) relative to the optical axis."""
 

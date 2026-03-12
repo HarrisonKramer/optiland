@@ -8,7 +8,7 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
     from optiland import Optic
@@ -17,6 +17,44 @@ if TYPE_CHECKING:
 
 class BaseFieldDefinition(ABC):
     """Abstract base class for defining how fields map to ray properties."""
+
+    _registry: ClassVar[dict[str, type[BaseFieldDefinition]]] = {}
+
+    @classmethod
+    def register(cls, name: str):
+        """Class decorator to register a field type by name.
+
+        Args:
+            name: The string key used to look up this field type.
+
+        Returns:
+            A decorator that registers the subclass and returns it unchanged.
+
+        """
+
+        def decorator(subclass: type[BaseFieldDefinition]) -> type[BaseFieldDefinition]:
+            cls._registry[name] = subclass
+            return subclass
+
+        return decorator
+
+    @classmethod
+    def create(cls, field_type: str) -> BaseFieldDefinition:
+        """Instantiate a field definition by its registered name.
+
+        Args:
+            field_type: The registered name of the field type.
+
+        Returns:
+            A new instance of the corresponding field definition.
+
+        Raises:
+            ValueError: If ``field_type`` is not in the registry.
+
+        """
+        if field_type not in cls._registry:
+            raise ValueError(f"Invalid field type: {field_type}.")
+        return cls._registry[field_type]()
 
     @abstractmethod
     def get_ray_origins(
@@ -112,27 +150,24 @@ class BaseFieldDefinition(ABC):
             BaseFieldDefinition: A field definition object created from the
                 dictionary.
 
+        Raises:
+            ValueError: If ``field_type`` is missing or not in the registry.
+
         """
         if "field_type" not in field_def_dict:
             raise ValueError("Missing required keys: field_type")
 
-        field_type = field_def_dict["field_type"]
+        # Ensure subclasses are imported so their @register decorators run.
+        from optiland.fields.field_types import (  # noqa: F401
+            AngleField,
+            ObjectHeightField,
+            ParaxialImageHeightField,
+            RealImageHeightField,
+        )
 
-        if field_type == "AngleField":
-            from .angle import AngleField
-
-            return AngleField()
-        elif field_type == "ObjectHeightField":
-            from .object_height import ObjectHeightField
-
-            return ObjectHeightField()
-        elif field_type == "ParaxialImageHeightField":
-            from .paraxial_image_height import ParaxialImageHeightField
-
-            return ParaxialImageHeightField()
-        elif field_type == "RealImageHeightField":
-            from .real_image_height import RealImageHeightField
-
-            return RealImageHeightField()
-        else:
-            raise ValueError(f"Unknown field definition: {field_type}")
+        class_name = field_def_dict["field_type"]
+        # Registry keys are class names (e.g. "AngleField"); look up by name.
+        for _key, klass in cls._registry.items():
+            if klass.__name__ == class_name:
+                return klass()
+        raise ValueError(f"Unknown field definition: {class_name}")

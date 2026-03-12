@@ -11,6 +11,7 @@ from .base import BaseFieldDefinition
 from .paraxial_image_height import ParaxialImageHeightField
 
 
+@BaseFieldDefinition.register("real_image_height")
 class RealImageHeightField(BaseFieldDefinition):
     """Defines fields by the chief ray's real height at the image plane."""
 
