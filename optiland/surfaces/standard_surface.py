@@ -23,11 +23,12 @@ from optiland.interactions.refractive_reflective_model import RefractiveReflecti
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
-from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from optiland.rays import BaseRays, ParaxialRays, RealRays
 
 
 class Surface:
@@ -183,7 +184,7 @@ class Surface:
         super().__init_subclass__(**kwargs)
         Surface._registry[cls.__name__] = cls
 
-    def trace(self, rays: BaseRays):
+    def trace(self, rays: BaseRays) -> BaseRays:
         """Traces the given rays through the surface.
 
         Args:
@@ -193,44 +194,72 @@ class Surface:
             BaseRays: The traced rays.
 
         """
-        # reset recorded information
         self.reset()
-
-        # transform coordinate system
         self.geometry.localize(rays)
-
-        if isinstance(rays, ParaxialRays):
-            # propagate to this surface
-            t = -rays.z
-            rays.propagate(t)
-
-            # interact with surface
-            rays = self.interaction_model.interact_paraxial_rays(rays)
-
-        elif isinstance(rays, RealRays):
-            # find distance from rays to the surface
-            t = self.geometry.distance(rays)
-
-            # propagate the rays a distance t through material
-            self.material_pre.propagation_model.propagate(rays, t)
-
-            # update OPD
-            rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
-
-            # if there is a limiting aperture, clip rays outside of it
-            if self.aperture:
-                self.aperture.clip(rays)
-
-            # interact with surface
-            rays = self.interaction_model.interact_real_rays(rays)
-
-        # inverse transform coordinate system
+        rays = rays.trace_on_surface(self)
         self.geometry.globalize(rays)
-
-        # record ray information
-        self._record(rays)
-
         return rays
+
+    def _trace_paraxial(self, rays: ParaxialRays) -> ParaxialRays:
+        """Paraxial physics kernel: propagate, interact, record.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays.
+
+        Returns:
+            ParaxialRays: The traced paraxial rays.
+
+        """
+        t = -rays.z
+        rays.propagate(t)
+        rays = self.interaction_model.interact_paraxial_rays(rays)
+        self._record_paraxial(rays)
+        return rays
+
+    def _trace_real(self, rays: RealRays) -> RealRays:
+        """Real ray physics kernel: propagate, interact, record.
+
+        Args:
+            rays (RealRays): The real rays.
+
+        Returns:
+            RealRays: The traced real rays.
+
+        """
+        t = self.geometry.distance(rays)
+        self.material_pre.propagation_model.propagate(rays, t)
+        rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
+        if self.aperture:
+            self.aperture.clip(rays)
+        rays = self.interaction_model.interact_real_rays(rays)
+        self._record_real(rays)
+        return rays
+
+    def _record_paraxial(self, rays: ParaxialRays) -> None:
+        """Records paraxial ray information after tracing.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays.
+
+        """
+        self.y = be.copy(be.atleast_1d(rays.y))
+        self.u = be.copy(be.atleast_1d(rays.u))
+
+    def _record_real(self, rays: RealRays) -> None:
+        """Records real ray information after tracing.
+
+        Args:
+            rays (RealRays): The real rays.
+
+        """
+        self.x = be.copy(be.atleast_1d(rays.x))
+        self.y = be.copy(be.atleast_1d(rays.y))
+        self.z = be.copy(be.atleast_1d(rays.z))
+        self.L = be.copy(be.atleast_1d(rays.L))
+        self.M = be.copy(be.atleast_1d(rays.M))
+        self.N = be.copy(be.atleast_1d(rays.N))
+        self.intensity = be.copy(be.atleast_1d(rays.i))
+        self.opd = be.copy(be.atleast_1d(rays.opd))
 
     def set_semi_aperture(self, r_max: float):
         """Sets the physical semi-aperture of the surface.
@@ -262,28 +291,6 @@ class Surface:
         self.interaction_model.coating = FresnelCoating(
             self.material_pre, self.material_post
         )
-
-    def _record(self, rays):
-        """Records the ray information.
-
-        Args:
-            rays: The rays.
-
-        """
-        if isinstance(rays, ParaxialRays):
-            self.y = be.copy(be.atleast_1d(rays.y))
-            self.u = be.copy(be.atleast_1d(rays.u))
-        elif isinstance(rays, RealRays):
-            self.x = be.copy(be.atleast_1d(rays.x))
-            self.y = be.copy(be.atleast_1d(rays.y))
-            self.z = be.copy(be.atleast_1d(rays.z))
-
-            self.L = be.copy(be.atleast_1d(rays.L))
-            self.M = be.copy(be.atleast_1d(rays.M))
-            self.N = be.copy(be.atleast_1d(rays.N))
-
-            self.intensity = be.copy(be.atleast_1d(rays.i))
-            self.opd = be.copy(be.atleast_1d(rays.opd))
 
     def is_rotationally_symmetric(self):
         """Returns True if the surface is rotationally symmetric, False otherwise."""

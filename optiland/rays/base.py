@@ -14,6 +14,8 @@ import optiland.backend as be
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
+    from optiland.surfaces.standard_surface import Surface
+
 
 class BaseRays:
     """Base class for rays in a 3D space.
@@ -24,6 +26,18 @@ class BaseRays:
         z: z-coordinate of the ray.
 
     """
+
+    def trace_on_surface(self, surface: Surface) -> BaseRays:
+        """Dispatch tracing to the appropriate surface method.
+
+        Args:
+            surface (Surface): The surface to trace through.
+
+        Returns:
+            BaseRays: The traced rays.
+
+        """
+        raise NotImplementedError
 
     def translate(self, dx: ArrayLike, dy: ArrayLike, dz: ArrayLike):
         """Shifts the rays in the x, y, and z directions.

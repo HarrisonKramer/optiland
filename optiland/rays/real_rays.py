@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from optiland._types import BEArray, ScalarOrArray
+    from optiland.surfaces.standard_surface import Surface
 
 
 class RealRays(BaseRays):
@@ -86,6 +87,18 @@ class RealRays(BaseRays):
         self.N0: BEArray | None = None
 
         self.is_normalized = True
+
+    def trace_on_surface(self, surface: Surface) -> RealRays:
+        """Dispatch to the surface's real ray trace kernel.
+
+        Args:
+            surface (Surface): The surface to trace through.
+
+        Returns:
+            RealRays: The traced real rays.
+
+        """
+        return surface._trace_real(self)
 
     def rotate_x(self, rx: ScalarOrArray):
         """Rotate the rays about the x-axis.
