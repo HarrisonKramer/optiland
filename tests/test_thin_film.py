@@ -135,6 +135,30 @@ class TestThinFilmStackBasic:
         assert "ThinFilmStack" in repr_str
         assert "1 layers" in repr_str
 
+    def test_stack_str_empty_and_non_empty(self, set_test_backend, air, glass, sio2):
+        empty_stack = ThinFilmStack(incident_material=air, substrate_material=glass)
+        empty_str = str(empty_stack)
+        assert "layers=[]" in empty_str
+
+        filled_stack = ThinFilmStack(incident_material=air, substrate_material=glass)
+        filled_stack.add_layer_nm(sio2, 100.0, name="SiO2_1")
+        filled_str = str(filled_stack)
+        assert "ThinFilmStack Summary" in filled_str
+        assert "Total Thickness" in filled_str
+        assert "SiO2" in filled_str
+
+    def test_stack_copy_with_overrides(self, set_test_backend, air, glass, sio2):
+        stack = ThinFilmStack(incident_material=air, substrate_material=glass)
+        stack.add_layer_nm(sio2, 120.0, name="L0")
+
+        new_incident = IdealMaterial(n=1.1)
+        copied = stack.copy(incident=new_incident)
+
+        assert copied is not stack
+        assert copied.incident_material == new_incident
+        assert copied.substrate_material == stack.substrate_material
+        assert len(copied.layers) == len(stack.layers)
+
 
 class TestThinFilmStackLayerManipulation:
     """Test layer addition methods."""
@@ -313,6 +337,27 @@ class TestThinFilmStackCalculations:
         with pytest.raises(ValueError, match="polarization must be"):
             simple_stack.compute_rtRTA(0.55, 0.0, "invalid")
 
+    def test_elementwise_coefficients_all_polarizations(
+        self, set_test_backend, simple_stack
+    ):
+        """Test element-wise coefficient mode for s/p/u and invalid polarization."""
+        wavelengths_um = be.array([0.5, 0.55, 0.6])
+        aoi_rads = be.array([0.0, be.deg2rad(20.0), be.deg2rad(40.0)])
+
+        result_s = simple_stack.compute_rtRTA_elementwise(wavelengths_um, aoi_rads, "s")
+        result_p = simple_stack.compute_rtRTA_elementwise(wavelengths_um, aoi_rads, "p")
+        result_u = simple_stack.compute_rtRTA_elementwise(wavelengths_um, aoi_rads, "u")
+
+        assert result_s["R"].shape == (3,)
+        assert result_p["R"].shape == (3,)
+        assert result_u["R"].shape == (3,)
+
+        expected_R_u = 0.5 * (result_s["R"] + result_p["R"])
+        assert_allclose(result_u["R"], expected_R_u, rtol=1e-10)
+
+        with pytest.raises(ValueError, match="polarization must be"):
+            simple_stack.compute_rtRTA_elementwise(wavelengths_um, aoi_rads, "invalid")
+
 
 class TestThinFilmStackUnitHelpers:
     """Test unit conversion helper methods."""
@@ -373,6 +418,18 @@ class TestThinFilmStackVisualization:
         returned_fig, returned_ax = multilayer_stack.plot_structure_thickness(ax=ax)
         assert returned_fig is fig
         assert returned_ax is ax
+        plt.close(fig)
+
+    def test_plot_structure_thickness_with_ideal_material_layer(
+        self, set_test_backend, air, glass
+    ):
+        """Cover legend naming branch for IdealMaterial layers."""
+        stack = ThinFilmStack(incident_material=air, substrate_material=glass)
+        stack.add_layer_nm(IdealMaterial(n=1.7), 80.0, name=None)
+
+        fig, ax = stack.plot_structure_thickness()
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, plt.Axes)
         plt.close(fig)
 
 

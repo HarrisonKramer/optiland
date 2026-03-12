@@ -9,9 +9,12 @@ Corentin Nannini, 2025
 import pytest
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from types import SimpleNamespace
 import optiland.backend as be
 from optiland.materials import IdealMaterial
 from optiland.thin_film import ThinFilmStack
+import optiland.thin_film.optimization.optimizer as optimizer_module
 from optiland.thin_film.optimization import (
     ThinFilmOptimizer,
     LayerThicknessVariable,
@@ -723,3 +726,193 @@ class TestReportFunctionality:
 
         result = optimizer.optimize(max_iterations=3, verbose=False)
         assert isinstance(result, dict)
+
+
+class TestThinFilmOptimizerCoverageBranches:
+    def test_interpolate_target_value_additional_branches(self, simple_stack):
+        optimizer = ThinFilmOptimizer(simple_stack)
+
+        target_aoi = optimizer_module.OptimizationTarget(
+            property="R",
+            wavelength_nm=550.0,
+            target_type="equal",
+            value=[0.1, 0.2, 0.3],
+            weight=1.0,
+            aoi_deg=[0.0, 30.0, 60.0],
+            polarization="s",
+            tolerance=1e-6,
+        )
+        interp_value = optimizer._interpolate_target_value(target_aoi, current_aoi=15.0)
+        assert isinstance(interp_value, float)
+
+        with pytest.raises(ValueError, match="current_aoi"):
+            optimizer._interpolate_target_value(target_aoi)
+
+        mismatch_target = optimizer_module.OptimizationTarget(
+            property="R",
+            wavelength_nm=550.0,
+            target_type="equal",
+            value=[0.1, 0.2],
+            weight=1.0,
+            aoi_deg=[0.0, 30.0, 60.0],
+            polarization="s",
+            tolerance=1e-6,
+        )
+        with pytest.raises(ValueError, match="same length"):
+            optimizer._interpolate_target_value(mismatch_target, current_aoi=10.0)
+
+        fallback_target = optimizer_module.OptimizationTarget(
+            property="R",
+            wavelength_nm=550.0,
+            target_type="equal",
+            value=[0.7, 0.8],
+            weight=1.0,
+            aoi_deg=0.0,
+            polarization="u",
+            tolerance=1e-6,
+        )
+        assert optimizer._interpolate_target_value(fallback_target) == 0.7
+
+    def test_merit_function_and_optimize_kwargs_branches(self, simple_stack, monkeypatch):
+        optimizer = ThinFilmOptimizer(simple_stack)
+        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=180)
+        optimizer.add_target(
+            property="A",
+            wavelength_nm=[500.0, 550.0],
+            target_type="equal",
+            value=[0.0, 0.0],
+            polarization="s",
+        )
+        optimizer.add_target(
+            property="T",
+            wavelength_nm=[500.0, 550.0],
+            target_type="over",
+            value=[0.6, 0.6],
+            polarization="p",
+        )
+
+        # Force numpy-scalar merit so the ".item()" path is exercised.
+        monkeypatch.setattr(ThinFilmOperand, "absorptance", staticmethod(lambda *a, **k: np.float64(0.05)))
+        monkeypatch.setattr(ThinFilmOperand, "transmittance", staticmethod(lambda *a, **k: np.float64(0.7)))
+
+        x0 = np.array([optimizer.variables[0].variable.get_value()])
+        merit = optimizer._merit_function(x0)
+        assert isinstance(merit, float)
+
+        result = optimizer.optimize(max_iterations=2, disp=True, iprint=1, gtol=1e-9)
+        assert isinstance(result, dict)
+        assert "final_merit" in result
+
+    def test_get_current_performance_array_cases(self, simple_stack):
+        optimizer = ThinFilmOptimizer(simple_stack)
+        optimizer.add_target(
+            property="T",
+            wavelength_nm=[500.0, 550.0, 600.0],
+            target_type="over",
+            value=[0.5, 0.6, 0.5],
+            aoi_deg=10.0,
+        )
+        optimizer.add_target(
+            property="A",
+            wavelength_nm=550.0,
+            target_type="below",
+            value=[0.2, 0.2, 0.2],
+            aoi_deg=[0.0, 30.0, 60.0],
+        )
+
+        perf = optimizer.get_current_performance()
+        assert "target_0" in perf
+        assert "target_1" in perf
+        assert len(perf["target_0"]["target_values"]) == 3
+        assert len(perf["target_1"]["target_values"]) == 3
+
+    def test_add_spectral_target_with_weights_average(self, simple_stack):
+        optimizer = ThinFilmOptimizer(simple_stack)
+        optimizer.add_spectral_target(
+            property="R",
+            wavelengths_nm=[450.0, 550.0, 650.0],
+            target_type="below",
+            value=0.2,
+            weights=[1.0, 2.0, 3.0],
+        )
+        assert len(optimizer.targets) == 1
+        assert optimizer.targets[0].weight == pytest.approx(2.0)
+
+    def test_plot_targets_branches(self, simple_stack, monkeypatch):
+        optimizer = ThinFilmOptimizer(simple_stack)
+
+        # No target branch should return cleanly.
+        fig, ax = plt.subplots()
+        optimizer.plot_targets(ax)
+        plt.close(fig)
+
+        optimizer.add_target(
+            property="R",
+            wavelength_nm=[500.0, 550.0, 600.0],
+            target_type="below",
+            value=[0.3, 0.2, 0.3],
+            aoi_deg=10.0,
+        )
+        optimizer.add_target(
+            property="T",
+            wavelength_nm=550.0,
+            target_type="over",
+            value=0.7,
+            aoi_deg=20.0,
+        )
+        optimizer.add_target(
+            property="A",
+            wavelength_nm=550.0,
+            target_type="below",
+            value=[0.1, 0.15, 0.2],
+            aoi_deg=[0.0, 30.0, 60.0],
+        )
+
+        fig, ax = plt.subplots()
+        optimizer.plot_targets(ax, plot_type="wavelength")
+        plt.close(fig)
+
+        fig, ax = plt.subplots()
+        optimizer.plot_targets(ax, plot_type="angle")
+        plt.close(fig)
+
+        fig, ax = plt.subplots()
+        with pytest.raises(ValueError, match="Invalid plot_type"):
+            optimizer.plot_targets(ax, plot_type="invalid")
+        plt.close(fig)
+
+        monkeypatch.setattr(optimizer_module, "plt", None)
+        fig, ax = plt.subplots()
+        with pytest.raises(ImportError, match="matplotlib is required"):
+            optimizer.plot_targets(ax)
+        plt.close(fig)
+
+    def test_info_without_tabulate_and_with_result(self, multilayer_stack, capsys, monkeypatch):
+        optimizer = ThinFilmOptimizer(multilayer_stack)
+        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=150, apply_scaling=True)
+        optimizer.add_thickness_variable(layer_index=1, min_nm=60, max_nm=120, apply_scaling=False)
+        optimizer.add_target(
+            property="R",
+            wavelength_nm=[500.0, 600.0],
+            target_type="below",
+            value=[0.2, 0.2],
+            aoi_deg=10.0,
+        )
+
+        optimizer.result = SimpleNamespace(success=True, fun=0.123, nit=4, method="L-BFGS-B")
+
+        import builtins
+
+        original_import = builtins.__import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "tabulate":
+                raise ImportError("forced for coverage")
+            return original_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", fake_import)
+
+        optimizer.info()
+        out = capsys.readouterr().out
+        assert "ThinFilm Optimizer Information" in out
+        assert "Last Optimization Result" in out
