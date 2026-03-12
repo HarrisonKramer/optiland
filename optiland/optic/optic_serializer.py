@@ -3,7 +3,7 @@
 Handles serialization and deserialization of Optic instances to/from
 dictionaries, keeping serialization concerns separate from optical physics.
 
-Kramer Harrison, 2024
+Kramer Harrison, 2026
 """
 
 from __future__ import annotations
