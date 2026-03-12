@@ -198,10 +198,11 @@ class Surface:
         self.geometry.localize(rays)
         rays = rays.trace_on_surface(self)
         self.geometry.globalize(rays)
+        rays.record_on_surface(self)
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays) -> ParaxialRays:
-        """Paraxial physics kernel: propagate, interact, record.
+        """Paraxial physics kernel: propagate and interact.
 
         Args:
             rays (ParaxialRays): The paraxial rays.
@@ -213,11 +214,10 @@ class Surface:
         t = -rays.z
         rays.propagate(t)
         rays = self.interaction_model.interact_paraxial_rays(rays)
-        self._record_paraxial(rays)
         return rays
 
     def _trace_real(self, rays: RealRays) -> RealRays:
-        """Real ray physics kernel: propagate, interact, record.
+        """Real ray physics kernel: propagate and interact.
 
         Args:
             rays (RealRays): The real rays.
@@ -232,7 +232,6 @@ class Surface:
         if self.aperture:
             self.aperture.clip(rays)
         rays = self.interaction_model.interact_real_rays(rays)
-        self._record_real(rays)
         return rays
 
     def _record_paraxial(self, rays: ParaxialRays) -> None:

@@ -60,6 +60,15 @@ class ParaxialRays(BaseRays):
         """
         return surface._trace_paraxial(self)
 
+    def record_on_surface(self, surface: Surface) -> None:
+        """Dispatch to the surface's paraxial record method.
+
+        Args:
+            surface (Surface): The surface to record onto.
+
+        """
+        surface._record_paraxial(self)
+
     def propagate(self, t: ScalarOrArray):
         """Propagates the rays by a given distance.
 

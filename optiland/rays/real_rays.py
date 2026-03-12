@@ -100,6 +100,15 @@ class RealRays(BaseRays):
         """
         return surface._trace_real(self)
 
+    def record_on_surface(self, surface: Surface) -> None:
+        """Dispatch to the surface's real ray record method.
+
+        Args:
+            surface (Surface): The surface to record onto.
+
+        """
+        surface._record_real(self)
+
     def rotate_x(self, rx: ScalarOrArray):
         """Rotate the rays about the x-axis.
 

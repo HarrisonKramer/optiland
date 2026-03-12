@@ -65,10 +65,11 @@ class ObjectSurface(Surface):
         """
         self.reset()
         rays.trace_on_surface(self)
+        rays.record_on_surface(self)
         return rays
 
     def _trace_paraxial(self, rays: ParaxialRays) -> ParaxialRays:
-        """Records and returns paraxial rays at the object surface.
+        """No-op physics kernel for the object surface (paraxial).
 
         Args:
             rays (ParaxialRays): The paraxial rays to be traced.
@@ -77,11 +78,10 @@ class ObjectSurface(Surface):
             ParaxialRays: The rays (unchanged).
 
         """
-        self._record_paraxial(rays)
         return rays
 
     def _trace_real(self, rays: RealRays) -> RealRays:
-        """Records and returns real rays at the object surface.
+        """No-op physics kernel for the object surface (real rays).
 
         Args:
             rays (RealRays): The real rays to be traced.
@@ -90,7 +90,6 @@ class ObjectSurface(Surface):
             RealRays: The rays (unchanged).
 
         """
-        self._record_real(rays)
         return rays
 
     def _interact(self, rays):

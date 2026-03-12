@@ -39,6 +39,15 @@ class BaseRays:
         """
         raise NotImplementedError
 
+    def record_on_surface(self, surface: Surface) -> None:
+        """Dispatch recording to the appropriate surface method.
+
+        Args:
+            surface (Surface): The surface to record onto.
+
+        """
+        raise NotImplementedError
+
     def translate(self, dx: ArrayLike, dy: ArrayLike, dz: ArrayLike):
         """Shifts the rays in the x, y, and z directions.
 

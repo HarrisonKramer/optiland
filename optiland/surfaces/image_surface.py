@@ -57,7 +57,6 @@ class ImageSurface(Surface):
         """
         t = -rays.z
         rays.propagate(t)
-        self._record_paraxial(rays)
         return rays
 
     def _interact(self, rays):
