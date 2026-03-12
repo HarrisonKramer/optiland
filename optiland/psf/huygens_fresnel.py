@@ -7,6 +7,12 @@ Visualization and Strehl ratio calculation are primarily handled by the base
 class. The PSF is normalized against the peak of an ideal diffraction-limited
 system calculated using the same Huygens-Fresnel principle.
 
+The module exposes:
+- ``ScalarHuygensPSF``: scalar (intensity-only) Huygens PSF.
+- ``HuygensPSF``: factory that automatically dispatches to
+  ``VectorialHuygensPSF`` when a polarization state is set on the optic,
+  and to ``ScalarHuygensPSF`` otherwise.
+
 Kramer Harrison, 2025
 """
 
@@ -22,8 +28,8 @@ from optiland.visualization.system.utils import transform
 from optiland.wavefront import Wavefront
 
 
-class HuygensPSF(BasePSF):
-    """Huygens PSF class using Huygens-Fresnel principle.
+class ScalarHuygensPSF(BasePSF):
+    """Huygens PSF class using Huygens-Fresnel principle (scalar formulation).
 
     Computes PSF by integrating contributions from point sources across the
     exit pupil. The PSF is normalized such that the peak intensity of an
@@ -337,3 +343,69 @@ class HuygensPSF(BasePSF):
         x = be.to_numpy(num_x * dx) * 1e3  # mm --> um
         y = be.to_numpy(num_y * dx) * 1e3  # mm --> um
         return x, y
+
+
+class HuygensPSF:
+    """Factory class for generating either a Vectorial or Scalar Huygens PSF.
+
+    This class inspects the optical system's polarization state to determine
+    which Huygens PSF implementation to instantiate. If polarization is enabled,
+    it returns a ``VectorialHuygensPSF``. Otherwise, it returns a
+    ``ScalarHuygensPSF``.
+
+    Args:
+        optic (Optic): The optical system object.
+        field (tuple): The field point.
+        wavelength (str | float): The wavelength of light in micrometers.
+        num_rays (int, optional): The number of rays to trace. Defaults to 128.
+        image_size (int, optional): The size of the image grid. Defaults to 128.
+        strategy (str): The wavefront calculation strategy. Defaults to
+            "chief_ray".
+        remove_tilt (bool): If True, removes tilt from OPD. Defaults to False.
+        oversample (float, optional): Oversampling ratio for MTF use.
+            Defaults to None.
+        pixel_pitch (float, optional): Pixel pitch in mm. Defaults to None.
+        **kwargs: Additional keyword arguments.
+    """
+
+    def __new__(
+        cls,
+        optic,
+        field,
+        wavelength: str | float,
+        num_rays=128,
+        image_size=128,
+        strategy="chief_ray",
+        remove_tilt=False,
+        oversample: float = None,
+        pixel_pitch: float = None,
+        **kwargs,
+    ):
+        if optic.polarization_state is not None:
+            from optiland.psf.vectorial_huygens import VectorialHuygensPSF
+
+            return VectorialHuygensPSF(
+                optic=optic,
+                field=field,
+                wavelength=wavelength,
+                num_rays=num_rays,
+                image_size=image_size,
+                strategy=strategy,
+                remove_tilt=remove_tilt,
+                oversample=oversample,
+                pixel_pitch=pixel_pitch,
+                **kwargs,
+            )
+        else:
+            return ScalarHuygensPSF(
+                optic=optic,
+                field=field,
+                wavelength=wavelength,
+                num_rays=num_rays,
+                image_size=image_size,
+                strategy=strategy,
+                remove_tilt=remove_tilt,
+                oversample=oversample,
+                pixel_pitch=pixel_pitch,
+                **kwargs,
+            )
