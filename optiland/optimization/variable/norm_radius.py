@@ -40,7 +40,7 @@ class NormalizationRadiusVariable(VariableBehavior):
 
     def update_value(self, new_value):
         """Updates the value of the normalization radius."""
-        self.optic.set_norm_radius(new_value, self.surface_number)
+        self.optic.updater.set_norm_radius(new_value, self.surface_number)
 
     def __str__(self):
         return f"Normalization Radius, Surface {self.surface_number}"

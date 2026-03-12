@@ -250,13 +250,13 @@ class MultiConfiguration:
     def _apply_standard_value(self, config_idx, surface_index, attr_type, value):
         optic = self.configurations[config_idx]
         if attr_type == "radius":
-            optic.set_radius(value, surface_index)
+            optic.updater.set_radius(value, surface_index)
         elif attr_type == "conic":
-            optic.set_conic(value, surface_index)
+            optic.updater.set_conic(value, surface_index)
         elif attr_type == "thickness":
-            optic.set_thickness(value, surface_index)
+            optic.updater.set_thickness(value, surface_index)
         elif attr_type == "material":
-            optic.set_material(value, surface_index)
+            optic.updater.set_material(value, surface_index)
 
     def _set_generic_value(self, config_idx, surface_index, path, value):
         optic = self.configurations[config_idx]

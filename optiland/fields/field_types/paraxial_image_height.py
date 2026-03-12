@@ -10,6 +10,7 @@ import optiland.backend as be
 from .base import BaseFieldDefinition
 
 
+@BaseFieldDefinition.register("paraxial_image_height")
 class ParaxialImageHeightField(BaseFieldDefinition):
     """Defines fields by the chief ray's paraxial height at the image plane."""
 

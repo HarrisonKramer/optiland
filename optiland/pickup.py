@@ -231,13 +231,13 @@ class Pickup:
         """
         # Legacy support
         if self.attr_type == "radius":
-            self.optic.set_radius(value, self.target_surface_idx)
+            self.optic.updater.set_radius(value, self.target_surface_idx)
             return
         elif self.attr_type == "conic":
-            self.optic.set_conic(value, self.target_surface_idx)
+            self.optic.updater.set_conic(value, self.target_surface_idx)
             return
         elif self.attr_type == "thickness":
-            self.optic.set_thickness(value, self.target_surface_idx)
+            self.optic.updater.set_thickness(value, self.target_surface_idx)
             return
 
         # Generic path support
