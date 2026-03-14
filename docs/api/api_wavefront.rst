@@ -34,6 +34,7 @@ from fast Fourier transforms to more rigorous diffraction calculations.
    psf.huygens_fresnel
    psf.mmdft
    psf.vectorial_fft
+   psf.vectorial_huygens
 
 Modulation Transfer Function (MTF)
 ----------------------------------
