@@ -11,6 +11,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
+from optiland.physics.interaction import reflect as _reflect_kernel
+from optiland.physics.interaction import refract as _refract_kernel
 from optiland.rays.base import BaseRays
 
 if TYPE_CHECKING:
@@ -167,24 +169,25 @@ class RealRays(BaseRays):
             nx: The x-component of the surface normals.
             ny: The y-component of the surface normals.
             nz: The z-component of the surface normals.
+            n1: Refractive index of the incident medium.
+            n2: Refractive index of the refracted medium.
         """
         self.L0 = be.copy(self.L)
         self.M0 = be.copy(self.M)
         self.N0 = be.copy(self.N)
 
-        u = n1 / n2
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
-        # ignore runtime warnings for total internal reflection
-        with be.errstate(invalid="ignore"):
-            root = be.sqrt(1 - u**2 * (1 - dot**2))
-        tx = u * self.L0 + nx * root - u * nx * dot
-        ty = u * self.M0 + ny * root - u * ny * dot
-        tz = u * self.N0 + nz * root - u * nz * dot
-
-        self.L = tx
-        self.M = ty
-        self.N = tz
+        self.L, self.M, self.N, _ = _refract_kernel(
+            self.L0,
+            self.M0,
+            self.N0,
+            nx,
+            ny,
+            nz,
+            n1,
+            n2,
+        )
 
     def reflect(self, nx: float, ny: float, nz: float):
         """Reflects the rays on the surface.
@@ -200,9 +203,14 @@ class RealRays(BaseRays):
 
         nx, ny, nz, dot = self._align_surface_normal(nx, ny, nz)
 
-        self.L = self.L - 2 * dot * nx
-        self.M = self.M - 2 * dot * ny
-        self.N = self.N - 2 * dot * nz
+        self.L, self.M, self.N = _reflect_kernel(
+            self.L0,
+            self.M0,
+            self.N0,
+            nx,
+            ny,
+            nz,
+        )
 
     def gratingdiffract(
         self,
