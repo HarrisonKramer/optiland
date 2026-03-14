@@ -39,6 +39,7 @@ from optiland.visualization import (
     SurfaceSagViewer,
 )
 from optiland.wavelength import WavelengthGroup
+from optiland.wavepropagation import BaseWavePropagator
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
@@ -128,6 +129,7 @@ class Optic:
         self.fields: FieldGroup = FieldGroup()
         self.wavelengths: WavelengthGroup = WavelengthGroup()
 
+        self.wave_propagator: BaseWavePropagator = BaseWavePropagator(self)
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
