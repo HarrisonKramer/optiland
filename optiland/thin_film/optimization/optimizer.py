@@ -86,7 +86,7 @@ class ThinFilmOptimizer:
             f"{len(self.variables)} variables, {len(self.targets)} targets>"
         )
 
-    def add_thickness_variable(
+    def add_variable(
         self,
         layer_index: int,
         min_nm: float | None = None,
@@ -140,7 +140,7 @@ class ThinFilmOptimizer:
 
         return self
 
-    def add_target(
+    def add_operand(
         self,
         property: OpticalProperty,
         wavelength_nm: float | list[float],
@@ -151,14 +151,14 @@ class ThinFilmOptimizer:
         polarization: str = "u",
         tolerance: float = 1e-6,
     ) -> ThinFilmOptimizer:
-        """Add an optimization target.
+        """Add an optimization operand.
 
         Args:
             property: Optical property to target ('R', 'T', or 'A').
             wavelength_nm: Wavelength(s) in nanometers. Can be scalar or array.
             target_type: Type of target ('equal', 'below', 'over').
             value: Target value(s). Can be scalar or array for interpolation.
-            weight: Weight for this target. Defaults to 1.0.
+            weight: Weight for this operand. Defaults to 1.0.
             aoi_deg: Angle(s) of incidence in degrees. Can be scalar or array.
                 Defaults to 0.0.
             polarization: Polarization state ('s', 'p', 'u'). Defaults to 'u'.
@@ -220,7 +220,7 @@ class ThinFilmOptimizer:
         self.targets.append(target)
         return self
 
-    def add_angular_target(
+    def add_angular_operand(
         self,
         property: str,
         wavelength_nm: float,
@@ -230,7 +230,7 @@ class ThinFilmOptimizer:
         weight: float = 1.0,
         polarization: str = "s",
     ) -> ThinFilmOptimizer:
-        """Convenience method to add an angular target with multiple AOI values.
+        """Convenience method to add an angular operand with multiple AOI values.
 
         Args:
             property: Property to optimize ("R", "T", "A").
@@ -239,13 +239,13 @@ class ThinFilmOptimizer:
             target_type: Type of target ("equal", "over", "below").
             value: Target value(s). Single value or list matching
                 aoi_deg_range length.
-            weight: Target weight for optimization. Defaults to 1.0.
+            weight: Operand weight for optimization. Defaults to 1.0.
             polarization: Polarization state ("s", "p", "u"). Defaults to "s".
 
         Returns:
             ThinFilmOptimizer: self for method chaining.
         """
-        return self.add_target(
+        return self.add_operand(
             property=property,
             wavelength_nm=wavelength_nm,
             target_type=target_type,
@@ -255,7 +255,7 @@ class ThinFilmOptimizer:
             polarization=polarization,
         )
 
-    def add_interpolated_target(
+    def add_interpolated_operand(
         self,
         property: str,
         wavelength_nm: list[float],
@@ -265,21 +265,21 @@ class ThinFilmOptimizer:
         aoi_deg: float = 0.0,
         polarization: str = "s",
     ) -> ThinFilmOptimizer:
-        """Convenience method to add an interpolated spectral target.
+        """Convenience method to add an interpolated spectral operand.
 
         Args:
             property: Property to optimize ("R", "T", "A").
             wavelength_nm: List of wavelength values in nm.
             target_type: Type of target ("equal", "over", "below").
             value: List of target values matching wavelength_nm length.
-            weight: Target weight for optimization. Defaults to 1.0.
+            weight: Operand weight for optimization. Defaults to 1.0.
             aoi_deg: Angle of incidence in degrees. Defaults to 0.0.
             polarization: Polarization state ("s", "p", "u"). Defaults to "s".
 
         Returns:
             ThinFilmOptimizer: self for method chaining.
         """
-        return self.add_target(
+        return self.add_operand(
             property=property,
             wavelength_nm=wavelength_nm,
             target_type=target_type,
@@ -523,11 +523,9 @@ class ThinFilmOptimizer:
             ValueError: If no variables or targets are defined.
         """
         if not self.variables:
-            raise ValueError(
-                "No variables defined. Use add_thickness_variable() first."
-            )
+            raise ValueError("No variables defined. Use add_variable() first.")
         if not self.targets:
-            raise ValueError("No targets defined. Use add_target() first.")
+            raise ValueError("No operands defined. Use add_operand() first.")
 
         # Get initial values and bounds
         x0 = np.array([var.variable.get_value() for var in self.variables])
@@ -726,26 +724,26 @@ class ThinFilmOptimizer:
 
         return performance
 
-    def add_spectral_target(
+    def add_spectral_operand(
         self,
         property: OpticalProperty,
         wavelengths_nm: list[float],
         target_type: TargetType,
         value: float,
         weight: float = 1.0,
-        weights: list[float] | None = None,  # For weighted spectral targets
+        weights: list[float] | None = None,  # For weighted spectral operands
         aoi_deg: float = 0.0,
         polarization: str = "u",
         tolerance: float = 1e-6,
     ) -> ThinFilmOptimizer:
-        """Add a spectral optimization target (convenience method).
+        """Add a spectral optimization operand (convenience method).
 
         Args:
             property: Optical property to target ('R', 'T', or 'A').
             wavelengths_nm: List of wavelengths in nanometers.
             target_type: Type of target ('equal', 'below', 'over').
             value: Target value.
-            weight: Weight for this target. Defaults to 1.0.
+            weight: Weight for this operand. Defaults to 1.0.
             weights: Per-wavelength weights (alternative to weight). Defaults to None.
             aoi_deg: Angle of incidence in degrees. Defaults to 0.0.
             polarization: Polarization state ('s', 'p', 'u'). Defaults to 'u'.
@@ -758,10 +756,10 @@ class ThinFilmOptimizer:
         final_weight = weight
         if weights is not None:
             # For now, just use the average weight
-            # In a more sophisticated implementation, we could create separate targets
+            # In a more sophisticated implementation, we could create separate operands
             final_weight = sum(weights) / len(weights)
 
-        return self.add_target(
+        return self.add_operand(
             property=property,
             wavelength_nm=wavelengths_nm,
             target_type=target_type,
@@ -772,7 +770,7 @@ class ThinFilmOptimizer:
             tolerance=tolerance,
         )
 
-    def plot_targets(
+    def plot_operands(
         self,
         ax,
         plot_type: Literal["wavelength", "angle"] = "wavelength",
@@ -782,7 +780,7 @@ class ThinFilmOptimizer:
         fixed_wavelength_nm: float = 550.0,
         fixed_angle_deg: float = 0.0,
     ) -> None:
-        """Plot optimization targets on the provided axes (lightweight version).
+        """Plot optimization operands on the provided axes (lightweight version).
 
         Args:
             ax: Matplotlib axes to plot on.

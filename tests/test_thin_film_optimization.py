@@ -204,24 +204,24 @@ class TestThinFilmOptimizer:
         assert len(optimizer.variables) == 0
         assert len(optimizer.targets) == 0
 
-    def test_add_thickness_variable(self, simple_stack):
-        """Test adding a thickness variable."""
+    def test_add_variable(self, simple_stack):
+        """Test adding a variable."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
 
         assert len(optimizer.variables) == 1
         assert optimizer.variables[0].layer_index == 0
 
-    def test_add_thickness_variable_invalid_index(self, simple_stack):
+    def test_add_variable_invalid_index(self, simple_stack):
         """Test adding variable with invalid layer index."""
         optimizer = ThinFilmOptimizer(simple_stack)
         with pytest.raises(ValueError, match="out of range"):
-            optimizer.add_thickness_variable(layer_index=5)
+            optimizer.add_variable(layer_index=5)
 
-    def test_add_target(self, simple_stack):
-        """Test adding an optimization target."""
+    def test_add_operand(self, simple_stack):
+        """Test adding an optimization operand."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_target(
+        optimizer.add_operand(
             property="R",
             wavelength_nm=550.0,
             target_type="below",
@@ -232,10 +232,10 @@ class TestThinFilmOptimizer:
         assert len(optimizer.targets) == 1
         assert optimizer.targets[0].property == "R"
 
-    def test_add_spectral_target(self, simple_stack):
-        """Test adding a spectral target."""
+    def test_add_spectral_operand(self, simple_stack):
+        """Test adding a spectral operand."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_spectral_target(
+        optimizer.add_spectral_operand(
             property="T",
             wavelengths_nm=[500.0, 550.0, 600.0],
             target_type="over",
@@ -248,9 +248,9 @@ class TestThinFilmOptimizer:
         """Test that methods can be chained."""
         optimizer = ThinFilmOptimizer(multilayer_stack)
         result = (
-            optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=150)
-            .add_thickness_variable(layer_index=1, min_nm=60, max_nm=120)
-            .add_target("R", wavelength_nm=550, target_type="below", value=0.05)
+            optimizer.add_variable(layer_index=0, min_nm=50, max_nm=150)
+            .add_variable(layer_index=1, min_nm=60, max_nm=120)
+            .add_operand("R", wavelength_nm=550, target_type="below", value=0.05)
         )
 
         assert result is optimizer
@@ -260,24 +260,24 @@ class TestThinFilmOptimizer:
     def test_optimize_no_variables_fails(self, simple_stack):
         """Test that optimization fails without variables."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.05)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.05)
 
         with pytest.raises(ValueError, match="No variables"):
             optimizer.optimize(maxiter=5)
 
-    def test_optimize_no_targets_fails(self, simple_stack):
-        """Test that optimization fails without targets."""
+    def test_optimize_no_operands_fails(self, simple_stack):
+        """Test that optimization fails without operands."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
+        optimizer.add_variable(layer_index=0)
 
-        with pytest.raises(ValueError, match="No targets"):
+        with pytest.raises(ValueError, match="No operands"):
             optimizer.optimize(maxiter=5)
 
     def test_basic_optimization(self, simple_stack):
         """Test a basic optimization run."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.01)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.01)
 
         # Run a short optimization
         result = optimizer.optimize(max_iterations=5, verbose=False)
@@ -303,8 +303,8 @@ class TestThinFilmOptimizer:
     def test_info_display(self, multilayer_stack, capsys):
         """Test info display method."""
         optimizer = ThinFilmOptimizer(multilayer_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.05)
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.05)
 
         optimizer.info()
         captured = capsys.readouterr()
@@ -318,8 +318,8 @@ class TestThinFilmOptimizer:
     def test_repr(self, multilayer_stack):
         """Test string representation."""
         optimizer = ThinFilmOptimizer(multilayer_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.05)
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.05)
 
         repr_str = repr(optimizer)
         assert "ThinFilmOptimizer" in repr_str or "thin_film" in repr_str.lower()
@@ -336,8 +336,8 @@ class TestOptimizationIntegration:
 
         # Set up optimization
         optimizer = ThinFilmOptimizer(stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.01)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.01)
 
         # Run optimization
         result = optimizer.optimize(max_iterations=10, verbose=False)
@@ -361,13 +361,13 @@ class TestOptimizationIntegration:
         # Set up optimization for transmission at 550 nm, reflection elsewhere
         optimizer = ThinFilmOptimizer(stack)
         for i in range(3):
-            optimizer.add_thickness_variable(layer_index=i, min_nm=50, max_nm=200)
+            optimizer.add_variable(layer_index=i, min_nm=50, max_nm=200)
 
         # Target high transmission at 550 nm
-        optimizer.add_target("T", wavelength_nm=550, target_type="over", value=0.8)
+        optimizer.add_operand("T", wavelength_nm=550, target_type="over", value=0.8)
 
         # Target low transmission at other wavelengths
-        optimizer.add_spectral_target(
+        optimizer.add_spectral_operand(
             "T", wavelengths_nm=[450, 650], target_type="below", value=0.1, weight=0.5
         )
 
@@ -379,8 +379,8 @@ class TestOptimizationIntegration:
     def test_optimization_with_report(self, simple_stack):
         """Test optimization returns expected result structure."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.01)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.01)
 
         # Run optimization
         result = optimizer.optimize(max_iterations=5, verbose=False)
@@ -475,8 +475,8 @@ class TestTargetTypes:
     def test_target_below(self, simple_stack):
         """Test 'below' target type."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.2)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.2)
 
         assert len(optimizer.targets) == 1
         assert optimizer.targets[0].target_type == "below"
@@ -484,8 +484,8 @@ class TestTargetTypes:
     def test_target_over(self, simple_stack):
         """Test 'over' target type."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
-        optimizer.add_target("T", wavelength_nm=550, target_type="over", value=0.5)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand("T", wavelength_nm=550, target_type="over", value=0.5)
 
         assert len(optimizer.targets) == 1
         assert optimizer.targets[0].target_type == "over"
@@ -493,8 +493,8 @@ class TestTargetTypes:
     def test_target_equal(self, simple_stack):
         """Test 'equal' target type."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_target(
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_operand(
             "R", wavelength_nm=550, target_type="equal", value=0.1, tolerance=1e-3
         )
 
@@ -506,20 +506,20 @@ class TestTargetTypes:
         optimizer = ThinFilmOptimizer(simple_stack)
 
         with pytest.raises(ValueError, match="Invalid target_type"):
-            optimizer.add_target("R", 550, target_type="invalid", value=0.1)
+            optimizer.add_operand("R", 550, target_type="invalid", value=0.1)
 
     def test_invalid_property(self, simple_stack):
         """Test invalid property raises error."""
         optimizer = ThinFilmOptimizer(simple_stack)
 
         with pytest.raises(ValueError, match="Invalid property"):
-            optimizer.add_target("Z", 550, target_type="below", value=0.1)
+            optimizer.add_operand("Z", 550, target_type="below", value=0.1)
 
-    def test_spectral_target_convenience(self, simple_stack):
-        """Test add_spectral_target convenience method."""
+    def test_spectral_operand_convenience(self, simple_stack):
+        """Test add_spectral_operand convenience method."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_spectral_target(
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_spectral_operand(
             property="R",
             wavelengths_nm=[500.0, 550.0, 600.0],
             target_type="below",
@@ -529,11 +529,11 @@ class TestTargetTypes:
         assert len(optimizer.targets) == 1
         assert isinstance(optimizer.targets[0].wavelength_nm, (list, np.ndarray))
 
-    def test_angular_target_convenience(self, simple_stack):
-        """Test add_angular_target convenience method."""
+    def test_angular_operand_convenience(self, simple_stack):
+        """Test add_angular_operand convenience method."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_angular_target(
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_angular_operand(
             property="R",
             wavelength_nm=550,
             aoi_deg_range=[0.0, 30.0, 60.0],
@@ -544,11 +544,11 @@ class TestTargetTypes:
         assert len(optimizer.targets) == 1
         assert isinstance(optimizer.targets[0].aoi_deg, (list, np.ndarray))
 
-    def test_interpolated_target_convenience(self, simple_stack):
-        """Test add_interpolated_target convenience method."""
+    def test_interpolated_operand_convenience(self, simple_stack):
+        """Test add_interpolated_operand convenience method."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_interpolated_target(
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_interpolated_operand(
             property="T",
             wavelength_nm=[500.0, 550.0, 600.0],
             target_type="over",
@@ -564,8 +564,8 @@ class TestOptimizerMethods:
     def test_get_current_performance(self, simple_stack):
         """Test get_current_performance method."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.2)
-        optimizer.add_target("T", wavelength_nm=550, target_type="over", value=0.5)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.2)
+        optimizer.add_operand("T", wavelength_nm=550, target_type="over", value=0.5)
 
         performance = optimizer.get_current_performance()
 
@@ -577,7 +577,7 @@ class TestOptimizerMethods:
         optimizer = ThinFilmOptimizer(multilayer_stack)
 
         for i in range(len(multilayer_stack.layers)):
-            optimizer.add_thickness_variable(layer_index=i, min_nm=50, max_nm=200)
+            optimizer.add_variable(layer_index=i, min_nm=50, max_nm=200)
 
         assert len(optimizer.variables) == len(multilayer_stack.layers)
 
@@ -585,10 +585,10 @@ class TestOptimizerMethods:
         """Test fluent interface with method chaining."""
         optimizer = (
             ThinFilmOptimizer(multilayer_stack)
-            .add_thickness_variable(layer_index=0, min_nm=50, max_nm=150)
-            .add_thickness_variable(layer_index=1, min_nm=60, max_nm=120)
-            .add_target("R", wavelength_nm=500, target_type="below", value=0.1)
-            .add_target("R", wavelength_nm=600, target_type="below", value=0.1)
+            .add_variable(layer_index=0, min_nm=50, max_nm=150)
+            .add_variable(layer_index=1, min_nm=60, max_nm=120)
+            .add_operand("R", wavelength_nm=500, target_type="below", value=0.1)
+            .add_operand("R", wavelength_nm=600, target_type="below", value=0.1)
         )
 
         assert len(optimizer.variables) == 2
@@ -598,7 +598,7 @@ class TestOptimizerMethods:
         """Test bounds validation and correction."""
         optimizer = ThinFilmOptimizer(simple_stack)
         # Test with min > max (should be corrected internally)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=200, max_nm=50)
+        optimizer.add_variable(layer_index=0, min_nm=200, max_nm=50)
 
         assert len(optimizer.variables) == 1
         # The optimizer should handle this gracefully
@@ -610,8 +610,8 @@ class TestOptimizationWithArrayTargets:
     def test_optimization_with_wavelength_array(self, simple_stack):
         """Test optimization with wavelength array target."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=200)
-        optimizer.add_target(
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand(
             "R",
             wavelength_nm=[500.0, 550.0, 600.0],
             target_type="below",
@@ -625,8 +625,8 @@ class TestOptimizationWithArrayTargets:
     def test_optimization_with_angular_array(self, simple_stack):
         """Test optimization with angular array target."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_target(
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_operand(
             "R",
             wavelength_nm=550.0,
             aoi_deg=[0.0, 30.0, 60.0],
@@ -643,7 +643,7 @@ class TestOptimizationWithArrayTargets:
 
         # Should fail if value array length doesn't match wavelength array
         with pytest.raises(ValueError):
-            optimizer.add_target(
+            optimizer.add_operand(
                 "R",
                 wavelength_nm=[500.0, 550.0, 600.0],
                 target_type="below",
@@ -655,7 +655,7 @@ class TestOptimizationWithArrayTargets:
         optimizer = ThinFilmOptimizer(simple_stack)
 
         with pytest.raises(ValueError, match="Cannot specify both"):
-            optimizer.add_target(
+            optimizer.add_operand(
                 "R",
                 wavelength_nm=[500.0, 550.0],
                 aoi_deg=[0.0, 30.0],
@@ -672,8 +672,8 @@ class TestReportFunctionality:
         from optiland.thin_film.optimization.report import ThinFilmReport
 
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.01)
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.01)
 
         # Mock result
         result = {"success": True, "fun": 0.001}
@@ -690,13 +690,13 @@ class TestReportFunctionality:
         optimizer = ThinFilmOptimizer(simple_stack)
 
         with pytest.raises(ValueError, match="out of range"):
-            optimizer.add_thickness_variable(layer_index=10)
+            optimizer.add_variable(layer_index=10)
 
     def test_optimization_options(self, simple_stack):
         """Test optimization with different methods."""
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.1)
+        optimizer.add_variable(layer_index=0)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.1)
 
         # Test L-BFGS-B method (default)
         result = optimizer.optimize(method="L-BFGS-B", max_iterations=3, verbose=False)
@@ -709,8 +709,8 @@ class TestReportFunctionality:
         stack.add_layer_nm(sio2, 1.0, name="Thin SiO2")
 
         optimizer = ThinFilmOptimizer(stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=0.5, max_nm=10.0)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.2)
+        optimizer.add_variable(layer_index=0, min_nm=0.5, max_nm=10.0)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.2)
 
         result = optimizer.optimize(max_iterations=3, verbose=False)
         assert isinstance(result, dict)
@@ -721,8 +721,8 @@ class TestReportFunctionality:
         stack.add_layer_nm(sio2, 500.0, name="Thick SiO2")
 
         optimizer = ThinFilmOptimizer(stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=100, max_nm=1000)
-        optimizer.add_target("R", wavelength_nm=550, target_type="below", value=0.2)
+        optimizer.add_variable(layer_index=0, min_nm=100, max_nm=1000)
+        optimizer.add_operand("R", wavelength_nm=550, target_type="below", value=0.2)
 
         result = optimizer.optimize(max_iterations=3, verbose=False)
         assert isinstance(result, dict)
@@ -773,17 +773,19 @@ class TestThinFilmOptimizerCoverageBranches:
         )
         assert optimizer._interpolate_target_value(fallback_target) == 0.7
 
-    def test_merit_function_and_optimize_kwargs_branches(self, simple_stack, monkeypatch):
+    def test_merit_function_and_optimize_kwargs_branches(
+        self, simple_stack, monkeypatch
+    ):
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=180)
-        optimizer.add_target(
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=180)
+        optimizer.add_operand(
             property="A",
             wavelength_nm=[500.0, 550.0],
             target_type="equal",
             value=[0.0, 0.0],
             polarization="s",
         )
-        optimizer.add_target(
+        optimizer.add_operand(
             property="T",
             wavelength_nm=[500.0, 550.0],
             target_type="over",
@@ -792,8 +794,16 @@ class TestThinFilmOptimizerCoverageBranches:
         )
 
         # Force numpy-scalar merit so the ".item()" path is exercised.
-        monkeypatch.setattr(ThinFilmOperand, "absorptance", staticmethod(lambda *a, **k: np.float64(0.05)))
-        monkeypatch.setattr(ThinFilmOperand, "transmittance", staticmethod(lambda *a, **k: np.float64(0.7)))
+        monkeypatch.setattr(
+            ThinFilmOperand,
+            "absorptance",
+            staticmethod(lambda *a, **k: np.float64(0.05)),
+        )
+        monkeypatch.setattr(
+            ThinFilmOperand,
+            "transmittance",
+            staticmethod(lambda *a, **k: np.float64(0.7)),
+        )
 
         x0 = np.array([optimizer.variables[0].variable.get_value()])
         merit = optimizer._merit_function(x0)
@@ -805,14 +815,14 @@ class TestThinFilmOptimizerCoverageBranches:
 
     def test_get_current_performance_array_cases(self, simple_stack):
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_target(
+        optimizer.add_operand(
             property="T",
             wavelength_nm=[500.0, 550.0, 600.0],
             target_type="over",
             value=[0.5, 0.6, 0.5],
             aoi_deg=10.0,
         )
-        optimizer.add_target(
+        optimizer.add_operand(
             property="A",
             wavelength_nm=550.0,
             target_type="below",
@@ -826,9 +836,9 @@ class TestThinFilmOptimizerCoverageBranches:
         assert len(perf["target_0"]["target_values"]) == 3
         assert len(perf["target_1"]["target_values"]) == 3
 
-    def test_add_spectral_target_with_weights_average(self, simple_stack):
+    def test_add_spectral_operand_with_weights_average(self, simple_stack):
         optimizer = ThinFilmOptimizer(simple_stack)
-        optimizer.add_spectral_target(
+        optimizer.add_spectral_operand(
             property="R",
             wavelengths_nm=[450.0, 550.0, 650.0],
             target_type="below",
@@ -838,29 +848,29 @@ class TestThinFilmOptimizerCoverageBranches:
         assert len(optimizer.targets) == 1
         assert optimizer.targets[0].weight == pytest.approx(2.0)
 
-    def test_plot_targets_branches(self, simple_stack, monkeypatch):
+    def test_plot_operands_branches(self, simple_stack, monkeypatch):
         optimizer = ThinFilmOptimizer(simple_stack)
 
         # No target branch should return cleanly.
         fig, ax = plt.subplots()
-        optimizer.plot_targets(ax)
+        optimizer.plot_operands(ax)
         plt.close(fig)
 
-        optimizer.add_target(
+        optimizer.add_operand(
             property="R",
             wavelength_nm=[500.0, 550.0, 600.0],
             target_type="below",
             value=[0.3, 0.2, 0.3],
             aoi_deg=10.0,
         )
-        optimizer.add_target(
+        optimizer.add_operand(
             property="T",
             wavelength_nm=550.0,
             target_type="over",
             value=0.7,
             aoi_deg=20.0,
         )
-        optimizer.add_target(
+        optimizer.add_operand(
             property="A",
             wavelength_nm=550.0,
             target_type="below",
@@ -869,29 +879,33 @@ class TestThinFilmOptimizerCoverageBranches:
         )
 
         fig, ax = plt.subplots()
-        optimizer.plot_targets(ax, plot_type="wavelength")
+        optimizer.plot_operands(ax, plot_type="wavelength")
         plt.close(fig)
 
         fig, ax = plt.subplots()
-        optimizer.plot_targets(ax, plot_type="angle")
+        optimizer.plot_operands(ax, plot_type="angle")
         plt.close(fig)
 
         fig, ax = plt.subplots()
         with pytest.raises(ValueError, match="Invalid plot_type"):
-            optimizer.plot_targets(ax, plot_type="invalid")
+            optimizer.plot_operands(ax, plot_type="invalid")
         plt.close(fig)
 
         monkeypatch.setattr(optimizer_module, "plt", None)
         fig, ax = plt.subplots()
         with pytest.raises(ImportError, match="matplotlib is required"):
-            optimizer.plot_targets(ax)
+            optimizer.plot_operands(ax)
         plt.close(fig)
 
-    def test_info_without_tabulate_and_with_result(self, multilayer_stack, capsys, monkeypatch):
+    def test_info_without_tabulate_and_with_result(
+        self, multilayer_stack, capsys, monkeypatch
+    ):
         optimizer = ThinFilmOptimizer(multilayer_stack)
-        optimizer.add_thickness_variable(layer_index=0, min_nm=50, max_nm=150, apply_scaling=True)
-        optimizer.add_thickness_variable(layer_index=1, min_nm=60, max_nm=120, apply_scaling=False)
-        optimizer.add_target(
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=150, apply_scaling=True)
+        optimizer.add_variable(
+            layer_index=1, min_nm=60, max_nm=120, apply_scaling=False
+        )
+        optimizer.add_operand(
             property="R",
             wavelength_nm=[500.0, 600.0],
             target_type="below",
@@ -899,7 +913,9 @@ class TestThinFilmOptimizerCoverageBranches:
             aoi_deg=10.0,
         )
 
-        optimizer.result = SimpleNamespace(success=True, fun=0.123, nit=4, method="L-BFGS-B")
+        optimizer.result = SimpleNamespace(
+            success=True, fun=0.123, nit=4, method="L-BFGS-B"
+        )
 
         import builtins
 
