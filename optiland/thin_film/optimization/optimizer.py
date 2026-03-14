@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
-from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
 try:
@@ -21,7 +20,15 @@ try:
 except ImportError:
     plt = None
 
-from .operand.thin_film import ThinFilmOperand
+from .operand import (
+    OptimizationTarget,
+    SpectralOptimizationOperand,
+    ThinFilmCustomOperand,
+    ThinFilmOperandManager,
+    ThinFilmOperandPlotter,
+    thin_film_operand_registry,
+)
+from .operand.core import ThinFilmEvaluationContext
 from .variable.layer_thickness import LayerThicknessVariable
 
 if TYPE_CHECKING:
@@ -34,20 +41,6 @@ OptimizerMethod = Literal["L-BFGS-B", "TNC", "SLSQP"]
 
 
 @dataclass
-class OptimizationTarget:
-    """Represents an optimization target."""
-
-    property: OpticalProperty
-    wavelength_nm: float | list[float]
-    target_type: TargetType
-    value: float | list[float]
-    weight: float
-    aoi_deg: float | list[float]
-    polarization: str
-    tolerance: float
-
-
-@dataclass
 class VariableInfo:
     """Information about an optimization variable."""
 
@@ -55,6 +48,21 @@ class VariableInfo:
     min_val: float | None
     max_val: float | None
     layer_index: int
+
+
+@dataclass
+class StackSnapshot:
+    """Minimal stack snapshot kept for reset and future tolerance workflows."""
+
+    thicknesses_um: list[float]
+
+    @classmethod
+    def capture(cls, stack: ThinFilmStack) -> StackSnapshot:
+        return cls([layer.thickness_um for layer in stack.layers])
+
+    def restore(self, stack: ThinFilmStack) -> None:
+        for layer, thickness_um in zip(stack.layers, self.thicknesses_um, strict=False):
+            layer.update_thickness(thickness_um)
 
 
 class ThinFilmOptimizer:
@@ -73,11 +81,13 @@ class ThinFilmOptimizer:
         """
         self.stack = stack
         self.variables: list[VariableInfo] = []
-        self.targets: list[OptimizationTarget] = []
+        self.operands = ThinFilmOperandManager()
+        self.targets = self.operands.operands
         self.result = None
 
         # Store initial state for reporting
         self._initial_thicknesses = [layer.thickness_um for layer in stack.layers]
+        self._initial_snapshot = StackSnapshot.capture(stack)
 
     def __repr__(self) -> str:
         """String representation of the optimizer."""
@@ -85,6 +95,11 @@ class ThinFilmOptimizer:
             f"<ThinFilmOptimizer: {len(self.stack.layers)} layers, "
             f"{len(self.variables)} variables, {len(self.targets)} targets>"
         )
+
+    @staticmethod
+    def register_operand(name: str, func, overwrite: bool = False) -> None:
+        """Register a custom operand metric function."""
+        thin_film_operand_registry.register(name, func, overwrite=overwrite)
 
     def add_variable(
         self,
@@ -142,82 +157,174 @@ class ThinFilmOptimizer:
 
     def add_operand(
         self,
-        property: OpticalProperty,
-        wavelength_nm: float | list[float],
-        target_type: TargetType,
-        value: float | list[float],
+        property: str | None = None,
+        wavelength_nm: float | list[float] | None = None,
+        target_type: TargetType | None = None,
+        value: float | list[float] | None = None,
         weight: float = 1.0,
         aoi_deg: float | list[float] = 0.0,
         polarization: str = "u",
         tolerance: float = 1e-6,
+        target: float | None = None,
+        min_val: float | None = None,
+        max_val: float | None = None,
+        input_data: dict[str, Any] | None = None,
+        label: str | None = None,
+        operand_type: str | None = None,
     ) -> ThinFilmOptimizer:
         """Add an optimization operand.
 
         Args:
-            property: Optical property to target ('R', 'T', or 'A').
-            wavelength_nm: Wavelength(s) in nanometers. Can be scalar or array.
-            target_type: Type of target ('equal', 'below', 'over').
-            value: Target value(s). Can be scalar or array for interpolation.
+            property: Operand key. Built-ins are 'R', 'T', and 'A'. Any
+                registered operand key is also accepted.
+            operand_type: Alias of property. Useful for explicit custom calls.
+            wavelength_nm: Wavelength(s) in nanometers for spectral R/T/A
+                operands. Can be scalar or array.
+            target_type: Type of target ('equal', 'below', 'over') for spectral
+                R/T/A operands.
+            value: Target value(s) for spectral R/T/A operands. Can be scalar
+                or array for interpolation.
             weight: Weight for this operand. Defaults to 1.0.
-            aoi_deg: Angle(s) of incidence in degrees. Can be scalar or array.
-                Defaults to 0.0.
-            polarization: Polarization state ('s', 'p', 'u'). Defaults to 'u'.
-            tolerance: Tolerance for 'equal' targets. Defaults to 1e-6.
+            aoi_deg: Angle(s) of incidence in degrees for spectral R/T/A
+                operands. Can be scalar or array. Defaults to 0.0.
+            polarization: Polarization state ('s', 'p', 'u') for spectral R/T/A
+                operands. Defaults to 'u'.
+            tolerance: Tolerance for 'equal' spectral targets. Defaults to 1e-6.
+            target: Equality target for custom registered operands.
+            min_val: Lower inequality bound for custom registered operands.
+            max_val: Upper inequality bound for custom registered operands.
+            input_data: Input dictionary for custom registered operands.
+            label: Optional display label for custom registered operands.
 
         Returns:
             self for method chaining.
 
         Raises:
-            ValueError: If property, target_type is invalid, or both wavelength_nm
-                and aoi_deg are arrays.
+            ValueError: If inputs are invalid for the chosen operand mode.
+
+        Examples:
+            Built-in spectral operand at a single wavelength and angle:
+
+            >>> optimizer.add_operand(
+            ...     property="R",
+            ...     wavelength_nm=550.0,
+            ...     target_type="below",
+            ...     value=0.05,
+            ...     aoi_deg=0.0,
+            ...     polarization="s",
+            ... )
+
+            Built-in spectral operand over a wavelength range:
+
+            >>> optimizer.add_operand(
+            ...     property="T",
+            ...     wavelength_nm=[450.0, 550.0, 650.0],
+            ...     target_type="equal",
+            ...     value=[0.90, 0.95, 0.90],
+            ...     aoi_deg=0.0,
+            ...     polarization="u",
+            ... )
+
+            Built-in angular operand at fixed wavelength:
+
+            >>> optimizer.add_operand(
+            ...     property="R",
+            ...     wavelength_nm=550.0,
+            ...     target_type="over",
+            ...     value=[0.95, 0.90, 0.85],
+            ...     aoi_deg=[0.0, 30.0, 60.0],
+            ...     polarization="p",
+            ... )
         """
-        # Validation
-        if property not in ["R", "T", "A"]:
-            raise ValueError(
-                f"Invalid property '{property}'. Must be 'R', 'T', or 'A'."
-            )
-        if target_type not in ["equal", "below", "over"]:
-            raise ValueError(
-                f"Invalid target_type '{target_type}'. Must be 'equal', 'below', 'over'"
-            )
+        operand_name = property if property is not None else operand_type
+        if (
+            property is not None
+            and operand_type is not None
+            and property != operand_type
+        ):
+            raise ValueError("property and operand_type must match when both set")
+        if operand_name is None:
+            raise ValueError("property or operand_type must be provided")
 
-        # Check that wavelength_nm and aoi_deg are not both arrays
-        is_wl_array = isinstance(wavelength_nm, list | np.ndarray)
-        is_aoi_array = isinstance(aoi_deg, list | np.ndarray)
+        is_builtin_spectral = operand_name in ["R", "T", "A"]
 
-        if is_wl_array and is_aoi_array:
-            raise ValueError(
-                "Cannot specify both wavelength_nm and aoi_deg as arrays "
-                "simultaneously. Use one as array and the other as scalar."
-            )
-
-        # Validate value array dimensions
-        is_value_array = isinstance(value, list | np.ndarray)
-        if is_value_array:
-            if is_wl_array and len(value) != len(wavelength_nm):
+        if is_builtin_spectral:
+            if wavelength_nm is None:
+                raise ValueError("wavelength_nm is required for R/T/A operands")
+            if target_type is None:
+                raise ValueError("target_type is required for R/T/A operands")
+            if value is None:
+                raise ValueError("value is required for R/T/A operands")
+            if target_type not in ["equal", "below", "over"]:
                 raise ValueError(
-                    f"Length of value array ({len(value)}) must match "
-                    f"length of wavelength_nm array ({len(wavelength_nm)})"
-                )
-            elif is_aoi_array and len(value) != len(aoi_deg):
-                raise ValueError(
-                    f"Length of value array ({len(value)}) must match "
-                    f"length of aoi_deg array ({len(aoi_deg)})"
+                    f"Invalid target_type '{target_type}'. Must be "
+                    "'equal', 'below', 'over'"
                 )
 
-        # Create target object
-        target = OptimizationTarget(
-            property=property,
-            wavelength_nm=wavelength_nm,
-            target_type=target_type,
-            value=value,
+            # Check that wavelength_nm and aoi_deg are not both arrays
+            is_wl_array = isinstance(wavelength_nm, list | np.ndarray)
+            is_aoi_array = isinstance(aoi_deg, list | np.ndarray)
+
+            if is_wl_array and is_aoi_array:
+                raise ValueError(
+                    "Cannot specify both wavelength_nm and aoi_deg as arrays "
+                    "simultaneously. Use one as array and the other as scalar."
+                )
+
+            # Validate value array dimensions
+            is_value_array = isinstance(value, list | np.ndarray)
+            if is_value_array:
+                if is_wl_array and len(value) != len(wavelength_nm):
+                    raise ValueError(
+                        f"Length of value array ({len(value)}) must match "
+                        f"length of wavelength_nm array ({len(wavelength_nm)})"
+                    )
+                if is_aoi_array and len(value) != len(aoi_deg):
+                    raise ValueError(
+                        f"Length of value array ({len(value)}) must match "
+                        f"length of aoi_deg array ({len(aoi_deg)})"
+                    )
+
+            operand = SpectralOptimizationOperand(
+                property=operand_name,
+                wavelength_nm=wavelength_nm,
+                target_type=target_type,
+                value=value,
+                weight=weight,
+                aoi_deg=aoi_deg,
+                polarization=polarization,
+                tolerance=tolerance,
+            )
+            self.operands.add(operand)
+            return self
+
+        if operand_name not in thin_film_operand_registry:
+            raise ValueError(
+                f"Invalid property '{operand_name}'. Must be 'R', 'T', 'A' "
+                "or a registered operand name."
+            )
+
+        if target_type is not None:
+            raise ValueError("target_type is only valid for built-in R/T/A operands")
+        if wavelength_nm is not None:
+            raise ValueError("wavelength_nm is only valid for built-in R/T/A operands")
+        if value is not None:
+            raise ValueError("value is only valid for built-in R/T/A operands")
+        if target is not None and (min_val is not None or max_val is not None):
+            raise ValueError(
+                "Custom operand cannot mix equality and inequality targets"
+            )
+
+        operand = ThinFilmCustomOperand(
+            operand_type=operand_name,
+            target=target,
+            min_val=min_val,
+            max_val=max_val,
             weight=weight,
-            aoi_deg=aoi_deg,
-            polarization=polarization,
-            tolerance=tolerance,
+            input_data=input_data,
+            label=label,
         )
-
-        self.targets.append(target)
+        self.operands.add(operand)
         return self
 
     def add_angular_operand(
@@ -244,6 +351,16 @@ class ThinFilmOptimizer:
 
         Returns:
             ThinFilmOptimizer: self for method chaining.
+
+        Example:
+            >>> optimizer.add_angular_operand(
+            ...     property="R",
+            ...     wavelength_nm=550.0,
+            ...     aoi_deg_range=[0.0, 20.0, 40.0, 60.0],
+            ...     target_type="below",
+            ...     value=[0.08, 0.10, 0.14, 0.20],
+            ...     polarization="s",
+            ... )
         """
         return self.add_operand(
             property=property,
@@ -278,6 +395,16 @@ class ThinFilmOptimizer:
 
         Returns:
             ThinFilmOptimizer: self for method chaining.
+
+        Example:
+            >>> optimizer.add_interpolated_operand(
+            ...     property="T",
+            ...     wavelength_nm=[450.0, 550.0, 650.0],
+            ...     target_type="equal",
+            ...     value=[0.88, 0.94, 0.89],
+            ...     aoi_deg=0.0,
+            ...     polarization="u",
+            ... )
         """
         return self.add_operand(
             property=property,
@@ -305,55 +432,13 @@ class ThinFilmOptimizer:
         Returns:
             Interpolated target value.
         """
-        # If value is scalar, return as-is
-        if isinstance(target.value, int | float):
-            return float(target.value)
+        return target.interpolate_target_value(
+            current_wl=current_wl,
+            current_aoi=current_aoi,
+        )
 
-        # If value is array, interpolate
-        value_array = np.array(target.value)
-
-        # Determine interpolation axis
-        if isinstance(target.wavelength_nm, list | np.ndarray):
-            # Interpolate along wavelength
-            if current_wl is None:
-                raise ValueError(
-                    "current_wl must be provided for wavelength interpolation"
-                )
-            wl_array = np.array(target.wavelength_nm)
-            if len(value_array) != len(wl_array):
-                raise ValueError("Value and wavelength arrays must have same length")
-
-            # Use linear interpolation, with extrapolation for out-of-bounds
-            interp_func = interp1d(
-                wl_array,
-                value_array,
-                kind="linear",
-                bounds_error=False,
-                fill_value="extrapolate",
-            )
-            return float(interp_func(current_wl))
-
-        elif isinstance(target.aoi_deg, list | np.ndarray):
-            # Interpolate along AOI
-            if current_aoi is None:
-                raise ValueError("current_aoi must be provided for AOI interpolation")
-            aoi_array = np.array(target.aoi_deg)
-            if len(value_array) != len(aoi_array):
-                raise ValueError("Value and AOI arrays must have same length")
-
-            # Use linear interpolation, with extrapolation for out-of-bounds
-            interp_func = interp1d(
-                aoi_array,
-                value_array,
-                kind="linear",
-                bounds_error=False,
-                fill_value="extrapolate",
-            )
-            return float(interp_func(current_aoi))
-
-        else:
-            # Neither wavelength nor AOI is array, but value is array - take first value
-            return float(value_array[0])
+    def _evaluation_context(self) -> ThinFilmEvaluationContext:
+        return ThinFilmEvaluationContext(stack=self.stack)
 
     def _merit_function(self, x: np.ndarray) -> float:
         """Evaluate the merit function.
@@ -367,135 +452,24 @@ class ThinFilmOptimizer:
         # Update variables
         for i, var_info in enumerate(self.variables):
             var_info.variable.update_value(x[i])
+        return self.sum_squared()
 
-        merit = 0.0
+    def fun_array(self) -> np.ndarray:
+        """Array of operand weighted deltas for the current stack state."""
+        context = self._evaluation_context()
+        terms = [operand.fun(context) for operand in self.operands]
+        if not terms:
+            return np.array([0.0])
+        return np.asarray(terms, dtype=float)
 
-        # Evaluate all targets
-        for target in self.targets:
-            # Handle different combinations of array/scalar parameters
-            if isinstance(target.wavelength_nm, list | np.ndarray):
-                # Wavelength is array, AOI should be scalar
-                aoi_deg = (
-                    float(target.aoi_deg)
-                    if not isinstance(target.aoi_deg, list | np.ndarray)
-                    else target.aoi_deg[0]
-                )
+    def sum_squared(self) -> float:
+        """Calculate the sum of squared operand deltas."""
+        values = self.fun_array()
+        return float(np.sum(values**2))
 
-                # Calculate property for each wavelength
-                total_residual = 0.0
-                wavelengths = np.array(target.wavelength_nm)
-
-                for wl in wavelengths:
-                    # Get interpolated target value for this wavelength
-                    target_value = self._interpolate_target_value(target, current_wl=wl)
-
-                    # Calculate current property value
-                    if target.property == "R":
-                        current_value = ThinFilmOperand.reflectance(
-                            self.stack, wl, aoi_deg, target.polarization
-                        )
-                    elif target.property == "T":
-                        current_value = ThinFilmOperand.transmittance(
-                            self.stack, wl, aoi_deg, target.polarization
-                        )
-                    elif target.property == "A":
-                        current_value = ThinFilmOperand.absorptance(
-                            self.stack, wl, aoi_deg, target.polarization
-                        )
-
-                    # Compute residual based on target type
-                    if target.target_type == "equal":
-                        residual = current_value - target_value
-                    elif target.target_type == "below":
-                        residual = max(0, current_value - target_value)
-                    elif target.target_type == "over":
-                        residual = max(0, target_value - current_value)
-
-                    total_residual += residual**2
-
-                # Average over wavelengths and apply weight
-                merit += target.weight * total_residual / len(wavelengths)
-
-            elif isinstance(target.aoi_deg, list | np.ndarray):
-                # AOI is array, wavelength should be scalar
-                wavelength_nm = (
-                    float(target.wavelength_nm)
-                    if not isinstance(target.wavelength_nm, list | np.ndarray)
-                    else target.wavelength_nm[0]
-                )
-
-                # Calculate property for each AOI
-                total_residual = 0.0
-                aoi_angles = np.array(target.aoi_deg)
-
-                for aoi in aoi_angles:
-                    # Get interpolated target value for this AOI
-                    target_value = self._interpolate_target_value(
-                        target, current_aoi=aoi
-                    )
-
-                    # Calculate current property value
-                    if target.property == "R":
-                        current_value = ThinFilmOperand.reflectance(
-                            self.stack, wavelength_nm, aoi, target.polarization
-                        )
-                    elif target.property == "T":
-                        current_value = ThinFilmOperand.transmittance(
-                            self.stack, wavelength_nm, aoi, target.polarization
-                        )
-                    elif target.property == "A":
-                        current_value = ThinFilmOperand.absorptance(
-                            self.stack, wavelength_nm, aoi, target.polarization
-                        )
-
-                    # Compute residual based on target type
-                    if target.target_type == "equal":
-                        residual = current_value - target_value
-                    elif target.target_type == "below":
-                        residual = max(0, current_value - target_value)
-                    elif target.target_type == "over":
-                        residual = max(0, target_value - current_value)
-
-                    total_residual += residual**2
-
-                # Average over AOIs and apply weight
-                merit += target.weight * total_residual / len(aoi_angles)
-
-            else:
-                # Both wavelength and AOI are scalars
-                wavelength_nm = float(target.wavelength_nm)
-                aoi_deg = float(target.aoi_deg)
-                target_value = self._interpolate_target_value(target)
-
-                # Calculate current property value
-                if target.property == "R":
-                    current_value = ThinFilmOperand.reflectance(
-                        self.stack, wavelength_nm, aoi_deg, target.polarization
-                    )
-                elif target.property == "T":
-                    current_value = ThinFilmOperand.transmittance(
-                        self.stack, wavelength_nm, aoi_deg, target.polarization
-                    )
-                elif target.property == "A":
-                    current_value = ThinFilmOperand.absorptance(
-                        self.stack, wavelength_nm, aoi_deg, target.polarization
-                    )
-
-                # Compute residual based on target type
-                if target.target_type == "equal":
-                    residual = current_value - target_value
-                elif target.target_type == "below":
-                    residual = max(0, current_value - target_value)
-                elif target.target_type == "over":
-                    residual = max(0, target_value - current_value)
-
-                # Add weighted squared residual to merit
-                merit += target.weight * residual**2
-
-        # Ensure we return a scalar float
-        if hasattr(merit, "item"):
-            return merit.item()
-        return float(merit)
+    def rss(self) -> float:
+        """Root sum of squares of the current merit function."""
+        return float(np.sqrt(self.sum_squared()))
 
     def optimize(
         self,
@@ -602,125 +576,9 @@ class ThinFilmOptimizer:
         """
         performance = {}
 
-        for i, target in enumerate(self.targets):
-            # Handle different parameter combinations
-            if isinstance(target.wavelength_nm, list | np.ndarray):
-                # Wavelength array case
-                aoi_deg = (
-                    float(target.aoi_deg)
-                    if not isinstance(target.aoi_deg, list | np.ndarray)
-                    else target.aoi_deg[0]
-                )
-                wavelengths = np.array(target.wavelength_nm)
-
-                current_values = []
-                target_values = []
-
-                for wl in wavelengths:
-                    target_val = self._interpolate_target_value(target, current_wl=wl)
-                    target_values.append(target_val)
-
-                    if target.property == "R":
-                        current_val = ThinFilmOperand.reflectance(
-                            self.stack, wl, aoi_deg, target.polarization
-                        )
-                    elif target.property == "T":
-                        current_val = ThinFilmOperand.transmittance(
-                            self.stack, wl, aoi_deg, target.polarization
-                        )
-                    elif target.property == "A":
-                        current_val = ThinFilmOperand.absorptance(
-                            self.stack, wl, aoi_deg, target.polarization
-                        )
-                    current_values.append(current_val)
-
-                performance[f"target_{i}"] = {
-                    "property": target.property,
-                    "wavelength_nm": target.wavelength_nm,
-                    "aoi_deg": aoi_deg,
-                    "target_type": target.target_type,
-                    "target_values": target_values,
-                    "current_values": current_values,
-                    "differences": [
-                        c - t
-                        for c, t in zip(current_values, target_values, strict=False)
-                    ],
-                    "weight": target.weight,
-                }
-
-            elif isinstance(target.aoi_deg, list | np.ndarray):
-                # AOI array case
-                wavelength_nm = (
-                    float(target.wavelength_nm)
-                    if not isinstance(target.wavelength_nm, list | np.ndarray)
-                    else target.wavelength_nm[0]
-                )
-                aoi_angles = np.array(target.aoi_deg)
-
-                current_values = []
-                target_values = []
-
-                for aoi in aoi_angles:
-                    target_val = self._interpolate_target_value(target, current_aoi=aoi)
-                    target_values.append(target_val)
-
-                    if target.property == "R":
-                        current_val = ThinFilmOperand.reflectance(
-                            self.stack, wavelength_nm, aoi, target.polarization
-                        )
-                    elif target.property == "T":
-                        current_val = ThinFilmOperand.transmittance(
-                            self.stack, wavelength_nm, aoi, target.polarization
-                        )
-                    elif target.property == "A":
-                        current_val = ThinFilmOperand.absorptance(
-                            self.stack, wavelength_nm, aoi, target.polarization
-                        )
-                    current_values.append(current_val)
-
-                performance[f"target_{i}"] = {
-                    "property": target.property,
-                    "wavelength_nm": wavelength_nm,
-                    "aoi_deg": target.aoi_deg,
-                    "target_type": target.target_type,
-                    "target_values": target_values,
-                    "current_values": current_values,
-                    "differences": [
-                        c - t
-                        for c, t in zip(current_values, target_values, strict=False)
-                    ],
-                    "weight": target.weight,
-                }
-
-            else:
-                # Scalar case
-                wavelength_nm = float(target.wavelength_nm)
-                aoi_deg = float(target.aoi_deg)
-                target_value = self._interpolate_target_value(target)
-
-                if target.property == "R":
-                    current_value = ThinFilmOperand.reflectance(
-                        self.stack, wavelength_nm, aoi_deg, target.polarization
-                    )
-                elif target.property == "T":
-                    current_value = ThinFilmOperand.transmittance(
-                        self.stack, wavelength_nm, aoi_deg, target.polarization
-                    )
-                elif target.property == "A":
-                    current_value = ThinFilmOperand.absorptance(
-                        self.stack, wavelength_nm, aoi_deg, target.polarization
-                    )
-
-                performance[f"target_{i}"] = {
-                    "property": target.property,
-                    "wavelength_nm": wavelength_nm,
-                    "aoi_deg": aoi_deg,
-                    "target_type": target.target_type,
-                    "target_value": target_value,
-                    "current_value": current_value,
-                    "difference": current_value - target_value,
-                    "weight": target.weight,
-                }
+        context = self._evaluation_context()
+        for i, operand in enumerate(self.operands):
+            performance[f"target_{i}"] = operand.performance_data(context)
 
         return performance
 
@@ -797,136 +655,14 @@ class ThinFilmOptimizer:
                 "Install with: pip install matplotlib"
             )
 
-        if not self.targets:
-            return
-
-        # Determine plotting range
-        if plot_type == "wavelength":
-            if wavelength_range_nm is None:
-                wl_values = []
-                for target in self.targets:
-                    if isinstance(target.wavelength_nm, list | np.ndarray):
-                        wl_values.extend(target.wavelength_nm)
-                    else:
-                        wl_values.append(target.wavelength_nm)
-
-                if wl_values:
-                    margin = (max(wl_values) - min(wl_values)) * 0.1
-                    wavelength_range_nm = (
-                        min(wl_values) - margin,
-                        max(wl_values) + margin,
-                    )
-                else:
-                    wavelength_range_nm = (400, 800)
-
-            x_values = np.linspace(
-                wavelength_range_nm[0], wavelength_range_nm[1], num_points
-            )
-
-        elif plot_type == "angle":
-            if angle_range_deg is None:
-                angle_values = []
-                for target in self.targets:
-                    if isinstance(target.aoi_deg, list | np.ndarray):
-                        angle_values.extend(target.aoi_deg)
-                    else:
-                        angle_values.append(target.aoi_deg)
-
-                if angle_values:
-                    margin = (max(angle_values) - min(angle_values)) * 0.1
-                    angle_range_deg = (
-                        min(angle_values) - margin,
-                        max(angle_values) + margin,
-                    )
-                else:
-                    angle_range_deg = (0, 80)
-
-            x_values = np.linspace(angle_range_deg[0], angle_range_deg[1], num_points)
-        else:
-            raise ValueError(
-                f"Invalid plot_type '{plot_type}'. Must be 'wavelength' or 'angle'."
-            )
-
-        # Color and style maps
-        color_map = {"R": "red", "T": "blue", "A": "green"}
-        target_styles = {"equal": "-", "below": "--", "over": ":"}
-
-        # Plot each target
-        for _i, target in enumerate(self.targets):
-            color = color_map.get(target.property, "black")
-            style = target_styles.get(target.target_type, "-")
-
-            if plot_type == "wavelength":
-                # Handle wavelength-dependent targets
-                if isinstance(target.wavelength_nm, list | np.ndarray):
-                    wl_array = np.array(target.wavelength_nm)
-
-                    if isinstance(target.value, list | np.ndarray):
-                        value_array = np.array(target.value)
-                        interp_func = interp1d(
-                            wl_array,
-                            value_array,
-                            kind="linear",
-                            bounds_error=False,
-                            fill_value="extrapolate",
-                        )
-                        y_target = interp_func(x_values)
-                    else:
-                        y_target = np.full_like(x_values, target.value)
-
-                    label = f"{target.property} {target.target_type}"
-                    ax.plot(
-                        x_values, y_target, linestyle=style, color=color, label=label
-                    )
-
-                elif not isinstance(target.aoi_deg, list | np.ndarray):
-                    # Single wavelength target
-                    if (
-                        wavelength_range_nm[0]
-                        <= target.wavelength_nm
-                        <= wavelength_range_nm[1]
-                    ):
-                        label = f"{target.property} @ {target.wavelength_nm}nm"
-                        ax.axvline(
-                            target.wavelength_nm,
-                            color=color,
-                            linestyle=style,
-                            label=label,
-                        )
-
-            elif plot_type == "angle":
-                # Handle angle-dependent targets
-                if isinstance(target.aoi_deg, list | np.ndarray):
-                    angle_array = np.array(target.aoi_deg)
-
-                    if isinstance(target.value, list | np.ndarray):
-                        value_array = np.array(target.value)
-                        interp_func = interp1d(
-                            angle_array,
-                            value_array,
-                            kind="linear",
-                            bounds_error=False,
-                            fill_value="extrapolate",
-                        )
-                        y_target = interp_func(x_values)
-                    else:
-                        y_target = np.full_like(x_values, target.value)
-
-                    label = f"{target.property} {target.target_type}"
-                    ax.plot(
-                        x_values, y_target, linestyle=style, color=color, label=label
-                    )
-
-                elif not isinstance(target.wavelength_nm, list | np.ndarray):
-                    # Single angle target
-                    if angle_range_deg[0] <= target.aoi_deg <= angle_range_deg[1]:
-                        label = f"{target.property} @ {target.aoi_deg}°"
-                        ax.axvline(
-                            target.aoi_deg, color=color, linestyle=style, label=label
-                        )
-
-        # Add legend
-        ax.legend()
+        plotter = ThinFilmOperandPlotter(self.operands)
+        plotter.plot(
+            ax,
+            plot_type=plot_type,
+            wavelength_range_nm=wavelength_range_nm,
+            angle_range_deg=angle_range_deg,
+            num_points=num_points,
+        )
 
     def info(self) -> None:
         """Display information about the optimizer state in tabular format."""
@@ -1019,6 +755,25 @@ class ThinFilmOptimizer:
             print("Targets:")
             target_data = []
             for i, target in enumerate(self.targets):
+                if not isinstance(target, SpectralOptimizationOperand):
+                    target_data.append(
+                        [
+                            i,
+                            getattr(
+                                target,
+                                "display_name",
+                                getattr(target, "operand_type", "custom"),
+                            ),
+                            "custom",
+                            getattr(target, "target", ""),
+                            "-",
+                            "-",
+                            f"{target.weight:.1f}",
+                            "-",
+                        ]
+                    )
+                    continue
+
                 # Handle different parameter types for display
                 if isinstance(target.wavelength_nm, list | np.ndarray):
                     wl_str = (
@@ -1041,7 +796,7 @@ class ThinFilmOptimizer:
                         f"interp ({min(target.value):.3f}-{max(target.value):.3f})"
                     )
                 else:
-                    value_str = f"{target.value:.3f}"
+                    value_str = f"{float(target.value):.3f}"
 
                 target_data.append(
                     [

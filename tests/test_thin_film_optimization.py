@@ -603,6 +603,28 @@ class TestOptimizerMethods:
         assert len(optimizer.variables) == 1
         # The optimizer should handle this gracefully
 
+    def test_custom_operand_registration_and_optimization(self, simple_stack):
+        def layer_thickness_nm(stack, layer_index=0):
+            return stack.layers[layer_index].thickness_um * 1000.0
+
+        ThinFilmOptimizer.register_operand(
+            "layer_thickness_nm_test", layer_thickness_nm, overwrite=True
+        )
+
+        optimizer = ThinFilmOptimizer(simple_stack)
+        optimizer.add_variable(layer_index=0, min_nm=50, max_nm=200)
+        optimizer.add_operand(
+            "layer_thickness_nm_test",
+            max_val=80.0,
+            input_data={"layer_index": 0},
+            label="Layer thickness",
+        )
+
+        result = optimizer.optimize(max_iterations=5, verbose=False)
+        assert isinstance(result, dict)
+        assert optimizer.targets[0].display_name == "Layer thickness"
+        assert optimizer.get_current_performance()["target_0"]["current_value"] <= 80.1
+
 
 class TestOptimizationWithArrayTargets:
     """Test optimization with array-based targets."""
