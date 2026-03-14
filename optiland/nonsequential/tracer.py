@@ -270,8 +270,8 @@ class NonSequentialTracer:
         unique_w = be.unique(wavelengths)
         result = be.ones_like(wavelengths)
         for w in unique_w:
-            w_val = float(w)
-            n_val = float(material.n(w_val))
+            w_val = float(be.to_numpy(w).item())
+            n_val = float(be.to_numpy(material.n(w_val)).item() if hasattr(material.n(w_val), 'item') else material.n(w_val))
             w_mask = wavelengths == w
             result = be.where(w_mask, be.array(n_val), result)
         return result

@@ -198,7 +198,7 @@ class TestPrism:
         assert det_data.n_hits > 0
         x, y, z = det_data.get_positions()
         # The prism should cause lateral displacement
-        mean_x = float(be.to_numpy(be.mean(x)))
+        mean_x = float(be.to_numpy(be.mean(x)).item())
         # For a 30° wedge prism with n=1.5, there should be noticeable deviation
         assert abs(mean_x) > 0.01
 

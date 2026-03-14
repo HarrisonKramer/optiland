@@ -40,6 +40,7 @@ class NonSequentialScene:
         self._tracer = NonSequentialTracer(intensity_threshold, max_interactions)
         self._detector_data: dict[int, DetectorData] = {}
         self._next_id = 0
+        self._last_traced_rays: list = []
 
     def add_surface(self, surface: NSQSurface) -> None:
         """Add a surface to the scene. Assigns a unique surface_id.
@@ -74,6 +75,7 @@ class NonSequentialScene:
         Returns:
             Dictionary mapping detector surface_id to DetectorData.
         """
+        self._last_traced_rays = []
         for source in self._sources:
             rays = source.generate_rays(n_rays)
             self._tracer.trace(
@@ -81,6 +83,8 @@ class NonSequentialScene:
                 rays,
                 self._detector_data,
             )
+            if rays.record_paths:
+                self._last_traced_rays.append(rays)
 
         return self._detector_data
 
@@ -98,6 +102,60 @@ class NonSequentialScene:
     def detector_surfaces(self) -> tuple[NSQSurface, ...]:
         """Surfaces flagged as detectors."""
         return tuple(s for s in self._surfaces if s.is_detector)
+
+    def draw(
+        self,
+        figsize: tuple | None = None,
+        xlim: tuple | None = None,
+        ylim: tuple | None = None,
+        title: str | None = None,
+        projection: str = "YZ",
+        ax=None,
+    ) -> tuple:
+        """Generate a 2D cross-sectional view of the non-sequential scene.
+
+        Args:
+            figsize: Figure size.
+            xlim: X-axis limits.
+            ylim: Y-axis limits.
+            title: Plot title.
+            projection: Projection plane ('YZ', 'XZ', 'XY').
+            ax: Optional matplotlib axes to plot on.
+
+        Returns:
+            Tuple of (figure, axes, viewer).
+        """
+        from optiland.visualization.nonsequential.viewer import NSQViewer
+
+        viewer = NSQViewer(self)
+        fig, ax = viewer.view(
+            figsize=figsize,
+            xlim=xlim,
+            ylim=ylim,
+            title=title,
+            projection=projection,
+            ax=ax,
+        )
+        return fig, ax, viewer
+
+    def draw3d(
+        self,
+        figsize: tuple = (1200, 800),
+        dark_mode: bool = False,
+    ) -> None:
+        """Generate an interactive 3D view of the non-sequential scene.
+
+        Args:
+            figsize: Window size.
+            dark_mode: Whether to use a dark theme.
+        """
+        from optiland.visualization.nonsequential.viewer_3d import NSQViewer3D
+
+        viewer = NSQViewer3D(self)
+        viewer.view(
+            figsize=figsize,
+            dark_mode=dark_mode,
+        )
 
     def get_detector_data(self, surface_id: int) -> DetectorData:
         """Get detector data for a specific surface.
