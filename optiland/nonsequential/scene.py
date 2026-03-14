@@ -9,12 +9,15 @@ Kramer Harrison, 2026
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING
 
+import optiland.backend as be
 from optiland.nonsequential.detector import DetectorData
 from optiland.nonsequential.tracer import NonSequentialTracer
 
 if TYPE_CHECKING:
+    from optiland.nonsequential.ray_data import NSQRayPool
     from optiland.nonsequential.source import BaseSource
     from optiland.nonsequential.surface import NSQSurface
 
@@ -83,6 +86,52 @@ class NonSequentialScene:
             )
 
         return self._detector_data
+
+    def trace_with_paths(self, n_rays: int = 10000) -> list[NSQRayPool]:
+        """Trace rays from all sources, recording full path histories.
+
+        Unlike ``trace()``, this method temporarily enables path recording on
+        every source and returns the ray pools for visualization. Detector
+        data is **not** accumulated (an empty dict is passed to the tracer).
+
+        Sources without a ``record_paths`` attribute are traced without path
+        recording and a warning is emitted; their returned pool will have
+        ``path_history=None``.
+
+        Args:
+            n_rays: Number of rays per source.
+
+        Returns:
+            List of NSQRayPool instances (one per source) with
+            ``path_history`` populated (or ``None`` for unsupported sources).
+        """
+        pools: list[NSQRayPool] = []
+
+        for source in self._sources:
+            if not hasattr(source, "record_paths"):
+                warnings.warn(
+                    f"Source {source!r} has no 'record_paths' attribute; "
+                    "path recording skipped for this source.",
+                    stacklevel=2,
+                )
+                pool = source.generate_rays(n_rays)
+                self._tracer.trace(self._surfaces, pool, {})
+                pools.append(pool)
+                continue
+
+            old_rp = source.record_paths
+            source.record_paths = True
+            try:
+                pool = source.generate_rays(n_rays)
+                # Snapshot source emission positions as sentinel step 0
+                pool.record_path_point(be.full(n_rays, -1.0))
+                self._tracer.trace(self._surfaces, pool, {})
+            finally:
+                source.record_paths = old_rp
+
+            pools.append(pool)
+
+        return pools
 
     def reset_detectors(self) -> None:
         """Clear all accumulated detector data."""
