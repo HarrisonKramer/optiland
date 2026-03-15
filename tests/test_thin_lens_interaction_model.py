@@ -69,16 +69,30 @@ class TestThinLensInteractionModel:
         traced_rays = surface.trace(rays)
         assert isinstance(traced_rays, RealRays)
 
-    def test_paraxial_surface_perfect_imaging(self, set_test_backend):
+    @pytest.mark.parametrize(
+        "focal_length, n1, n2",
+        [
+            (50.0, 1.0, 1.0),
+            (50.0, 1.5, 2.0),
+            (50.0, 2.0, 1.5),
+            (-50.0, 1.0, 1.0),
+            (-50.0, 1.5, 2.0),
+            (-50.0, 2.0, 1.5),
+        ],
+    )
+    def test_paraxial_surface_perfect_imaging_refraction(
+        self, focal_length, n1, n2, set_test_backend
+    ):
         lens = Optic()
 
         # add surfaces
-        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(index=0, thickness=be.inf, material=IdealMaterial(n1))
         lens.add_surface(
             index=1,
             surface_type="paraxial",
-            thickness=100,
-            f=100,
+            material=IdealMaterial(n2),
+            thickness=focal_length * n2,
+            f=focal_length,
             is_stop=True,
         )
         lens.add_surface(index=2)
@@ -89,7 +103,6 @@ class TestThinLensInteractionModel:
         # add field
         lens.set_field_type(field_type="angle")
         lens.add_field(y=0)
-        # lens.add_field(y=5)
 
         # add wavelength
         lens.add_wavelength(value=0.55, is_primary=True)
@@ -106,7 +119,7 @@ class TestThinLensInteractionModel:
         assert_allclose(rays.y, 0)
 
         # confirm all points at exact same z
-        assert_allclose(rays.z, 100)
+        assert_allclose(rays.z, focal_length * n2)
 
     def test_flip(self, surface):
         f_initial = be.copy(surface.interaction_model.f)
