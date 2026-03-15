@@ -140,20 +140,33 @@ class TestThinLensInteractionModel:
         assert surface.interaction_model.from_dict(data, None)
 
     def test_refractive_paraxial_ray_trace(self, set_test_backend):
+    @pytest.mark.parametrize(
+        "focal_length, n1",
+        [
+            (50.0, 1.0),
+            (50.0, 1.5),
+            (50.0, 2.0),
+            (-50.0, 1.0),
+            (-50.0, 1.5),
+            (-50.0, 2.0),
+        ],
+    )
+    def test_paraxial_surface_perfect_imaging_reflection(
+        self, focal_length, n1, set_test_backend
+    ):
         lens = Optic()
 
         # add surfaces
-        lens.surfaces.add(index=0, thickness=be.inf)
+        lens.surfaces.add(index=0, thickness=be.inf, material=IdealMaterial(n1))
         lens.surfaces.add(
             index=1,
             surface_type="paraxial",
-            thickness=75,
-            f=50,
+            material="mirror",
+            thickness=focal_length,
+            f=focal_length,
             is_stop=True,
-            material=IdealMaterial(1.5, 0),
-            is_reflective=False,
         )
-        lens.surfaces.add(index=2, material=IdealMaterial(1.5, 0))
+        lens.surfaces.add(index=2)
 
         # add aperture
         lens.set_aperture(aperture_type="EPD", value=20)
@@ -177,4 +190,5 @@ class TestThinLensInteractionModel:
         assert_allclose(rays.y, 0)
 
         # confirm all points at exact same z
-        assert_allclose(rays.z, 75)
+        assert_allclose(rays.z, focal_length)
+
