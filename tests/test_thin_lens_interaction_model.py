@@ -124,22 +124,6 @@ class TestThinLensInteractionModel:
         # confirm all points at exact same z
         assert_allclose(rays.z, focal_length * n2)
 
-    def test_flip(self, surface):
-        f_initial = be.copy(surface.interaction_model.f)
-        surface.interaction_model.flip()
-        assert_allclose(surface.interaction_model.f, f_initial)
-
-    def test_to_dict(self, surface):
-        data = surface.interaction_model.to_dict()
-        assert "focal_length" in data
-        assert data["focal_length"] == 42
-
-    def test_from_dict(self, surface):
-        data = surface.interaction_model.to_dict()
-        data["material_pre"] = None
-        assert surface.interaction_model.from_dict(data, None)
-
-    def test_refractive_paraxial_ray_trace(self, set_test_backend):
     @pytest.mark.parametrize(
         "focal_length, n1",
         [
@@ -192,3 +176,48 @@ class TestThinLensInteractionModel:
         # confirm all points at exact same z
         assert_allclose(rays.z, focal_length)
 
+    @pytest.mark.parametrize("n1, n2", [(1.0, 1.0), (2.0, 1.5), (1.5, 2.0)])
+    def test_plane_paraxial_surface_refraction(self, n1, n2, set_test_backend):
+        lens = Optic()
+
+        # add surfaces
+        lens.add_surface(index=0, thickness=be.inf, material=IdealMaterial(n1))
+        lens.add_surface(
+            index=1,
+            surface_type="paraxial",
+            material=IdealMaterial(n2),
+            thickness=0.0,
+            f=be.inf,
+            is_stop=True,
+        )
+        lens.add_surface(index=2, material=IdealMaterial(n2))
+
+        model = lens.surface_group.surfaces[1].interaction_model
+        assert isinstance(model, ThinLensInteractionModel)
+
+        ray_in = RealRays(0.0, 0.0, -1.0, 0.1, 0.2, 1.0, intensity=1.0, wavelength=0.55)
+        ray_out = RealRays(
+            0.0, 0.0, -1.0, 0.1, 0.2, 1.0 * n2 / n1, intensity=1.0, wavelength=0.55
+        )
+        ray_out.normalize()
+        model.interact_real_rays(ray_in)
+
+        assert_allclose(
+            [ray_in.x, ray_in.y, ray_in.z, ray_in.L, ray_in.M, ray_in.N],
+            [ray_out.x, ray_out.y, ray_out.z, ray_out.L, ray_out.M, ray_out.N],
+        )
+
+    def test_flip(self, surface):
+        f_initial = be.copy(surface.interaction_model.f)
+        surface.interaction_model.flip()
+        assert_allclose(surface.interaction_model.f, f_initial)
+
+    def test_to_dict(self, surface):
+        data = surface.interaction_model.to_dict()
+        assert "focal_length" in data
+        assert data["focal_length"] == 42
+
+    def test_from_dict(self, surface):
+        data = surface.interaction_model.to_dict()
+        data["material_pre"] = None
+        assert surface.interaction_model.from_dict(data, None)
