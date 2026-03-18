@@ -128,11 +128,13 @@ def _initialize_alphas(s, x, alphas, j=0):
         if be.get_backend() == "torch":
             import torch
 
+            prec = be.get_precision()
+            dtype = torch.float32 if prec == 32 else torch.float64
             # Ensure alphas doesn't require grad to allow in-place ops
             alphas = torch.zeros(
                 shape,
                 device=be.get_device(),
-                dtype=be.get_precision(),
+                dtype=dtype,
                 requires_grad=False,
             )
         else:
