@@ -47,7 +47,7 @@ The NumPy backend provides pure-CPU execution and leverages Numba JIT compilatio
    y = be.sin(x)                   # trigonometric
    total = be.sum(y)               # reduction
 
-Because of automatic patching, you do not need to re‑implement any basic routines in `numpy_backend.py`.
+Because of automatic patching, you do not need to re‑implement any basic routines in the `NumpyBackend` class.
 
 PyTorch Backend
 ---------------
@@ -102,14 +102,15 @@ When extending Optiland, always import operations from `optiland.backend` to ens
    def my_custom_metric(x, y):
        return dot(x, y) / sqrt(dot(x, x) * dot(y, y))
 
-If you define a function that relies on a backend-specific feature, add it to both `numpy_backend.py` and `torch_backend.py`, following the existing patterns.
+If you define a function that relies on a backend-specific feature, add it to the `NumpyBackend` and `TorchBackend` classes, as well as the `AbstractBackend` interface, following the existing patterns.
 
 Backend Implementation Details
 ------------------------------
 
-- **Dynamic Dispatch**: The backend uses a `__getattr__` function to dynamically dispatch calls to the appropriate backend module.
-- **NumPy Backend**: The `numpy_backend.py` module defines a `_lib` attribute that points to the `numpy` library, allowing for a fallback to the NumPy namespace for functions not explicitly defined in the module.
-- **PyTorch Backend**: The `torch_backend.py` module explicitly defines or maps all supported functions.
+- **Dynamic Dispatch**: The backend uses a `__getattr__` function to dynamically dispatch calls to the active backend class instance.
+- **Abstract Backend**: The `backend.base.AbstractBackend` class defines the contract and common interfaces for all backends.
+- **NumPy Backend**: The `backend.numpy_backend.NumpyBackend` class defines a `_lib` attribute that points to the `numpy` library, allowing for a fallback to the NumPy namespace for functions not explicitly defined.
+- **PyTorch Backend**: The `backend.torch_backend.TorchBackend` class explicitly defines or maps all supported functions to PyTorch operations.
 - **`to_numpy` Utility**: The `optiland.backend.utils` module provides a `to_numpy` function to convert backend-specific arrays to NumPy arrays.
 
 Best Practices

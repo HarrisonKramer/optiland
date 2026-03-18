@@ -1,4 +1,4 @@
-jones
+﻿jones
 =====
 
 .. automodule:: jones
@@ -13,6 +13,7 @@ jones
       JonesFresnel
       JonesHalfWaveRetarder
       JonesLinearDiattenuator
+      JonesLinearPolarizer
       JonesLinearRetarder
       JonesPolarizerH
       JonesPolarizerL135
