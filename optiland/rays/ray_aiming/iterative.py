@@ -299,11 +299,11 @@ class IterativeRayAimer(BaseRayAimer):
         para = self.optic.paraxial
         if is_inf:
             z_start = para.surfaces.positions[1]
-            y, _ = para._trace_generic(1.0, 0.0, z_start, wavelength, skip=1)
+            y, _ = para.trace_generic(1.0, 0.0, z_start, wavelength, skip=1)
             return y[stop_idx]
         else:
             obj_z = self.optic.object_surface.geometry.cs.z
-            y, _ = para._trace_generic(0.0, 1.0, obj_z, wavelength)
+            y, _ = para.trace_generic(0.0, 1.0, obj_z, wavelength)
             return y[stop_idx]
 
     def _get_local_stop_coords(self, rays: RealRays, stop_idx: int) -> tuple:
