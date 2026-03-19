@@ -49,7 +49,7 @@ def test_confirm_invalid_ap_type(set_test_backend):
     [
         ("EPD", False, True),
         ("imageFNO", False, False),
-        ("objectNA", False, False),
+        ("objectNA", True, False),
         ("float_by_stop_size", True, True),
     ],
 )
@@ -61,10 +61,10 @@ def test_capability_flags(set_test_backend, ap_type, expected_telecentric, expec
 
 
 def test_obj_space_telecentric_via_capability(set_test_backend):
-    """EPD and imageFNO report not supporting telecentric object space."""
+    """Only EPD and imageFNO are incompatible with telecentric object space."""
     assert not EPDAperture(5.0).supports_telecentric
     assert not ImageFNOAperture(5.0).supports_telecentric
-    assert ObjectNAAperture(0.1).supports_telecentric is False
+    assert ObjectNAAperture(0.1).supports_telecentric is True
     assert FloatByStopAperture(5.0).supports_telecentric is True
 
 

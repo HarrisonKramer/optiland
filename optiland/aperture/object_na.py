@@ -41,7 +41,7 @@ class ObjectNAAperture(BaseSystemAperture):
 
     @property
     def supports_telecentric(self) -> bool:
-        return False
+        return True
 
     @property
     def is_scalable(self) -> bool:
