@@ -68,7 +68,7 @@ class Paraxial:
         """
         z_start = -1
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
+        y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True, skip=1)
         f1 = y[0] / u[-1]
         return f1[0]
 
