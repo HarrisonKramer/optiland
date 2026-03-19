@@ -1,13 +1,6 @@
-analysis.image_simulation
-=========================
+﻿analysis.image\_simulation
+==========================
 
-.. automodule:: optiland.analysis.image_simulation
+.. automodule:: analysis.image_simulation
 
-   .. rubric:: Classes
-
-   .. autosummary::
    
-      DistortionWarper
-      ImageSimulationEngine
-      PSFBasisGenerator
-      SpatiallyVariableSimulator

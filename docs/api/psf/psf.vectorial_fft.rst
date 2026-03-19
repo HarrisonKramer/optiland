@@ -1,4 +1,4 @@
-psf.vectorial_fft
+﻿psf.vectorial\_fft
 ==================
 
 .. automodule:: psf.vectorial_fft
@@ -9,3 +9,4 @@ psf.vectorial_fft
    .. autosummary::
    
       VectorialFFTPSF
+   

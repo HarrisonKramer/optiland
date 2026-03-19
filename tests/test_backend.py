@@ -58,11 +58,13 @@ def test_getattr_from_backend(monkeypatch):
 
 
 def test_getattr_from_backend_lib(monkeypatch):
-    fake_backend = types.ModuleType("fake_numpy")
-    fake_backend._lib = types.SimpleNamespace(test_attr_lib=42)
+    # The new class-based dispatch no longer falls through to _lib.
+    # Attributes must be on the backend instance itself.
+    # Verify that attributes NOT on the instance raise AttributeError.
+    fake_backend = types.SimpleNamespace(test_attr_on_instance=99)
     monkeypatch.setitem(be.__getattr__.__globals__["_backends"], "numpy", fake_backend)
     monkeypatch.setattr(be, "_current_backend", "numpy")
-    assert be.test_attr_lib == 42
+    assert be.test_attr_on_instance == 99
 
 
 def test_getattr_fallback_priority(monkeypatch):
