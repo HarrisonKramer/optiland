@@ -28,7 +28,7 @@ At its heart, Optiland revolves around a few key components:
 
 * **Geometries** (``BaseGeometry``): These define the mathematical shape of a surface (e.g., plane, sphere, asphere).
 
-* **Aperture** (``Aperture``): Defines the system's limiting aperture. This can be specified as Entrance Pupil Diameter (EPD), Image Space F-number (imageFNO), Object Space Numerical Aperture (objectNA), or Float by Stop Size (float_by_stop_size).
+* **Aperture** (``BaseSystemAperture``): Defines the system's limiting aperture. This can be specified as Entrance Pupil Diameter (EPD), Image Space F-number (imageFNO), Object Space Numerical Aperture (objectNA), or Float by Stop Size (float_by_stop_size).
 
 * **Fields** (``Field``, ``FieldGroup``): Define the points in the object plane that are being imaged. Can be specified by angle or object height. Vignetting can also be applied.
 

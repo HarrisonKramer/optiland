@@ -1,4 +1,4 @@
-﻿aperture
+aperture
 ========
 
 .. automodule:: aperture
@@ -8,5 +8,15 @@
 
    .. autosummary::
    
-      Aperture
+      BaseSystemAperture
+      EPDAperture
+      ImageFNOAperture
+      ObjectNAAperture
+      FloatByStopAperture
+
+   .. rubric:: Functions
+
+   .. autosummary::
+
+      make_system_aperture
    
