@@ -30,7 +30,7 @@ def _complex_index(material: BaseMaterial, wavelength_um: float | Array) -> Arra
         k = material.k(wavelength_um)
     n = be.atleast_1d(n)
     k = be.atleast_1d(k)
-    return be.asarray(n, dtype=be.complex128) + 1j * be.asarray(k, dtype=be.complex128)
+    return be.to_complex(n) + 1j * be.to_complex(k)
 
 
 def _snell_cos(n0, theta0, n):
@@ -115,10 +115,10 @@ def _tmm_coh(stack: ThinFilmStack, wavelength_um, theta0_rad, pol: PolSP):
     etas = _admittance(ns, coss, pol)
 
     # Id initial matrix
-    A = be.asarray(be.ones_like(eta0), dtype=be.complex128)
-    B = be.asarray(be.zeros_like(eta0), dtype=be.complex128)
-    C = be.asarray(be.zeros_like(eta0), dtype=be.complex128)
-    D = be.asarray(be.ones_like(eta0), dtype=be.complex128)
+    A = be.to_complex(be.ones_like(eta0))
+    B = be.to_complex(be.zeros_like(eta0))
+    C = be.to_complex(be.zeros_like(eta0))
+    D = be.to_complex(be.ones_like(eta0))
 
     for layer in stack.layers:
         n_l = layer.n_complex(wavelength_um)
