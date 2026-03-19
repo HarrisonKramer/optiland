@@ -18,7 +18,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
 from optiland.aberrations import Aberrations
-from optiland.aperture import Aperture
+from optiland.aperture import BaseSystemAperture, make_system_aperture
 from optiland.fields import (
     BaseFieldDefinition,
     Field,
@@ -121,7 +121,7 @@ class Optic:
 
     def _initialize_attributes(self):
         """Initialize the attributes of the optical system."""
-        self.aperture: Aperture | None = None
+        self.aperture: BaseSystemAperture | None = None
         self.field_definition: BaseFieldDefinition | None = None
 
         self.surface_group: SurfaceGroup = SurfaceGroup()
@@ -312,7 +312,7 @@ class Optic:
             value (float): The value of the aperture.
 
         """
-        self.aperture = Aperture(aperture_type, value)
+        self.aperture = make_system_aperture(aperture_type, value)
 
     def set_field_type(self, field_type: FieldType):
         """Set the type of field used in the optical system.
