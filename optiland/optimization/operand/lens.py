@@ -36,14 +36,22 @@ class LensOperand:
         surface2 = optic.surface_group.surfaces[surface_number + 1]
         semi_apt_1 = surface1.semi_aperture
         semi_apt_2 = surface2.semi_aperture
-        semi_apt_min = semi_apt_1
+
+        # Populate semi-apertures if not yet set
+        if semi_apt_1 is None or semi_apt_2 is None:
+            optic.update_paraxial()
+            semi_apt_1 = surface1.semi_aperture
+            semi_apt_2 = surface2.semi_aperture
+
+        semi_apt_max = semi_apt_1
 
         if semi_apt_1 != semi_apt_2:
-            # in case of different semi-diameter, take the minimum
-            semi_apt_min = be.minimum(be.array(semi_apt_1), be.array(semi_apt_2))
+            # use the larger clear aperture — the lens blank is ground to one
+            # diameter, so edge thickness must be checked at the maximum height
+            semi_apt_max = be.maximum(be.array(semi_apt_1), be.array(semi_apt_2))
 
-        sag1 = surface1.geometry.sag(y=semi_apt_min)
-        sag2 = surface2.geometry.sag(y=semi_apt_min)
+        sag1 = surface1.geometry.sag(y=semi_apt_max)
+        sag2 = surface2.geometry.sag(y=semi_apt_max)
 
         thickness = optic.surface_group.get_thickness(surface_number)
 
