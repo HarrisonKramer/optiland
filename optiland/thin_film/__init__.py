@@ -21,6 +21,8 @@ from .stack import ThinFilmStack
 def __getattr__(name):
     if name == "optimization":
         return importlib.import_module(".optimization", __name__)
+    if name == "tolerancing":
+        return importlib.import_module(".tolerancing", __name__)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
@@ -29,4 +31,5 @@ __all__ = [
     "Layer",
     "ThinFilmStack",
     "optimization",
+    "tolerancing",
 ]

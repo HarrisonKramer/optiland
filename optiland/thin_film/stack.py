@@ -341,6 +341,101 @@ class ThinFilmStack:
             rta_data["A"],
         )
 
+    # ----- insertion / removal helpers -----
+    def insert_layer(
+        self,
+        index: int,
+        material: BaseMaterial,
+        thickness_um: float,
+        name: str | None = None,
+    ) -> ThinFilmStack:
+        """Insert a layer at an arbitrary position.
+
+        Args:
+            index: Position to insert at (0 = closest to incident).
+            material: Optiland material providing n(λ), k(λ).
+            thickness_um: Thickness in microns (µm).
+            name: Optional label.
+
+        Returns:
+            self for chaining.
+        """
+        self.layers.insert(index, Layer(material, thickness_um, name))
+        return self
+
+    def insert_layer_nm(
+        self,
+        index: int,
+        material: BaseMaterial,
+        thickness_nm: float,
+        name: str | None = None,
+    ) -> ThinFilmStack:
+        """Insert a layer at an arbitrary position, thickness in nm.
+
+        Args:
+            index: Position to insert at (0 = closest to incident).
+            material: Optiland material providing n(λ), k(λ).
+            thickness_nm: Thickness in nanometers.
+            name: Optional label.
+
+        Returns:
+            self for chaining.
+        """
+        return self.insert_layer(index, material, thickness_nm / 1000.0, name)
+
+    def remove_layer(self, index: int) -> Layer:
+        """Remove and return the layer at *index*.
+
+        Args:
+            index: Index of the layer to remove.
+
+        Returns:
+            The removed Layer.
+        """
+        return self.layers.pop(index)
+
+    def split_layer(self, layer_index: int, position_fraction: float) -> ThinFilmStack:
+        """Split a layer into two layers of the same material.
+
+        The original layer at *layer_index* is replaced by two layers whose
+        combined thickness equals the original.  Useful for needle insertion
+        *within* a layer.
+
+        Args:
+            layer_index: Index of the layer to split.
+            position_fraction: Fraction (0..1) at which to split.  0.3 means
+                the first sub-layer gets 30 % of the original thickness.
+
+        Returns:
+            self for chaining.
+        """
+        if not 0.0 < position_fraction < 1.0:
+            raise ValueError("position_fraction must be strictly between 0 and 1")
+        layer = self.layers[layer_index]
+        t1 = layer.thickness_um * position_fraction
+        t2 = layer.thickness_um * (1.0 - position_fraction)
+        self.layers[layer_index] = Layer(layer.material, t1, layer.name)
+        self.layers.insert(layer_index + 1, Layer(layer.material, t2, layer.name))
+        return self
+
+    def deep_copy(self) -> ThinFilmStack:
+        """Create a deep copy with new Layer instances (materials are shared).
+
+        Returns:
+            A new ThinFilmStack with independent layers.
+        """
+        new_layers = [
+            Layer(layer.material, layer.thickness_um, layer.name)
+            for layer in self.layers
+        ]
+        return ThinFilmStack(
+            incident_material=self.incident_material,
+            substrate_material=self.substrate_material,
+            layers=new_layers,
+            reference_wl_um=self.reference_wl_um,
+            reference_AOI_deg=self.reference_AOI_deg,
+        )
+
     def __len__(self):
         return len(self.layers)
 
