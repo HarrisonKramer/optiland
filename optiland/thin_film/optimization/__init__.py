@@ -1,5 +1,6 @@
 # flake8: noqa
 
+from .needle import NeedleSynthesis, NeedleSynthesisResult
 from .operand import (
     OptimizationTarget,
     SpectralOptimizationOperand,
@@ -14,6 +15,8 @@ from .report import ThinFilmReport, OptimizationResult
 from .variable import LayerThicknessVariable
 
 __all__ = [
+    "NeedleSynthesis",
+    "NeedleSynthesisResult",
     "OptimizationTarget",
     "SpectralOptimizationOperand",
     "ThinFilmCustomOperand",
