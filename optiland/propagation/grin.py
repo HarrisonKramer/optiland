@@ -26,16 +26,17 @@ class GRINPropagation(BasePropagationModel):
 
     """
 
-    def __init__(self, material: BaseMaterial):
+    def __init__(self, material: BaseMaterial) -> None:
         """Initializes the GRINPropagation model.
 
         Args:
             material: A reference to the parent material instance, used to
                 query for refractive index and gradient.
+            step_size: The step size for RK4 integration (in mm).
 
         """
         self.material = material
-        self.step_size = 0.01  # Default step size for RK4 integration (in mm)
+        self.step_size = 0.001 # material.step_size
 
     def propagate(self, rays: RealRays, t: float) -> None:
         """Propagates rays through the GRIN medium to the exit surface.
@@ -174,6 +175,12 @@ class GRINPropagation(BasePropagationModel):
         # OPD_new = OPD_old + integral(n ds)
         # Using RK4 approximation for the integral
         rays.opd[active] += (step_size / 6.0) * (n1 + 2 * n2 + 2 * n3 + n4)
+
+        if getattr(rays, "path_recording_enabled", False):
+            rays.append_current_positions_global(
+                getattr(rays, "path_coordinate_system", None),
+                mask=active,
+            )
 
     def _ray_derivative(self, x, y, z, L, M, N, w):
         """Calculates the derivative of the ray state.

@@ -614,6 +614,7 @@ class Optic:
         wavelength: float,
         num_rays: int | None = 100,
         distribution: DistributionType | BaseDistribution | None = "hexapolar",
+        record_path: bool = False,
     ) -> RealRays:
         """Trace a distribution of rays through the optical system.
 
@@ -627,12 +628,15 @@ class Optic:
                 The distribution of rays. Can be a string identifier (e.g.,
                 'hexapolar', 'uniform') or a `BaseDistribution` object.
                 Defaults to 'hexapolar'.
+            record_path: Whether to record tracing-time ray paths.
 
         Returns:
             RealRays: A `RealRays` object containing the traced rays.
 
         """
-        return self.ray_tracer.trace(Hx, Hy, wavelength, num_rays, distribution)
+        return self.ray_tracer.trace(
+            Hx, Hy, wavelength, num_rays, distribution, record_path=record_path
+        )
 
     def trace_generic(
         self,
@@ -641,6 +645,7 @@ class Optic:
         Px: ScalarOrArray,
         Py: ScalarOrArray,
         wavelength: float,
+        record_path: bool = False,
     ):
         """Trace generic rays through the optical system.
 
@@ -650,12 +655,15 @@ class Optic:
             Px: The normalized x pupil coordinate(s).
             Py: The normalized y pupil coordinate(s).
             wavelength (float): The wavelength of the rays in microns.
+            record_path: Whether to record tracing-time ray paths.
 
         Returns:
             RealRays: A `RealRays` object containing the traced rays.
 
         """
-        return self.ray_tracer.trace_generic(Hx, Hy, Px, Py, wavelength)
+        return self.ray_tracer.trace_generic(
+            Hx, Hy, Px, Py, wavelength, record_path=record_path
+        )
 
     def plot_surface_sag(
         self, surface_index: int, y_cross_section: float = 0, x_cross_section: float = 0

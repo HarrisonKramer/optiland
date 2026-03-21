@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 import optiland.backend as be
 from optiland.rays.base import BaseRays
 
@@ -79,6 +81,11 @@ class RealRays(BaseRays):
         self.i = be.atleast_1d(intensity)
         self.w = be.atleast_1d(wavelength)
         self.opd = be.zeros_like(self.x)
+        self.path_recording_enabled = False
+        self.path_x: list[list[float]] = []
+        self.path_y: list[list[float]] = []
+        self.path_z: list[list[float]] = []
+        self.path_i: list[list[float]] = []
 
         # variables to hold pre-surface direction cosines
         self.L0: BEArray | None = None
@@ -86,6 +93,97 @@ class RealRays(BaseRays):
         self.N0: BEArray | None = None
 
         self.is_normalized = True
+
+    def init_paths(self):
+        """Initialize per-ray path storage for tracing-time visualization."""
+        num_rays = len(self.x)
+        self.path_recording_enabled = True
+        self.path_x = [[] for _ in range(num_rays)]
+        self.path_y = [[] for _ in range(num_rays)]
+        self.path_z = [[] for _ in range(num_rays)]
+        self.path_i = [[] for _ in range(num_rays)]
+
+    def append_current_positions(self, mask: BEArray | None = None):
+        """Append the current ray positions to the recorded paths."""
+        self.append_positions(self.x, self.y, self.z, mask=mask, intensity=self.i)
+
+    def append_current_positions_global(self, coordinate_system, mask: BEArray | None = None):
+        """Append current positions after converting them to global coordinates."""
+        if coordinate_system is None:
+            self.append_current_positions(mask=mask)
+            return
+
+        x_global, y_global, z_global = coordinate_system.globalize_points(
+            self.x, self.y, self.z
+        )
+        self.append_positions(
+            x_global,
+            y_global,
+            z_global,
+            mask=mask,
+            intensity=self.i,
+        )
+
+    def append_positions(
+        self,
+        x: ArrayLike,
+        y: ArrayLike,
+        z: ArrayLike,
+        mask: BEArray | None = None,
+        intensity: ArrayLike | None = None,
+    ):
+        """Append positions for all or a subset of rays to the recorded paths."""
+        if not self.path_recording_enabled or not self.path_x:
+            return
+
+        indices = self._resolve_path_indices(mask)
+        if len(indices) == 0:
+            return
+
+        x_np = np.ravel(be.to_numpy(be.atleast_1d(x)))
+        y_np = np.ravel(be.to_numpy(be.atleast_1d(y)))
+        z_np = np.ravel(be.to_numpy(be.atleast_1d(z)))
+        i_np = (
+            np.ravel(be.to_numpy(be.atleast_1d(intensity)))
+            if intensity is not None
+            else None
+        )
+
+        for local_idx, ray_idx in enumerate(indices):
+            value_idx = local_idx if len(x_np) == len(indices) else ray_idx
+            self.path_x[ray_idx].append(float(x_np[value_idx]))
+            self.path_y[ray_idx].append(float(y_np[value_idx]))
+            self.path_z[ray_idx].append(float(z_np[value_idx]))
+            if i_np is not None:
+                intensity_idx = local_idx if len(i_np) == len(indices) else ray_idx
+                self.path_i[ray_idx].append(float(i_np[intensity_idx]))
+
+    def has_paths(self) -> bool:
+        """Return True when any path samples have been recorded."""
+        return any(path for path in self.path_x)
+
+    def get_paths(self) -> list[tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        """Return recorded ray paths as NumPy arrays."""
+        return [
+            (np.asarray(px), np.asarray(py), np.asarray(pz))
+            for px, py, pz in zip(self.path_x, self.path_y, self.path_z, strict=False)
+        ]
+
+    def _resolve_path_indices(self, mask: BEArray | None) -> np.ndarray:
+        """Resolve a mask or index array to absolute ray indices."""
+        if mask is None:
+            return np.arange(len(self.path_x), dtype=int)
+
+        mask_np = np.ravel(np.asarray(be.to_numpy(be.atleast_1d(mask))))
+        if mask_np.dtype == bool:
+            return np.flatnonzero(mask_np)
+        if (
+            mask_np.size == len(self.path_x)
+            and np.all(np.isin(mask_np, [0, 1, False, True]))
+        ):
+            return np.flatnonzero(mask_np.astype(bool, copy=False))
+
+        return mask_np.astype(int, copy=False)
 
     def rotate_x(self, rx: ScalarOrArray):
         """Rotate the rays about the x-axis.

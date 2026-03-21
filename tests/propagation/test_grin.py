@@ -1,4 +1,5 @@
 """Unit tests for the GRIN propagation model."""
+import numpy as np
 import pytest
 
 import optiland.backend as be
@@ -162,6 +163,65 @@ def test_grin_propagation_backward():
     assert be.allclose(rays.opd[0], 1.5 * 5.0, atol=1e-3)
 
 
+def test_grin_propagation_path_recording_disabled():
+    """Default GRIN propagation should not allocate recorded path data."""
+    material = GradientMaterial(n0=1.5, nr2=0.01)
+    rays = RealRays(
+        x=[0.2], y=[0.0], z=[0.0],
+        L=[0.0], M=[0.0], N=[1.0],
+        intensity=[1.0], wavelength=[0.5]
+    )
+
+    model = GRINPropagation(material)
+    model.propagate(rays, t=5.0)
+
+    assert not rays.has_paths()
+
+
+def test_grin_propagation_records_internal_path_points():
+    """Recorded GRIN paths should include RK4 samples inside the medium."""
+    material = GradientMaterial(n0=1.5, nr2=0.01)
+    rays = RealRays(
+        x=[0.5], y=[0.0], z=[0.0],
+        L=[0.0], M=[0.0], N=[1.0],
+        intensity=[1.0], wavelength=[0.5]
+    )
+    rays.init_paths()
+    rays.append_current_positions()
+
+    model = GRINPropagation(material)
+    model.propagate(rays, t=5.0)
+
+    path_x, path_y, path_z = rays.get_paths()[0]
+    assert rays.has_paths()
+    assert len(path_z) > 2
+    assert np.isclose(path_z[0], 0.0)
+    assert np.isclose(path_z[-1], rays.z[0], atol=1e-3)
+    assert np.isclose(path_x[0], 0.5)
+    assert np.isclose(path_y[0], 0.0)
+
+
+def test_grin_propagation_records_turning_path():
+    """Recorded GRIN paths should preserve z turning points after reflection."""
+    material = GradientMaterial(n0=2.0, nz1=-0.3)
+    rays = RealRays(
+        x=[0.0], y=[0.0], z=[0.0],
+        L=[0.3], M=[0.0], N=[be.sqrt(1 - 0.3**2)],
+        intensity=[1.0], wavelength=[0.55]
+    )
+    rays.init_paths()
+    rays.append_current_positions()
+
+    model = GRINPropagation(material)
+    model.step_size = 0.001
+    model.propagate(rays, t=10.0)
+
+    z_path = rays.get_paths()[0][2]
+    z_diff = np.diff(z_path)
+    assert np.any(z_diff > 0)
+    assert np.any(z_diff < 0)
+
+
 def test_grin_material_serialization():
     """Test that GradientMaterial can be serialized and deserialized."""
     material = GradientMaterial(n0=1.6, nr2=0.02, nr4=0.001, nz1=0.01)
@@ -296,4 +356,3 @@ def test_grin_axial_gradient_strong_reflection():
 
     # Check that the ray reached the target distance
     assert rays.z[0] > thickness * 0.95  # Allow small numerical error
-

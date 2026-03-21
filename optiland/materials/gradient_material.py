@@ -47,6 +47,7 @@ class GradientMaterial(BaseMaterial):
         nz1: float = 0.0,
         nz2: float = 0.0,
         nz3: float = 0.0,
+        step_size: float = 0.01,
     ):
         """Initializes the gradient-index material."""
         # Initialize with GRIN propagation model
@@ -61,6 +62,7 @@ class GradientMaterial(BaseMaterial):
         self.nz1 = nz1
         self.nz2 = nz2
         self.nz3 = nz3
+        self.step_size = step_size
 
     def _calculate_n(
         self, wavelength: float | be.ndarray, **kwargs
