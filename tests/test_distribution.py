@@ -142,19 +142,20 @@ def test_uniform_distribution(set_test_backend, num_points):
     assert_allclose(d.x, x)
     assert_allclose(d.y, y)
 
+
 @pytest.mark.parametrize("num_rings", range(1, 7))
 def test_gaussian_quad_distribution(num_rings, set_test_backend):
     # From: G. W. Forbes, "Optical system assessment for design: numerical ray tracing
     # in the Gaussian pupil," J. Opt. Soc. Am. A 5, 1943-1956 (1988).
     radius_dict = {
-            1: be.array([0.70711]),
-            2: be.array([0.45970, 0.88807]),
-            3: be.array([0.33571, 0.70711, 0.94196]),
-            4: be.array([0.26350, 0.57446, 0.81853, 0.96466]),
-            5: be.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]),
-            6: be.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300]),
-        }
-    d=distribution.GaussianQuadrature()
+        1: be.array([0.70711]),
+        2: be.array([0.45970, 0.88807]),
+        3: be.array([0.33571, 0.70711, 0.94196]),
+        4: be.array([0.26350, 0.57446, 0.81853, 0.96466]),
+        5: be.array([0.21659, 0.48038, 0.70711, 0.87706, 0.97626]),
+        6: be.array([0.18375, 0.41158, 0.61700, 0.78696, 0.91138, 0.98300]),
+    }
+    d = distribution.GaussianQuadrature()
     # Only check radial distribution, set num_spokes to 1:
     d.generate_points(num_rings=num_rings, num_spokes=1)
     r = be.hypot(d.x, d.y)
@@ -166,3 +167,26 @@ def test_gaussian_quad_distribution_errors(set_test_backend):
     with pytest.raises(ValueError):
         d = distribution.GaussianQuadrature()
         d.generate_points(num_rings=0)
+
+
+def test_quadrature_r_squared(set_test_backend):
+    d = distribution.GaussianQuadrature()
+    d.generate_points(2)
+    assert_allclose(((d.x**2 + d.y**2) * d.weights).sum(), 0.5)
+
+
+def test_quadrature_zernike(set_test_backend):
+    def spherical(x, y):
+        return 5**0.5 * (6 * (x**2 + y**2) ** 2 - 6 * (x**2 + y**2) + 1)
+
+    d = distribution.GaussianQuadrature()
+    d.generate_points(4)
+    assert_allclose((spherical(d.x, d.y) * d.weights).sum(), 0.0)
+
+
+def test_quadrature_exp(set_test_backend):
+    d = distribution.GaussianQuadrature()
+    d.generate_points(7)
+    assert_allclose(
+        ((be.exp(-(d.x**2) - d.y**2)) * d.weights).sum(), (be.exp(1) - 1) / be.exp(1)
+    )
