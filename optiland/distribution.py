@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import qmc
 
 import optiland.backend as be
 
@@ -375,6 +376,42 @@ class RingDistribution(BaseDistribution):
         self.y = be.sin(theta)
 
 
+class SobolDistribution(BaseDistribution):
+    """A class representing a Sobol distribution.
+
+    Generates `num_points` points using a Sobol low-discrepancy sequence
+    within the unit disk.
+
+    Attributes:
+        seed (int | None): Seed for the Sobol sequence generator.
+        x: The x-coordinates of the generated points.
+        y: The y-coordinates of the generated points.
+    """
+
+    def __init__(self, seed: int | None = None):
+        super().__init__()
+        self.seed = seed
+
+    def generate_points(self, num_points: int):
+        """Generates Sobol points.
+
+        Args:
+            num_points (int): The number of points to generate.
+
+        """
+        sampler = qmc.Sobol(d=2, scramble=True, seed=self.seed)
+        sample = sampler.random(num_points)
+
+        u1 = be.array(sample[:, 0])
+        u2 = be.array(sample[:, 1])
+
+        r = be.sqrt(u1)
+        theta = 2 * be.pi * u2
+
+        self.x = r * be.cos(theta)
+        self.y = r * be.sin(theta)
+
+
 def create_distribution(distribution_type: DistributionType) -> BaseDistribution:
     """Create a distribution based on the given distribution type.
 
@@ -400,6 +437,7 @@ def create_distribution(distribution_type: DistributionType) -> BaseDistribution
         "hexapolar": HexagonalDistribution,
         "cross": CrossDistribution,
         "ring": RingDistribution,
+        "sobol": SobolDistribution,
     }
 
     if distribution_type not in distribution_classes:

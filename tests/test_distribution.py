@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from scipy.stats import qmc
 
 import optiland.backend as be
 from optiland import distribution
@@ -474,3 +475,23 @@ def test_gaussian_quad_weights(set_test_backend):
             weights / scale[k],
             be.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
         )
+
+
+@pytest.mark.parametrize("num_points", [16, 64, 256, 1024])
+def test_sobol_distribution(set_test_backend, num_points):
+    seed = 42
+    d = distribution.SobolDistribution(seed=seed)
+    d.generate_points(num_points=num_points)
+
+    sampler = qmc.Sobol(d=2, scramble=True, seed=seed)
+    sample = sampler.random(num_points)
+    u1 = be.array(sample[:, 0])
+    u2 = be.array(sample[:, 1])
+    r = be.sqrt(u1)
+    theta = 2 * be.pi * u2
+    x = r * be.cos(theta)
+    y = r * be.sin(theta)
+
+    assert_allclose(d.x, x)
+    assert_allclose(d.y, y)
+    assert be.all(d.x**2 + d.y**2 <= 1.0 + 1e-7)
