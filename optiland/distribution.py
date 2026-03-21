@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats import qmc
 
 import optiland.backend as be
 
@@ -399,11 +398,12 @@ class SobolDistribution(BaseDistribution):
             num_points (int): The number of points to generate.
 
         """
-        sampler = qmc.Sobol(d=2, scramble=True, seed=self.seed)
-        sample = sampler.random(num_points)
+        sample = be.sobol_sampler(
+            dim=2, num_samples=num_points, scramble=True, seed=self.seed
+        )
 
-        u1 = be.array(sample[:, 0])
-        u2 = be.array(sample[:, 1])
+        u1 = sample[:, 0]
+        u2 = sample[:, 1]
 
         r = be.sqrt(u1)
         theta = 2 * be.pi * u2

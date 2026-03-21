@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from scipy.stats import qmc
 
 import optiland.backend as be
 from optiland import distribution
@@ -483,10 +482,9 @@ def test_sobol_distribution(set_test_backend, num_points):
     d = distribution.SobolDistribution(seed=seed)
     d.generate_points(num_points=num_points)
 
-    sampler = qmc.Sobol(d=2, scramble=True, seed=seed)
-    sample = sampler.random(num_points)
-    u1 = be.array(sample[:, 0])
-    u2 = be.array(sample[:, 1])
+    sampler = be.sobol_sampler(dim=2, num_samples=num_points, scramble=True, seed=seed)
+    u1 = sampler[:, 0]
+    u2 = sampler[:, 1]
     r = be.sqrt(u1)
     theta = 2 * be.pi * u2
     x = r * be.cos(theta)
