@@ -1964,7 +1964,7 @@ class TorchBackend(AbstractBackend):
             dimension=dim, scramble=scramble, seed=seed
         )
         samples = sobol_engine.draw(num_samples_pow2)
-        return samples.to(device=self._device(), dtype=self._dtype())
+        return samples[:num_samples].to(device=self._device(), dtype=self._dtype())
 
     def erfinv(self, x: Any) -> Tensor:
         """Inverse error function.
