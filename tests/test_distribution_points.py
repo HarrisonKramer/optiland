@@ -12,6 +12,7 @@ from optiland.distribution import (
     LineYDistribution,
     RandomDistribution,
     RingDistribution,
+    SobolDistribution,
     UniformDistribution,
 )
 
@@ -219,3 +220,14 @@ class TestDistributionPoints:
         )
         assert len(dist.x) == 0
         assert len(dist.y) == 0
+
+    def test_sobol_distribution(self, backend):
+        be.set_backend(backend)
+        num_points = 100
+        dist = SobolDistribution(seed=42)
+        dist.generate_points(num_points=num_points)
+        # For Sobol, all points should be unique
+        unique_count = count_unique_points(dist.x, dist.y)
+        assert unique_count == num_points, (
+            f"SobolDistribution expected {num_points} unique points, got {unique_count}"
+        )
