@@ -1,14 +1,15 @@
-import pytest
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import (
-    StandardGeometry,
-    Plane,
     BiconicGeometry,
     ChebyshevPolynomialGeometry,
     EvenAsphere,
     OddAsphere,
+    Plane,
     PolynomialGeometry,
+    StandardGeometry,
     ToroidalGeometry,
     ZernikePolynomialGeometry,
 )

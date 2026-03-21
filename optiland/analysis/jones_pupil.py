@@ -163,7 +163,7 @@ class JonesPupil(BaseAnalysis):
         original_pol = self.optic.polarization
         if original_pol == "ignore":
             # Temporarily enable polarization to get PolarizedRays
-            self.optic.set_polarization(PolarizationState())
+            self.optic.updater.set_polarization(PolarizationState())
 
         try:
             rays = self.optic.trace_generic(
@@ -171,7 +171,7 @@ class JonesPupil(BaseAnalysis):
             )
         finally:
             if original_pol == "ignore":
-                self.optic.set_polarization("ignore")
+                self.optic.updater.set_polarization("ignore")
 
         if not hasattr(rays, "p"):
             # Fallback if rays are not polarized (should not happen w/ check above)

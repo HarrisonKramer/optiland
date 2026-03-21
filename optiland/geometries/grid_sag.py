@@ -152,6 +152,16 @@ class GridSagGeometry(BaseGeometry):
         """Flip the geometry by negating the sag values."""
         self.sag_grid = -self.sag_grid
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        self.x_grid = self.x_grid * scale_factor
+        self.y_grid = self.y_grid * scale_factor
+        self.sag_grid = self.sag_grid * scale_factor
+
     def to_dict(self):
         """Convert the geometry to a dictionary."""
         geometry_dict = super().to_dict()

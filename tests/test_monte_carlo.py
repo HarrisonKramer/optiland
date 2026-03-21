@@ -1,10 +1,10 @@
-from unittest.mock import patch
+from __future__ import annotations
 
 import matplotlib
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-import pytest
 
 from optiland.samples.objectives import ReverseTelephoto
 from optiland.tolerancing.core import Tolerancing

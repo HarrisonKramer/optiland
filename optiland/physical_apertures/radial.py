@@ -38,7 +38,7 @@ class RadialAperture(BaseAperture):
 
     """
 
-    def __init__(self, r_max, r_min=0):
+    def __init__(self, r_max: float, r_min: float = 0):
         super().__init__()
         self.r_max = r_max
         self.r_min = r_min

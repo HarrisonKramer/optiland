@@ -17,7 +17,7 @@ from optiland.optimization.variable.conic import ConicVariable
 from optiland.optimization.variable.decenter import DecenterVariable
 from optiland.optimization.variable.forbes_coeff import (
     ForbesQ2dCoeffVariable,
-    ForbesQbfsCoeffVariable,
+    ForbesQNormalSlopeCoeffVariable,
 )
 from optiland.optimization.variable.index import IndexVariable
 from optiland.optimization.variable.material import MaterialVariable
@@ -135,7 +135,8 @@ class Variable:
             "chebyshev_coeff": ChebyshevCoeffVariable,
             "zernike_coeff": ZernikeCoeffVariable,
             "reciprocal_radius": ReciprocalRadiusVariable,
-            "forbes_qbfs_coeff": ForbesQbfsCoeffVariable,
+            "forbes_qbfs_coeff": ForbesQNormalSlopeCoeffVariable,  # canonical
+            "forbes_qnormalslope_coeff": ForbesQNormalSlopeCoeffVariable,
             "forbes_q2d_coeff": ForbesQ2dCoeffVariable,
             "norm_radius": NormalizationRadiusVariable,
             "nurbs_control_point": NurbsPointsVariable,

@@ -1,18 +1,20 @@
-import optiland.backend as be
+from __future__ import annotations
+
 import pytest
 
-from .utils import assert_allclose
+import optiland.backend as be
 from optiland.coatings import FresnelCoating, SimpleCoating
-from optiland.materials import IdealMaterial
-from optiland.samples.objectives import TessarLens
 from optiland.interactions.diffractive_model import DiffractiveInteractionModel
-from optiland.surfaces.object_surface import ObjectSurface
 from optiland.interactions.thin_lens_interaction_model import ThinLensInteractionModel
-from optiland.phase.radial import RadialPhaseProfile
-from optiland.surfaces.standard_surface import Surface
-from optiland.surfaces import SurfaceFactory
+from optiland.materials import IdealMaterial
 from optiland.optic import Optic
-from optiland.fields import AngleField, Field
+from optiland.phase.radial import RadialPhaseProfile
+from optiland.samples.objectives import TessarLens
+from optiland.surfaces import SurfaceFactory
+from optiland.surfaces.object_surface import ObjectSurface
+from optiland.surfaces.standard_surface import Surface
+
+from .utils import assert_allclose
 
 
 class TestSurfaceFactory:

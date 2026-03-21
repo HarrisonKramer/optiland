@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from optiland._types import BEArray, ScalarOrArray
+    from optiland.surfaces.standard_surface import Surface
 
 
 class RealRays(BaseRays):
@@ -82,6 +83,7 @@ class RealRays(BaseRays):
         self.w = be.atleast_1d(wavelength)
         self.opd = be.zeros_like(self.x)
         self.path_recording_enabled = False
+        self.path_coordinate_system = None
         self.path_x: list[list[float]] = []
         self.path_y: list[list[float]] = []
         self.path_z: list[list[float]] = []
@@ -184,6 +186,27 @@ class RealRays(BaseRays):
             return np.flatnonzero(mask_np.astype(bool, copy=False))
 
         return mask_np.astype(int, copy=False)
+
+    def trace_on_surface(self, surface: Surface) -> RealRays:
+        """Dispatch to the surface's real ray trace kernel.
+
+        Args:
+            surface (Surface): The surface to trace through.
+
+        Returns:
+            RealRays: The traced real rays.
+
+        """
+        return surface._trace_real(self)
+
+    def record_on_surface(self, surface: Surface) -> None:
+        """Dispatch to the surface's real ray record method.
+
+        Args:
+            surface (Surface): The surface to record onto.
+
+        """
+        surface._record_real(self)
 
     def rotate_x(self, rx: ScalarOrArray):
         """Rotate the rays about the x-axis.

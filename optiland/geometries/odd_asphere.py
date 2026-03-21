@@ -70,6 +70,19 @@ class OddAsphere(EvenAsphere):
     def __str__(self):
         return "Odd Asphere"
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        # Skip EvenAsphere.scale as it incorrectly scales coefficients for OddAsphere
+        # Call the next class in MRO after EvenAsphere (NewtonRaphson -> Standard)
+        super(EvenAsphere, self).scale(scale_factor)
+        for i in range(len(self.coefficients)):
+            # C_i' = C_i * s^(1 - (i+1))
+            self.coefficients[i] *= scale_factor ** (1 - (i + 1))
+
     def sag(self, x=0, y=0):
         """Calculates the sag of the asphere at the given coordinates.
 

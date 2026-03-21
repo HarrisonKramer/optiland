@@ -41,8 +41,10 @@ class NurbsGeometry(BaseGeometry):
             points are passed)
         nurbs_norm_x: Defines, along with nurbs_norm_y, x_center, and y_center,
             the rectangular area for the fit of the surface with the NURBS.
+            If None, scales automatically during paraxial updates. Defaults to None.
         nurbs_norm_y: Defines, along with nurbs_norm_x, x_center, and y_center,
             the rectangular area for the fit of the surface with the NURBS.
+            If None, scales automatically during paraxial updates. Defaults to None.
         x_center: Defines, along with nurbs_norm_x, nurbs_norm_y, and y_center,
             the rectangular area for the fit of the surface with the NURBS.
         y_center: Defines, along with nurbs_norm_x, nurbs_norm_y, and x_center,
@@ -110,8 +112,15 @@ class NurbsGeometry(BaseGeometry):
         self.q = v_degree
         self.U = be.asarray(u_knots) if u_knots is not None else None
         self.V = be.asarray(v_knots) if v_knots is not None else None
-        self.nurbs_norm_x = nurbs_norm_x
-        self.nurbs_norm_y = nurbs_norm_y
+
+        self.normalization_mode = (
+            "manual"
+            if (nurbs_norm_x is not None or nurbs_norm_y is not None)
+            else "auto"
+        )
+        self.nurbs_norm_x = nurbs_norm_x if nurbs_norm_x is not None else 1.0
+        self.nurbs_norm_y = nurbs_norm_y if nurbs_norm_y is not None else 1.0
+
         self.x_center = x_center
         self.y_center = y_center
         self.radius = radius
@@ -275,7 +284,35 @@ class NurbsGeometry(BaseGeometry):
         control points.
         """
         self.radius = -self.radius
-        self.P[2, :, :] = -self.P[2, :, :]
+        if self.P is not None:
+            self.P[2, :, :] = -self.P[2, :, :]
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        self.radius = self.radius * scale_factor
+
+        if self.nurbs_norm_x is not None:
+            self.nurbs_norm_x = self.nurbs_norm_x * scale_factor
+
+        if self.nurbs_norm_y is not None:
+            self.nurbs_norm_y = self.nurbs_norm_y * scale_factor
+
+        self.x_center = self.x_center * scale_factor
+        self.y_center = self.y_center * scale_factor
+
+        if self.P is not None:
+            self.P = self.P * scale_factor
+
+    def update_normalization(self, semi_aperture: float) -> None:
+        if self.normalization_mode == "auto":
+            self.nurbs_norm_x = semi_aperture * 1.25
+            self.nurbs_norm_y = semi_aperture * 1.25
+            if getattr(self, "is_fitted", False):
+                self.fit_surface()
 
     def get_value(self, u, v):
         """Evaluates the coordinates of the surface.

@@ -1,8 +1,9 @@
-import optiland.backend as be
-import pytest
+from __future__ import annotations
 
+import optiland.backend as be
 from optiland.optic import Optic
 from optiland.samples import objectives
+
 from .utils import assert_allclose
 
 
@@ -48,20 +49,33 @@ def test_paraxial_image_height_finite_object(set_test_backend):
 
 def test_field_definition_to_dict(set_test_backend):
     """Test that field definition to_dict method works."""
-    from optiland.fields.field_types import AngleField, ObjectHeightField, ParaxialImageHeightField
+    from optiland.fields.field_types import (
+        AngleField,
+        ObjectHeightField,
+        ParaxialImageHeightField,
+    )
+
     field_defs = [AngleField(), ObjectHeightField(), ParaxialImageHeightField()]
     for field_def in field_defs:
         d = field_def.to_dict()
         assert d["field_type"] == field_def.__class__.__name__
 
+
 def test_field_definition_from_dict(set_test_backend):
     """Test that field definition from_dict method works."""
-    from optiland.fields.field_types import AngleField, ObjectHeightField, ParaxialImageHeightField, BaseFieldDefinition
+    from optiland.fields.field_types import (
+        AngleField,
+        BaseFieldDefinition,
+        ObjectHeightField,
+        ParaxialImageHeightField,
+    )
+
     field_defs = [AngleField(), ObjectHeightField(), ParaxialImageHeightField()]
     for field_def in field_defs:
         d = field_def.to_dict()
         new_field_def = BaseFieldDefinition.from_dict(d)
         assert isinstance(new_field_def, field_def.__class__)
+
 
 def test_paraxial_image_height_cooke_triplet(set_test_backend):
     """Test that paraxial image height field type is equivalent to angle field
@@ -155,7 +169,9 @@ def test_get_paraxial_object_position(set_test_backend):
     optic.add_field(y=20.0)
 
     # get the paraxial object position
-    obj_pos = optic.field_definition.get_paraxial_object_position(optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL())
+    obj_pos = optic.field_definition.get_paraxial_object_position(
+        optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL()
+    )
 
     # check that the object position is correct (should be at infinity)
     assert_allclose(obj_pos[0], [-4.12359504])
@@ -166,7 +182,9 @@ def test_get_paraxial_object_position(set_test_backend):
     optic.object_surface.geometry.cs.z = be.array([-555.0])
 
     # get the paraxial object position
-    obj_pos = optic.field_definition.get_paraxial_object_position(optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL())
+    obj_pos = optic.field_definition.get_paraxial_object_position(
+        optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL()
+    )
 
     # check that the object position is correct
     assert_allclose(obj_pos[0], [-3.69008309])

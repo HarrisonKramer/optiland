@@ -13,12 +13,9 @@ re-worked by Manuel Fragata Mendes, june 2025
 
 from __future__ import annotations
 
-import os
-
 import pandas as pd
 
 import optiland.backend as be
-from optiland import materials
 from optiland.geometries import (
     ChebyshevPolynomialGeometry,
     EvenAsphere,
@@ -28,6 +25,7 @@ from optiland.geometries import (
 )
 from optiland.physical_apertures import RadialAperture
 from optiland.visualization.base import BaseViewer
+from optiland.visualization.info.material_formatter import MaterialFormatter
 
 
 class LensInfoViewer(BaseViewer):
@@ -122,26 +120,9 @@ class LensInfoViewer(BaseViewer):
 
     def _get_materials(self):
         """Determines the material for each surface."""
-        mat = []
-        for surf in self.optic.surface_group.surfaces:
-            if surf.interaction_model.is_reflective:
-                mat.append("Mirror")
-            elif isinstance(surf.material_post, materials.Material):
-                mat.append(surf.material_post.name)
-            elif isinstance(surf.material_post, materials.MaterialFile):
-                mat.append(os.path.basename(surf.material_post.filename))
-            elif surf.material_post.index == 1:
-                mat.append("Air")
-            elif isinstance(surf.material_post, materials.IdealMaterial):
-                mat.append(surf.material_post.index.item())
-            elif isinstance(surf.material_post, materials.AbbeMaterial):
-                mat.append(
-                    f"{surf.material_post.index.item():.4f}, "
-                    f"{surf.material_post.abbe.item():.2f}",
-                )
-            else:
-                raise ValueError("Unknown material type")
-        return mat
+        return [
+            MaterialFormatter.format(surf) for surf in self.optic.surface_group.surfaces
+        ]
 
     def _get_aspheric_coefficients(self):
         """Extracts the aspheric coefficients for each surface."""

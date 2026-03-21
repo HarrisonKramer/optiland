@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from unittest.mock import MagicMock
 
 import pytest
@@ -7,10 +9,10 @@ import optiland.backend as be
 from optiland.distribution import create_distribution
 from optiland.samples.objectives import DoubleGauss
 from optiland.wavefront.strategy import (
+    BestFitSphereStrategy,
     CentroidReferenceSphereStrategy,
     ChiefRayStrategy,
     ReferenceStrategy,
-    BestFitSphereStrategy,
     create_strategy,
 )
 from optiland.wavefront.wavefront_data import WavefrontData

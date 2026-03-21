@@ -41,7 +41,7 @@ __all__ = [
 
 BEArrayT = TypeVar("BEArrayT", NDArray, "Tensor", Union[NDArray, "Tensor"])
 ScalarOrArrayT = TypeVar(
-    "ScalarOrArray", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
+    "ScalarOrArrayT", float, NDArray, "Tensor", Union[NDArray, "Tensor"]
 )
 
 DistributionType = Literal[
@@ -54,6 +54,7 @@ DistributionType = Literal[
     "hexapolar",
     "cross",
     "ring",
+    "sobol",
 ]
 ApertureType = Literal["EPD", "imageFNO", "objectNA", "float_by_stop_size"]
 Fields = Literal["all"] | Sequence[tuple[float, float]]

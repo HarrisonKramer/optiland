@@ -29,7 +29,7 @@ Analysis Tools
 - **Comprehensive Optical Analysis**:
   Generate spot diagrams, ray aberration fans, OPD maps, distortion plots, and more.
 - **Wavefront Analysis**:
-  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps.
+  Decompose wavefronts into Zernike polynomials, compute RMS/peak error, and visualize wavefront error maps, with support for both focal (spherical reference) and afocal (planar reference) systems.
 - **PSF and MTF Computation**:
   Evaluate image quality and spatial frequency response in imaging systems.
 - **BSDF and Scattering Models**:
@@ -48,6 +48,20 @@ Optimization and Tolerancing
   Optimize lens materials (categorical variables) alongside continuous parameters using the specialized `GlassExpert` tool, which intelligently searches glass catalogs.
 - **Extensible Framework**:
   Add new optimization variables, constraints, or algorithms with minimal overhead.
+
+Extended Source Modeling
+-----------------------
+
+- **Extended Source Ray Tracing**:
+  Model spatially and angularly extended light sources and trace them through optical systems using the ``ExtendedSourceOptic`` wrapper.
+- **Single-Mode Fiber (SMF) Source**:
+  Generate physically accurate ray bundles representing fiber outputs, with Gaussian spatial and angular distributions and quasi-random Sobol sampling.
+- **Custom Source Support**:
+  Define custom source types by inheriting from ``BaseSource`` and implementing the ``generate_rays`` method.
+- **Source Visualization**:
+  Validate source definitions with multi-panel diagnostic plots showing spatial distributions, angular distributions, cross-sections, and ray propagation paths.
+- **Irradiance Analysis Compatibility**:
+  Compute incoherent irradiance distributions at detector surfaces from extended source illumination.
 
 Material Database
 -----------------

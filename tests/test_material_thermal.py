@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import optiland.backend as be
 from optiland import materials
+
 from .utils import assert_allclose
 
 
@@ -109,10 +112,14 @@ class TestMaterialFileThermal:
         n1 = material.n(wavelengths[0], temperature=temp_c, pressure=pressure_atm)
         n2 = material.n(wavelengths[1], temperature=temp_c, pressure=pressure_atm)
         n3 = material.n(wavelengths[2], temperature=temp_c, pressure=pressure_atm)
-        expected_n_array = be.array([be.to_numpy(n1).item(), be.to_numpy(n2).item(), be.to_numpy(n3).item()])
+        expected_n_array = be.array(
+            [be.to_numpy(n1).item(), be.to_numpy(n2).item(), be.to_numpy(n3).item()]
+        )
 
         # Calculate with the array directly
-        calculated_n_array = material.n(wavelengths, temperature=temp_c, pressure=pressure_atm)
+        calculated_n_array = material.n(
+            wavelengths, temperature=temp_c, pressure=pressure_atm
+        )
 
         assert_allclose(calculated_n_array, expected_n_array)
 

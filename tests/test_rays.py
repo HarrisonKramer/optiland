@@ -1,6 +1,8 @@
-import optiland.backend as be
+from __future__ import annotations
+
 import pytest
 
+import optiland.backend as be
 from optiland.rays import (
     BaseRays,
     ParaxialRays,
@@ -871,12 +873,13 @@ class TestOpticTrace:
 
     def test_trace_multiple_fields_array_input(self, sample_optic):
         """Tests .trace() with multiple field points using array inputs for Hx, Hy."""
-        num_rays_grid_size = 20  
+        num_rays_grid_size = 20
         num_fields = 2
         Hx_all = be.array([0.0, 0.0])
         Hy_all = be.array([0.7, 1.0])
 
         from optiland.distribution import create_distribution
+
         dist = create_distribution("uniform")
         dist.generate_points(num_rays_grid_size)
         num_pupil_points = len(dist.x)
@@ -913,7 +916,7 @@ class TestOpticTrace:
 
     def test_trace_generic_multiple_fields_and_pupil_points(self, sample_optic):
         """Tests .trace_generic() with manually expanded arrays for all coordinates."""
-        
+
         Hx_in = be.array([0.0, 0.5])
         Hy_in = be.array([0.7, 0.5])
         Px_in = be.array([-0.5, 0.5])

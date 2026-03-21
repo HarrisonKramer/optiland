@@ -72,12 +72,23 @@ class EvenAsphere(NewtonRaphsonGeometry):
         if coefficients is None:
             coefficients = []
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
-        self.coefficients = coefficients
+        self.coefficients = list(coefficients)
         self.is_symmetric = True
         self.order = 2  # used for optimization scaling
 
     def __str__(self):
         return "Even Asphere"
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        for i in range(len(self.coefficients)):
+            # C_i' = C_i * s^(1 - 2(i+1))
+            self.coefficients[i] *= scale_factor ** (1 - 2 * (i + 1))
 
     def sag(self, x=0, y=0):
         """Calculates the sag of the asphere at the given coordinates.

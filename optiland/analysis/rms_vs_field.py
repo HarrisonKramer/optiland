@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 
 import optiland.backend as be
-from optiland.analysis import SpotDiagram
+from optiland.analysis.spot_diagram import SpotDiagram
 from optiland.wavefront import Wavefront
 
 if TYPE_CHECKING:

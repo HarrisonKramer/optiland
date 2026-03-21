@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import optiland.backend as be
 from optiland.fields import ParaxialImageHeightField
 from optiland.raytrace.paraxial_ray_tracer import ParaxialRayTracer
 
@@ -59,7 +58,7 @@ class Paraxial:
         """SurfaceGroup: the surface group of the optical system."""
         return self.optic.surface_group
 
-    def f1(self) -> BEArray:
+    def f1(self) -> ScalarOrArray:
         """Calculate the front focal length (f1).
 
         Returns:
@@ -68,7 +67,7 @@ class Paraxial:
         """
         z_start = -1
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
+        y, u = self.trace_generic(1.0, 0.0, z_start, wavelength, reverse=True)
         f1 = y[0] / u[-1]
         return f1[0]
 
@@ -82,9 +81,9 @@ class Paraxial:
         # start tracing 1 lens unit before first surface
         z_start = self.surfaces.positions[1] - 1
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
+        y, u = self.trace_generic(1.0, 0.0, z_start, wavelength)
         f2 = -y[0] / u[-1]
-        return be.abs(f2[0])
+        return f2[0]
 
     def F1(self) -> ScalarOrArray:
         """Calculate the front focal point (F1) location.
@@ -98,7 +97,7 @@ class Paraxial:
         # start tracing 1 lens unit before first surface
         z_start = -1
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(1.0, 0.0, z_start, wavelength, reverse=True, skip=1)
+        y, u = self.trace_generic(1.0, 0.0, z_start, wavelength, reverse=True, skip=1)
         F1 = y[-1] / u[-1]
         return F1[0]
 
@@ -114,7 +113,7 @@ class Paraxial:
         # start tracing 1 lens unit before first surface
         z_start = self.surfaces.positions[1] - 1
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(1.0, 0.0, z_start, wavelength)
+        y, u = self.trace_generic(1.0, 0.0, z_start, wavelength)
         F2 = -y[-1] / u[-1]
         return F2[0]
 
@@ -224,7 +223,7 @@ class Paraxial:
 
         # trace from center of stop on axis
         skip = self.surfaces.num_surfaces - stop_index
-        y, u = self._trace_generic(y0, u0, z0[0], wavelength, reverse=True, skip=skip)
+        y, u = self.trace_generic(y0, u0, z0[0], wavelength, reverse=True, skip=skip)
 
         loc_relative = y[-1] / u[-1]
         return loc_relative[0]
@@ -237,48 +236,10 @@ class Paraxial:
 
         """
         if self.optic.aperture is None:
-            # TODO make some nice error message
-            raise ValueError()
+            raise ValueError("No aperture is defined on the optical system.")
 
-        ap_type = self.optic.aperture.ap_type
-        ap_value = self.optic.aperture.value
-
-        if ap_type == "EPD":
-            return ap_value
-
-        elif ap_type == "imageFNO":
-            return self.f2() / ap_value
-
-        elif ap_type == "objectNA":
-            if self.optic.object_surface is None:
-                # TODO make some nice error message
-                raise ValueError()
-
-            obj_z = self.optic.object_surface.geometry.cs.z
-            wavelength = self.optic.primary_wavelength
-            n0 = self.optic.object_surface.material_post.n(wavelength)
-            u0 = be.arcsin(ap_value / n0)
-            z = self.EPL() - obj_z
-            return 2 * z * be.tan(u0)
-
-        elif ap_type == "float_by_stop_size":
-            stop_index = self.surfaces.stop_index
-            wavelength = self.optic.primary_wavelength
-            if self.optic.object_surface is None:
-                # TODO make some nice error message
-                raise ValueError()
-            if self.optic.object_surface.is_infinite:
-                y, _ = self._trace_generic(1.0, 0.0, -1, wavelength)
-                return ap_value / y[stop_index]
-            else:
-                obj_z = self.optic.object_surface.geometry.cs.z
-                EPL = self.EPL()
-                y, _ = self._trace_generic(0.0, 0.1, obj_z, wavelength)
-                u0 = 0.1 * ap_value / y[stop_index]
-                return u0 * (EPL - obj_z)
-        else:
-            # TODO make some nice error message
-            raise NotImplementedError()
+        wavelength = self.optic.primary_wavelength
+        return self.optic.aperture.compute_epd(self, wavelength)
 
     def XPL(self) -> ScalarOrArray:
         """Calculate the exit pupil location (XPL).
@@ -290,7 +251,7 @@ class Paraxial:
         stop_index = self.surfaces.stop_index
         z_start = self.surfaces.positions[stop_index]
         wavelength = self.optic.primary_wavelength
-        y, u = self._trace_generic(0.0, 0.1, z_start, wavelength, skip=stop_index + 1)
+        y, u = self.trace_generic(0.0, 0.1, z_start, wavelength, skip=stop_index + 1)
         loc_relative = -y[-1] / u[-1]
         return loc_relative[0]
 
@@ -321,11 +282,10 @@ class Paraxial:
 
         """
         if self.optic.aperture is None:
-            # TODO: make some nice error message
-            raise ValueError()
-        ap_type = self.optic.aperture.ap_type
-        if ap_type == "imageFNO":
-            return self.optic.aperture.value
+            raise ValueError("No aperture is defined on the optical system.")
+        fno = self.optic.aperture.direct_fno()
+        if fno is not None:
+            return fno
         return self.f2() / self.EPD()
 
     def magnification(self) -> ScalarOrArray:
@@ -382,7 +342,7 @@ class Paraxial:
             ua = EPD / (2 * z)
 
         wavelength = self.optic.primary_wavelength
-        return self._trace_generic(ya, ua, obj_z, wavelength)
+        return self.trace_generic(ya, ua, obj_z, wavelength)
 
     def chief_ray(self) -> tuple[BEArray, BEArray]:
         """Calculates the chief ray heights and angles at each surface.
@@ -406,13 +366,13 @@ class Paraxial:
         # Trace a unit ray forward from stop to image
         z_fwd = pos[stop_index]
         skip_fwd = stop_index
-        y_fwd_unit, _ = self._trace_generic(y0, u0, z_fwd, wavelength, skip=skip_fwd)
+        y_fwd_unit, _ = self.trace_generic(y0, u0, z_fwd, wavelength, skip=skip_fwd)
         y_img_unit = y_fwd_unit[-1]
 
         # Trace the same unit ray backward from stop to object
         z_rev = pos[-1] - pos[stop_index]
         skip_rev = num_surf - stop_index
-        y_rev_unit, u_rev_unit = self._trace_generic(
+        y_rev_unit, u_rev_unit = self.trace_generic(
             y0, u0, z_rev, wavelength, reverse=True, skip=skip_rev
         )
         y_obj_unit = y_rev_unit[-1]
@@ -443,11 +403,11 @@ class Paraxial:
             y1_start = u_obj_start * (z_surf1 - EPL)
             u1_start = u_obj_start
             z1_start = z_surf1
-            return self._trace_generic(y1_start, u1_start, z1_start, wavelength)
+            return self.trace_generic(y1_start, u1_start, z1_start, wavelength)
         else:  # Finite conjugate
             # For finite conjugates, ray starts at y_obj_start on the object plane.
             z_start = self.optic.object_surface.geometry.cs.z
-            return self._trace_generic(y_obj_start, u_obj_start, z_start, wavelength)
+            return self.trace_generic(y_obj_start, u_obj_start, z_start, wavelength)
 
     def trace(self, Hy: ArrayLike, Py: ArrayLike, wavelength: float):
         """Trace paraxial ray through the optical system based on specified field
@@ -465,7 +425,7 @@ class Paraxial:
         """
         return self._ray_tracer.trace(Hy, Py, wavelength)
 
-    def _trace_generic(
+    def trace_generic(
         self,
         y: BEArray | float,
         u: BEArray | float,

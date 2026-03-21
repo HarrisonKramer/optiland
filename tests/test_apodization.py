@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import pytest
+
 import optiland.backend as be
 from optiland.apodization import (
-    UniformApodization,
-    GaussianApodization,
     BaseApodization,
+    GaussianApodization,
+    UniformApodization,
 )
 from optiland.samples.objectives import CookeTriplet
 

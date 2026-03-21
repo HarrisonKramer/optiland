@@ -21,7 +21,7 @@ Optiland includes several built-in analysis tools, each tailored to a specific a
 - **Y Y-bar**: Compare the chief and marginal ray heights at each surface.
 - **PSF**: Compute the point spread function (PSF) of the optical system using either the FFT or direct integration (Huygens-Fresnel) method.
 - **MTF**: Calculate the modulation transfer function (MTF) of the optical system via both geometric and diffraction (FFT) methods.
-- **Wavefront**: Compute the wavefront error across the field of view and pupil.
+- **Wavefront**: Compute the wavefront error across the field of view and pupil. Supports both focal systems (spherical reference) and afocal systems (planar reference), with selectable reference strategies (Chief Ray, Centroid, Best Fit).
 - **Zernike Polynomials**: Decompose the wavefront error into Zernike polynomials.
 - **Image Simulation**: Simulate the image formation process, accounting for spatially variable blur, distortion, and lateral color.
 

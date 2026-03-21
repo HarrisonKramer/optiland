@@ -19,7 +19,7 @@ from optiland.geometries import (
     ChebyshevPolynomialGeometry,
     EvenAsphere,
     ForbesQ2dGeometry,
-    ForbesQbfsGeometry,
+    ForbesQNormalSlopeGeometry,
     ForbesSolverConfig,  # forbes
     ForbesSurfaceConfig,  # forbes
     GridSagGeometry,
@@ -280,7 +280,11 @@ def _create_toroidal(cs: CoordinateSystem, config: ToroidalConfig):
 
 
 def _create_forbes_qbfs(cs: CoordinateSystem, config: ForbesQbfsConfig):
-    """Create a Forbes (Q-BFS) Geometry."""
+    """Create a Forbes Q (slope-orthogonal) Geometry.
+
+    Note: The surface type key \"forbes_qbfs\" is retained for backward
+    compatibility, but the canonical class is now ForbesQNormalSlopeGeometry.
+    """
     surface_config = ForbesSurfaceConfig(
         radius=config.radius,
         conic=config.conic,
@@ -289,7 +293,7 @@ def _create_forbes_qbfs(cs: CoordinateSystem, config: ForbesQbfsConfig):
     )
     solver_config = ForbesSolverConfig(tol=config.tol, max_iter=config.max_iter)
 
-    return ForbesQbfsGeometry(
+    return ForbesQNormalSlopeGeometry(
         cs,
         surface_config=surface_config,
         solver_config=solver_config,

@@ -53,7 +53,8 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
             be.grad_mode.enable()
 
         # Initialize parameters as torch.nn.Parameter objects
-        initial_params = [var.variable.get_value() for var in self.problem.variables]
+        # Use var.value (scaled) to match the scaled bounds from var.bounds
+        initial_params = [var.value for var in self.problem.variables]
         self.params = [torch.nn.Parameter(be.array(p)) for p in initial_params]
 
     @abstractmethod
@@ -118,8 +119,9 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
                 optimizer.zero_grad()
 
                 # 1. Update the model state from the current nn.Parameter values.
+                # Use var.update() which inverse-scales from scaled space
                 for k, param in enumerate(self.params):
-                    self.problem.variables[k].variable.update_value(param)
+                    self.problem.variables[k].update(param)
 
                 # 2. Update any dependent properties.
                 self.problem.update_optics()
@@ -147,7 +149,7 @@ class TorchBaseOptimizer(BaseOptimizer, ABC):
 
         # Final update to ensure the model reflects the last optimized state
         for k, param in enumerate(self.params):
-            self.problem.variables[k].variable.update_value(param)
+            self.problem.variables[k].update(param)
         self.problem.update_optics()
 
         final_loss = self.problem.sum_squared().item()

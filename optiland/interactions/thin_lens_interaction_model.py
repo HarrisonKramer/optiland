@@ -107,7 +107,7 @@ class ThinLensInteractionModel(BaseInteractionModel):
         # paraxial approximation -> direction is not necessarily unit vector
         rays.L = L
         rays.M = M
-        rays.N = be.ones_like(L)
+        rays.N = be.copysign(be.ones_like(rays.N), rays.N)
         rays.is_normalized = False
 
         return rays

@@ -16,18 +16,19 @@ from typing import TYPE_CHECKING
 from weakref import WeakMethod
 
 import optiland.backend as be
-from optiland.coatings import BaseCoating, FresnelCoating
+from optiland.coatings import BaseCoating, FresnelCoating, ThinFilmCoating
 from optiland.geometries import BaseGeometry
 from optiland.interactions.base import BaseInteractionModel
 from optiland.interactions.refractive_reflective_model import RefractiveReflectiveModel
 from optiland.materials import BaseMaterial
 from optiland.physical_apertures import BaseAperture
 from optiland.physical_apertures.radial import configure_aperture
-from optiland.rays import BaseRays, ParaxialRays, RealRays
 from optiland.scatter import BaseBSDF
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+    from optiland.rays import BaseRays, ParaxialRays, RealRays
 
 
 class Surface:
@@ -104,8 +105,13 @@ class Surface:
 
         # Handle the changes. Right now, we're only interested in a change in refractive
         # index. If this surface's interaction model has a Fresnel coating, update it:
-        if self.coating is not None:
+        if isinstance(getattr(self.interaction_model, "coating", None), FresnelCoating):
             self.set_fresnel_coating()
+        elif isinstance(
+            getattr(self.interaction_model, "coating", None), ThinFilmCoating
+        ):
+            self.coating.stack.incident_material = self.material_pre
+            self.coating.stack.substrate_material = self.material_post
 
     def _register_callback(self, callback: Callable):
         if callback not in self._listeners:
@@ -150,11 +156,14 @@ class Surface:
     @material_post.setter
     def material_post(self, material: BaseMaterial):
         self._material_post = material
-        # Update Fresnel-based coating for new material
-        if hasattr(self, "interaction_model") and isinstance(
-            getattr(self.interaction_model, "coating", None), FresnelCoating
-        ):
+
+        # Update coating for new material
+        if isinstance(self.coating, FresnelCoating):
             self.set_fresnel_coating()
+        elif isinstance(self.coating, ThinFilmCoating):
+            self.coating.stack.incident_material = self.material_pre
+            self.coating.stack.substrate_material = self.material_post
+
         for weakref_callback in self._listeners:
             weakref_callback()(self)
 
@@ -162,6 +171,11 @@ class Surface:
     def coating(self):
         if (interaction_model := getattr(self, "interaction_model", None)) is not None:
             return getattr(interaction_model, "coating", None)
+
+    @coating.setter
+    def coating(self, value):
+        if hasattr(self, "interaction_model"):
+            self.interaction_model.coating = value
 
     def flip(self):
         """Flips the surface, swapping materials and reversing geometry."""
@@ -183,7 +197,7 @@ class Surface:
         super().__init_subclass__(**kwargs)
         Surface._registry[cls.__name__] = cls
 
-    def trace(self, rays: BaseRays):
+    def trace(self, rays: BaseRays) -> BaseRays:
         """Traces the given rays through the surface.
 
         Args:
@@ -193,48 +207,75 @@ class Surface:
             BaseRays: The traced rays.
 
         """
-        # reset recorded information
         self.reset()
-
-        # transform coordinate system
         self.geometry.localize(rays)
-
-        if isinstance(rays, ParaxialRays):
-            # propagate to this surface
-            t = -rays.z
-            rays.propagate(t)
-
-            # interact with surface
-            rays = self.interaction_model.interact_paraxial_rays(rays)
-
-        elif isinstance(rays, RealRays):
-            # find distance from rays to the surface
-            t = self.geometry.distance(rays)
-
-            # propagate the rays a distance t through material
-            rays.path_coordinate_system = self.geometry.cs
-            try:
-                self.material_pre.propagation_model.propagate(rays, t)
-            finally:
-                rays.path_coordinate_system = None
-
-            # update OPD
-            rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
-
-            # if there is a limiting aperture, clip rays outside of it
-            if self.aperture:
-                self.aperture.clip(rays)
-
-            # interact with surface
-            rays = self.interaction_model.interact_real_rays(rays)
-
-        # inverse transform coordinate system
+        rays = rays.trace_on_surface(self)
         self.geometry.globalize(rays)
-
-        # record ray information
-        self._record(rays)
-
+        rays.record_on_surface(self)
         return rays
+
+    def _trace_paraxial(self, rays: ParaxialRays) -> ParaxialRays:
+        """Paraxial physics kernel: propagate and interact.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays.
+
+        Returns:
+            ParaxialRays: The traced paraxial rays.
+
+        """
+        t = -rays.z
+        rays.propagate(t)
+        rays = self.interaction_model.interact_paraxial_rays(rays)
+        return rays
+
+    def _trace_real(self, rays: RealRays) -> RealRays:
+        """Real ray physics kernel: propagate and interact.
+
+        Args:
+            rays (RealRays): The real rays.
+
+        Returns:
+            RealRays: The traced real rays.
+
+        """
+        t = self.geometry.distance(rays)
+        rays.path_coordinate_system = self.geometry.cs
+        try:
+            self.material_pre.propagation_model.propagate(rays, t)
+        finally:
+            rays.path_coordinate_system = None
+        rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
+        if self.aperture:
+            self.aperture.clip(rays)
+        rays = self.interaction_model.interact_real_rays(rays)
+        return rays
+
+    def _record_paraxial(self, rays: ParaxialRays) -> None:
+        """Records paraxial ray information after tracing.
+
+        Args:
+            rays (ParaxialRays): The paraxial rays.
+
+        """
+        self.y = be.copy(be.atleast_1d(rays.y))
+        self.u = be.copy(be.atleast_1d(rays.u))
+
+    def _record_real(self, rays: RealRays) -> None:
+        """Records real ray information after tracing.
+
+        Args:
+            rays (RealRays): The real rays.
+
+        """
+        self.x = be.copy(be.atleast_1d(rays.x))
+        self.y = be.copy(be.atleast_1d(rays.y))
+        self.z = be.copy(be.atleast_1d(rays.z))
+        self.L = be.copy(be.atleast_1d(rays.L))
+        self.M = be.copy(be.atleast_1d(rays.M))
+        self.N = be.copy(be.atleast_1d(rays.N))
+        self.intensity = be.copy(be.atleast_1d(rays.i))
+        self.opd = be.copy(be.atleast_1d(rays.opd))
 
     def set_semi_aperture(self, r_max: float):
         """Sets the physical semi-aperture of the surface.
@@ -267,28 +308,6 @@ class Surface:
             self.material_pre, self.material_post
         )
 
-    def _record(self, rays):
-        """Records the ray information.
-
-        Args:
-            rays: The rays.
-
-        """
-        if isinstance(rays, ParaxialRays):
-            self.y = be.copy(be.atleast_1d(rays.y))
-            self.u = be.copy(be.atleast_1d(rays.u))
-        elif isinstance(rays, RealRays):
-            self.x = be.copy(be.atleast_1d(rays.x))
-            self.y = be.copy(be.atleast_1d(rays.y))
-            self.z = be.copy(be.atleast_1d(rays.z))
-
-            self.L = be.copy(be.atleast_1d(rays.L))
-            self.M = be.copy(be.atleast_1d(rays.M))
-            self.N = be.copy(be.atleast_1d(rays.N))
-
-            self.intensity = be.copy(be.atleast_1d(rays.i))
-            self.opd = be.copy(be.atleast_1d(rays.opd))
-
     def is_rotationally_symmetric(self):
         """Returns True if the surface is rotationally symmetric, False otherwise."""
         if not self.geometry.is_symmetric:
@@ -314,6 +333,7 @@ class Surface:
             "material_post": self.material_post.to_dict(),
             "is_stop": self.is_stop,
             "aperture": self.aperture.to_dict() if self.aperture else None,
+            "comment": self.comment,
             "interaction_model": self.interaction_model.to_dict(),
         }
 

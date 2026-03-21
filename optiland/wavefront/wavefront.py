@@ -61,6 +61,7 @@ class Wavefront:
         num_rays: int = 12,
         distribution: DistributionType = "hexapolar",
         strategy: WavefrontStrategyType = "chief_ray",
+        afocal: bool = False,
         remove_tilt: bool = False,
         **kwargs,
     ):
@@ -70,10 +71,12 @@ class Wavefront:
         self.num_rays = num_rays
         self.distribution = self._resolve_distribution(distribution, self.num_rays)
 
+        reference_type = "plane" if afocal else "sphere"
         self.strategy = create_strategy(
             strategy_name=strategy,
             optic=self.optic,
             distribution=self.distribution,
+            reference_type=reference_type,
             **kwargs,
         )
         self.remove_tilt = remove_tilt

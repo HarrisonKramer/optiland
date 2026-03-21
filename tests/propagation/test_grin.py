@@ -1,4 +1,6 @@
-"""Unit tests for the GRIN propagation model."""
+"""Unit tests for the GrinPropagation model."""
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
@@ -14,6 +16,17 @@ def test_grin_material_initialization():
     assert material.n0 == 1.5
     assert material.nr2 == 0.1
     assert material.nr4 == 0.01
+
+
+def test_grin_propagation_raises_not_implemented_error():
+    """Verify that GRINPropagation.propagate raises NotImplementedError."""
+    model = GRINPropagation()
+    rays = RealRays(
+        x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1], wavelength=[0.5]
+    )
+
+    with pytest.raises(NotImplementedError):
+        model.propagate(rays, t=1.0)
 
 
 def test_grin_material_refractive_index():

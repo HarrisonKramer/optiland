@@ -80,7 +80,7 @@ class MaterialVariable(VariableBehavior):
         material_post: BaseMaterial = MaterialFactory._configure_post_material(
             new_value
         )
-        self.optic.set_material(material_post, self.surface_number)
+        self.optic.updater.set_material(material_post, self.surface_number)
 
     def __str__(self) -> str:
         """Return a string representation of the variable.

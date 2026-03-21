@@ -42,6 +42,17 @@ def load_obj_from_json(cls, filepath):
     return cls.from_dict(data)
 
 
+class OptilandEncoder(json.JSONEncoder):
+    """Custom JSON encoder to handle tensor/array serialization across backends."""
+
+    def default(self, obj):
+        if hasattr(obj, "tolist") and callable(obj.tolist):
+            return obj.tolist()
+        elif hasattr(obj, "item") and callable(obj.item):
+            return obj.item()
+        return super().default(obj)
+
+
 def save_obj_to_json(obj, filepath):
     """Save an object to a JSON file.
 
@@ -56,7 +67,7 @@ def save_obj_to_json(obj, filepath):
 
     """
     with open(filepath, "w") as f:
-        json.dump(obj.to_dict(), f, indent=4)
+        json.dump(obj.to_dict(), f, indent=4, cls=OptilandEncoder)
 
 
 def load_optiland_file(filepath):

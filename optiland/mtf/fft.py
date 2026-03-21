@@ -1,7 +1,8 @@
 """Fast Fourier Transform Modulation Transfer Function (FFTMTF) Module.
 
-This module provides the FFTMTF class for computing the MTF
-of an optical system using FFT techniques.
+This module provides the ScalarFFTMTF, VectorialFFTMTF (via factory), and
+FFTMTF factory class for computing the MTF of an optical system using FFT
+techniques.
 
 Kramer Harrison, 2025
 """
@@ -9,16 +10,19 @@ Kramer Harrison, 2025
 from __future__ import annotations
 
 import optiland.backend as be
-from optiland.psf.fft import FFTPSF, calculate_grid_size
+from optiland.psf.fft import ScalarFFTPSF, calculate_grid_size
 
 from .base import BaseMTF
 
 
-class FFTMTF(BaseMTF):
-    """Fast Fourier Transform Modulation Transfer Function (FFTMTF) class.
+class ScalarFFTMTF(BaseMTF):
+    """Scalar Fast Fourier Transform Modulation Transfer Function class.
 
     This class calculates and visualizes the Modulation Transfer Function (MTF)
-    of an optic using the Fast Fourier Transform (FFT) method.
+    of an optic using the scalar FFT method. It is intended for use with
+    unpolarized optical systems. Use the `FFTMTF` factory to automatically
+    select between scalar and vectorial implementations based on the optic's
+    polarization state.
 
     Args:
         optic (Optic): The optic for which to calculate the MTF.
@@ -30,7 +34,7 @@ class FFTMTF(BaseMTF):
             calculation, which is then used for MTF. Defaults to 128.
         grid_size (int or None, optional): The size of the grid used for the PSF/MTF
             calculation. If `None`, the grid size will be calculated from `num_rays`
-            as documented in `optiland.psf.fft.FFTPSF`. Defaults to `None`.
+            as documented in `optiland.psf.fft.ScalarFFTPSF`. Defaults to `None`.
         max_freq (str or float, optional): The maximum frequency for the MTF
             calculation. Defaults to 'cutoff'.
         strategy (str): The calculation strategy to use. Supported options are
@@ -80,12 +84,13 @@ class FFTMTF(BaseMTF):
         self.freq = be.arange(self.grid_size // 2) * self._get_mtf_units()
 
     def _calculate_psf(self):
-        """Calculates and stores the Point Spread Function (PSF)
+        """Calculates and stores the Point Spread Function (PSF).
 
-        This method uses the resolved field points and wavelength from BaseMTF.
+        This method uses the resolved field points and wavelength from BaseMTF,
+        and explicitly uses the scalar FFT PSF implementation.
         """
         self.psf = [
-            FFTPSF(
+            ScalarFFTPSF(
                 self.optic,
                 field,
                 self.resolved_wavelength,
@@ -99,7 +104,7 @@ class FFTMTF(BaseMTF):
         ]
 
     def _plot_field_mtf(self, ax, field_index, mtf_field_data, color):
-        """Plots the MTF data for a single field for FFTMTF.
+        """Plots the MTF data for a single field for ScalarFFTMTF.
 
         Args:
             ax (matplotlib.axes.Axes): The matplotlib axes object.
@@ -161,3 +166,67 @@ class FFTMTF(BaseMTF):
         dx = 1 / ((self.num_rays - 1) * self.resolved_wavelength * 1e-3 * self.FNO)
 
         return dx
+
+
+class FFTMTF:
+    """Factory class for generating either a Vectorial or Scalar FFT MTF.
+
+    This class inspects the optical system's polarization state to determine
+    which FFT MTF implementation to instantiate. If polarization is enabled,
+    it returns a `VectorialFFTMTF`. Otherwise, it returns a `ScalarFFTMTF`.
+
+    Args:
+        optic (Optic): The optical system object.
+        fields (str or list, optional): The field coordinates for which to
+            calculate the MTF. Defaults to 'all'.
+        wavelength (str or float, optional): The wavelength of light to use.
+            Defaults to 'primary'.
+        num_rays (int, optional): The number of rays to use for the PSF
+            calculation. Defaults to 128.
+        grid_size (int or None, optional): The FFT grid size. Defaults to None.
+        max_freq (str or float, optional): The maximum frequency for the MTF
+            calculation. Defaults to 'cutoff'.
+        strategy (str): The wavefront calculation strategy. Defaults to
+            "chief_ray".
+        remove_tilt (bool): If True, removes tilt from OPD. Defaults to False.
+        **kwargs: Additional keyword arguments passed to the strategy.
+    """
+
+    def __new__(
+        cls,
+        optic,
+        fields: str | list = "all",
+        wavelength: str | float = "primary",
+        num_rays=128,
+        grid_size=None,
+        max_freq="cutoff",
+        strategy="chief_ray",
+        remove_tilt=False,
+        **kwargs,
+    ):
+        if optic.polarization_state is not None:
+            from optiland.mtf.vectorial_fft import VectorialFFTMTF
+
+            return VectorialFFTMTF(
+                optic=optic,
+                fields=fields,
+                wavelength=wavelength,
+                num_rays=num_rays,
+                grid_size=grid_size,
+                max_freq=max_freq,
+                strategy=strategy,
+                remove_tilt=remove_tilt,
+                **kwargs,
+            )
+        else:
+            return ScalarFFTMTF(
+                optic=optic,
+                fields=fields,
+                wavelength=wavelength,
+                num_rays=num_rays,
+                grid_size=grid_size,
+                max_freq=max_freq,
+                strategy=strategy,
+                remove_tilt=remove_tilt,
+                **kwargs,
+            )

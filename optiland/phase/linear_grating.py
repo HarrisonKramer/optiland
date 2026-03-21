@@ -57,7 +57,9 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
     def efficiency(self) -> float:
         return self._efficiency
 
-    def get_phase(self, x: be.Array, y: be.Array) -> be.Array:
+    def get_phase(
+        self, x: be.Array, y: be.Array, wavelength: be.Array = None
+    ) -> be.Array:
         """Calculates the phase added by the profile at coordinates (x, y).
 
         Args:
@@ -70,7 +72,7 @@ class LinearGratingPhaseProfile(BasePhaseProfile):
         return self._K_x * x + self._K_y * y
 
     def get_gradient(
-        self, x: be.Array, y: be.Array
+        self, x: be.Array, y: be.Array, wavelength: be.Array = None
     ) -> tuple[be.Array, be.Array, be.Array]:
         """Calculates the gradient of the phase at coordinates (x, y).
 

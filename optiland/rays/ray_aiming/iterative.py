@@ -135,7 +135,8 @@ class IterativeRayAimer(BaseRayAimer):
 
         # Initial trace (all rays)
         rays = self._trace_subset(x, y, z, L, M, N, wavelengths, stop_idx, is_inf)
-        ex, ey = rays.x - tx, rays.y - ty
+        lx, ly = self._get_local_stop_coords(rays, stop_idx)
+        ex, ey = lx - tx, ly - ty
 
         if be.any(be.isnan(ex)):
             raise ValueError(
@@ -228,8 +229,9 @@ class IterativeRayAimer(BaseRayAimer):
 
             # Recalculate errors with new parameters
             rays = self._trace_subset(x, y, z, L, M, N, wavelengths, stop_idx, is_inf)
-            ex_new = rays.x - tx
-            ey_new = rays.y - ty
+            lx, ly = self._get_local_stop_coords(rays, stop_idx)
+            ex_new = lx - tx
+            ey_new = ly - ty
 
             # Extract new errors for active set
             ex_next = ex_new[idx]
@@ -297,12 +299,42 @@ class IterativeRayAimer(BaseRayAimer):
         para = self.optic.paraxial
         if is_inf:
             z_start = para.surfaces.positions[1]
-            y, _ = para._trace_generic(1.0, 0.0, z_start, wavelength, skip=1)
+            y, _ = para.trace_generic(1.0, 0.0, z_start, wavelength, skip=1)
             return y[stop_idx]
         else:
             obj_z = self.optic.object_surface.geometry.cs.z
-            y, _ = para._trace_generic(0.0, 1.0, obj_z, wavelength)
+            y, _ = para.trace_generic(0.0, 1.0, obj_z, wavelength)
             return y[stop_idx]
+
+    def _get_local_stop_coords(self, rays: RealRays, stop_idx: int) -> tuple:
+        """Get ray intersection coordinates in the stop surface's local frame.
+
+        After tracing, ray coordinates are in the global frame. This method
+        transforms them back to the stop surface's local coordinate system
+        so they can be compared against local-frame targets (Px*r, Py*r).
+
+        Args:
+            rays (RealRays): Traced rays (in global coordinates).
+            stop_idx (int): The index of the stop surface.
+
+        Returns:
+            tuple: Local (x, y) coordinates on the stop surface.
+        """
+        stop_cs = self.optic.surface_group.surfaces[stop_idx].geometry.cs
+
+        # Create a temporary copy of rays to avoid mutating the originals
+        temp = RealRays(
+            be.copy(rays.x),
+            be.copy(rays.y),
+            be.copy(rays.z),
+            be.copy(rays.L),
+            be.copy(rays.M),
+            be.copy(rays.N),
+            intensity=be.copy(rays.i),
+            wavelength=rays.w,
+        )
+        stop_cs.localize(temp)
+        return temp.x, temp.y
 
     def _trace_subset(
         self,

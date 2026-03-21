@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import pytest
+
 from optiland.optic import Optic
 from optiland.utils import resolve_fields, resolve_wavelength, resolve_wavelengths
 

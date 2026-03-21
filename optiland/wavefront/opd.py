@@ -45,8 +45,10 @@ class OPD(Wavefront):
         num_rings (int, optional): The number of rings for ray tracing.
             Defaults to 15.
         strategy (str): The calculation strategy to use. Supported options are
-            "chief_ray", "centroid_sphere", and "best_fit_sphere".
+            "chief_ray", "centroid", and "best_fit".
             Defaults to "chief_ray".
+        afocal (bool): If True, uses a planar reference geometry for afocal systems.
+            If False, uses a spherical reference geometry. Defaults to False.
         remove_tilt (bool): If True, removes tilt and piston from the OPD data.
             Defaults to False.
         **kwargs: Additional keyword arguments passed to the strategy.

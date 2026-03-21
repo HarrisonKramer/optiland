@@ -59,6 +59,7 @@ class Rays2D:
         reference=None,
         theme=None,
         projection="YZ",
+        hide_vignetted=False,
     ):
         """Plots the rays for the given fields and wavelengths.
 
@@ -73,12 +74,15 @@ class Rays2D:
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
             theme (Theme, optional): The theme to apply. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         fields = resolve_fields(self.optic, fields)
         wavelengths = resolve_wavelengths(self.optic, wavelengths)
 
         artists = {}
+
         for i, field in enumerate(fields):
             for j, wavelength in enumerate(wavelengths):
                 # if only one field, use different colors for each wavelength
@@ -92,7 +96,12 @@ class Rays2D:
                     self._trace(field, wavelength, num_rays, distribution)
                     artists.update(
                         self._plot_lines(
-                            ax, color_idx, field, theme=theme, projection=projection
+                            ax,
+                            color_idx,
+                            field,
+                            theme=theme,
+                            projection=projection,
+                            hide_vignetted=hide_vignetted,
                         )
                     )
 
@@ -107,6 +116,7 @@ class Rays2D:
                             linewidth=1.5,
                             theme=theme,
                             projection=projection,
+                            hide_vignetted=hide_vignetted,
                         )
                     )
         return artists
@@ -169,14 +179,25 @@ class Rays2D:
         """Updates the extents of the surfaces in the optic's surface group."""
         r_extent_new = be.copy(be.zeros_like(self.r_extent))
         for i, surf in enumerate(self.optic.surface_group.surfaces):
-            # convert to local coordinate system
-            x, y, _ = transform(self.x[i], self.y[i], self.z[i], surf, is_global=True)
+            x_surf = self.x[i]
+            y_surf = self.y[i]
+            z_surf = self.z[i]
+
+            # Convert to local coordinate system
+            x, y, _ = transform(x_surf, y_surf, z_surf, surf, is_global=True)
 
             r_extent_new[i] = be.nanmax(be.hypot(x, y))
         self.r_extent = be.fmax(self.r_extent, r_extent_new)
 
     def _plot_lines(
-        self, ax, color_idx, field, linewidth=1, theme=None, projection="YZ"
+        self,
+        ax,
+        color_idx,
+        field,
+        linewidth=1,
+        theme=None,
+        projection="YZ",
+        hide_vignetted=False,
     ):
         """Plots multiple lines on the given axis.
 
@@ -235,6 +256,9 @@ class Rays2D:
             yk = be.to_numpy(self.y[:, k])
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
+
+            if hide_vignetted and np.any(ik == 0):
+                continue
 
             # remove rays outside aperture
             xk[ik == 0] = np.nan
@@ -314,6 +338,7 @@ class Rays3D(Rays2D):
         distribution="line_y",
         reference=None,
         theme=None,
+        hide_vignetted=False,
     ):
         """Plots the rays for the given fields and wavelengths.
 
@@ -328,6 +353,8 @@ class Rays3D(Rays2D):
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
             theme (Theme, optional): The theme to apply. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         fields = resolve_fields(self.optic, fields)
@@ -344,12 +371,25 @@ class Rays3D(Rays2D):
                 else:
                     # trace rays and plot lines
                     self._trace(field, wavelength, num_rays, distribution)
-                    self._plot_lines(ax, color_idx, field, theme=theme)
+                    self._plot_lines(
+                        ax,
+                        color_idx,
+                        field,
+                        theme=theme,
+                        hide_vignetted=hide_vignetted,
+                    )
 
                 # trace reference rays and plot lines
                 if reference is not None:
                     self._trace_reference(field, wavelength, reference)
-                    self._plot_lines(ax, color_idx, field, linewidth=1.5, theme=theme)
+                    self._plot_lines(
+                        ax,
+                        color_idx,
+                        field,
+                        linewidth=1.5,
+                        theme=theme,
+                        hide_vignetted=hide_vignetted,
+                    )
 
     def __init__(self, optic):
         super().__init__(optic)
@@ -368,7 +408,9 @@ class Rays3D(Rays2D):
             (0.090, 0.745, 0.812),
         ]
 
-    def _plot_lines(self, ax, color_idx, field, linewidth=1, theme=None):
+    def _plot_lines(
+        self, ax, color_idx, field, linewidth=1, theme=None, hide_vignetted=False
+    ):
         if self.traced_rays is not None and self.traced_rays.has_paths():
             for k, (xk, yk, zk) in enumerate(self.traced_rays.get_paths()):
                 if self.traced_rays.path_i and self.traced_rays.path_i[k]:
@@ -384,13 +426,15 @@ class Rays3D(Rays2D):
                     ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
                 )
             return
-
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])
             yk = be.to_numpy(self.y[:, k])
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
+
+            if hide_vignetted and np.any(ik == 0):
+                continue
 
             # remove rays outside aperture
             xk[ik == 0] = np.nan

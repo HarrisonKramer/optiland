@@ -57,6 +57,7 @@ class OpticViewer3D(BaseViewer):
         figsize=(1200, 800),
         dark_mode=False,
         reference=None,
+        hide_vignetted=False,
     ):
         """Visualizes the optical system in 3D.
 
@@ -75,6 +76,8 @@ class OpticViewer3D(BaseViewer):
                 Defaults to False.
             reference (str, optional): The reference rays to plot. Options
                 include "chief" and "marginal". Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         renderer = vtk.vtkRenderer()
@@ -92,6 +95,7 @@ class OpticViewer3D(BaseViewer):
             num_rays=num_rays,
             distribution=distribution,
             reference=reference,
+            hide_vignetted=hide_vignetted,
         )
         self.system.plot(renderer)
 

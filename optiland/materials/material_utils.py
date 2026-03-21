@@ -42,7 +42,8 @@ def glasses_selection(
     """
 
     csv_path = resources.files("optiland.database").joinpath("catalog_nk.csv")
-    catalogs = [c.lower() for c in catalogs]
+    if catalogs is not None:
+        catalogs = [c.lower() for c in catalogs]
     glasses = set()
 
     with open(csv_path, encoding="utf-8") as file:

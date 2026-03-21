@@ -1,8 +1,9 @@
-import optiland.backend as be
-import pytest
+from __future__ import annotations
 
+import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
 from optiland.rays import RealRays
+
 from .utils import assert_allclose
 
 

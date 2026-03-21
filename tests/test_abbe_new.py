@@ -1,9 +1,12 @@
+from __future__ import annotations
 
 import pytest
-import optiland.backend as be
+
 from optiland.materials import AbbeMaterial, AbbeMaterialE
 from optiland.materials.abbe import AbbePolynomialModel, BuchdahlDModel, BuchdahlEModel
+
 from .utils import assert_allclose
+
 
 class TestAbbePolynomialModel:
     def test_initialization(self, set_test_backend):
@@ -14,13 +17,14 @@ class TestAbbePolynomialModel:
 
     def test_predict_n(self, set_test_backend):
         # Known legacy behavior check
-        model = AbbePolynomialModel(1.5, 64.17) # Roughly N-BK7
+        model = AbbePolynomialModel(1.5, 64.17)  # Roughly N-BK7
         n_d = model.predict_n(0.5875618)
-        assert_allclose(n_d, 1.5, atol=1e-3) # Polynomial approximation
+        assert_allclose(n_d, 1.5, atol=1e-3)  # Polynomial approximation
 
     def test_predict_k(self, set_test_backend):
         model = AbbePolynomialModel(1.5, 64.17)
         assert model.predict_k(0.5) == 0
+
 
 class TestBuchdahlDModel:
     def test_initialization(self, set_test_backend):
@@ -38,12 +42,13 @@ class TestBuchdahlDModel:
         nd_input = 1.5168
         vd_input = 64.17
         model = BuchdahlDModel(nd_input, vd_input)
-        n_pred = model.predict_n(0.5875618) # lambda_d
+        n_pred = model.predict_n(0.5875618)  # lambda_d
         assert_allclose(n_pred, nd_input, atol=1e-6)
 
     def test_predict_k(self, set_test_backend):
         model = BuchdahlDModel(1.5, 64.17)
         assert model.predict_k(0.5) == 0
+
 
 class TestBuchdahlEModel:
     def test_initialization(self, set_test_backend):
@@ -62,13 +67,16 @@ class TestBuchdahlEModel:
         ne = 1.51872
         ve = 63.96
         model = BuchdahlEModel(ne, ve)
-        n_pred = model.predict_n(0.546074) # lambda_e
+        n_pred = model.predict_n(0.546074)  # lambda_e
         assert_allclose(n_pred, ne, atol=1e-6)
+
 
 class TestAbbeMaterialWrapper:
     def test_default_legacy_model(self, set_test_backend):
         # Should raise warning and use polynomial model
-        with pytest.warns(FutureWarning, match="default model for AbbeMaterial will change"):
+        with pytest.warns(
+            FutureWarning, match="default model for AbbeMaterial will change"
+        ):
             mat = AbbeMaterial(1.5, 64.17)
         assert isinstance(mat.model, AbbePolynomialModel)
         assert mat.model_name == "polynomial"
@@ -76,22 +84,38 @@ class TestAbbeMaterialWrapper:
     def test_explicit_polynomial_model(self, set_test_backend):
         # Should NOT raise warning
         import warnings
+
         with warnings.catch_warnings(record=True) as record:
-            warnings.simplefilter("always") # Cause all warnings to always be triggered.
+            warnings.simplefilter(
+                "always"
+            )  # Cause all warnings to always be triggered.
             mat = AbbeMaterial(1.5, 64.17, model="polynomial")
             # Check that no FutureWarning was raised related to AbbeMaterial
-            future_warnings = [w for w in record if issubclass(w.category, FutureWarning) and "AbbeMaterial" in str(w.message)]
+            future_warnings = [
+                w
+                for w in record
+                if issubclass(w.category, FutureWarning)
+                and "AbbeMaterial" in str(w.message)
+            ]
             assert len(future_warnings) == 0
         assert isinstance(mat.model, AbbePolynomialModel)
 
     def test_buchdahl_model(self, set_test_backend):
         # Should NOT raise warning
         import warnings
+
         with warnings.catch_warnings(record=True) as record:
-            warnings.simplefilter("always") # Cause all warnings to always be triggered.
+            warnings.simplefilter(
+                "always"
+            )  # Cause all warnings to always be triggered.
             mat = AbbeMaterial(1.5, 64.17, model="buchdahl")
             # Check that no FutureWarning was raised related to AbbeMaterial
-            future_warnings = [w for w in record if issubclass(w.category, FutureWarning) and "AbbeMaterial" in str(w.message)]
+            future_warnings = [
+                w
+                for w in record
+                if issubclass(w.category, FutureWarning)
+                and "AbbeMaterial" in str(w.message)
+            ]
             assert len(future_warnings) == 0
         assert isinstance(mat.model, BuchdahlDModel)
 
@@ -120,9 +144,15 @@ class TestAbbeMaterialWrapper:
         assert isinstance(mat.model, AbbePolynomialModel)
 
     def test_from_dict_explicit_model(self, set_test_backend):
-        data = {"type": "AbbeMaterial", "index": 1.5, "abbe": 64.17, "model": "buchdahl"}
+        data = {
+            "type": "AbbeMaterial",
+            "index": 1.5,
+            "abbe": 64.17,
+            "model": "buchdahl",
+        }
         mat = AbbeMaterial.from_dict(data)
         assert isinstance(mat.model, BuchdahlDModel)
+
 
 class TestAbbeMaterialE:
     def test_initialization(self, set_test_backend):

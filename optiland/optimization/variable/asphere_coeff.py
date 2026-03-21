@@ -81,7 +81,9 @@ class AsphereCoeffVariable(VariableBehavior):
             new_value (float): The new value of the aspheric coefficient.
 
         """
-        self.optic.set_asphere_coeff(new_value, self.surface_number, self.coeff_number)
+        self.optic.updater.set_asphere_coeff(
+            new_value, self.surface_number, self.coeff_number
+        )
 
     def __str__(self):
         """Return a string representation of the variable.

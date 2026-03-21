@@ -1,13 +1,12 @@
-import pytest
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from unittest.mock import patch, MagicMock
 
 from optiland.analysis import ThroughFocusMTF
 from optiland.samples.objectives import CookeTriplet
-import optiland.backend as be
-import numpy as np
 
 
 class TestThroughFocusMTF:

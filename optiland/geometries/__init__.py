@@ -10,7 +10,8 @@ from .chebyshev import ChebyshevPolynomialGeometry
 from .even_asphere import EvenAsphere
 from .forbes import (
     ForbesQ2dGeometry,
-    ForbesQbfsGeometry,
+    ForbesQbfsGeometry,  # Deprecated alias
+    ForbesQNormalSlopeGeometry,
     ForbesSolverConfig,
     ForbesSurfaceConfig,
 )
@@ -57,7 +58,8 @@ __all__ = [
     "ZernikePolynomialGeometry",
     # From forbes subpackage
     "ForbesQ2dGeometry",
-    "ForbesQbfsGeometry",
+    "ForbesQNormalSlopeGeometry",
+    "ForbesQbfsGeometry",  # Deprecated alias for backward compatibility
     "ForbesSurfaceConfig",
     "ForbesSolverConfig",
     # From nurbs subpackage

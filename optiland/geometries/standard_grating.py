@@ -74,6 +74,15 @@ class StandardGratingGeometry(BaseGeometry):
         """
         self.radius = -self.radius
 
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        self.radius = self.radius * scale_factor
+        self.grating_period = self.grating_period * scale_factor
+
     def sag(self, x=0, y=0):
         """Calculate the surface sag of the geometry at the given coordinates.
 
@@ -276,7 +285,7 @@ class StandardGratingGeometry(BaseGeometry):
             StandardGratingGeometry: An instance of StandardGratingGeometry.
 
         """
-        required_keys = {"cs", "radius", "alpha"}
+        required_keys = {"cs", "radius", "order", "period", "angle"}
         if not required_keys.issubset(data):
             missing = required_keys - data.keys()
             raise ValueError(f"Missing required keys: {missing}")
@@ -286,7 +295,6 @@ class StandardGratingGeometry(BaseGeometry):
         return cls(
             cs,
             data["radius"],
-            data["alpha"],
             data["order"],
             data["period"],
             data["angle"],

@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from optiland._types import ScalarOrArray
+    from optiland.surfaces.standard_surface import Surface
 
 
 class ParaxialRays(BaseRays):
@@ -46,6 +47,27 @@ class ParaxialRays(BaseRays):
         self.x = be.zeros_like(self.y)
         self.i = be.ones_like(self.y)
         self.w = be.as_array_1d(wavelength)
+
+    def trace_on_surface(self, surface: Surface) -> ParaxialRays:
+        """Dispatch to the surface's paraxial trace kernel.
+
+        Args:
+            surface (Surface): The surface to trace through.
+
+        Returns:
+            ParaxialRays: The traced paraxial rays.
+
+        """
+        return surface._trace_paraxial(self)
+
+    def record_on_surface(self, surface: Surface) -> None:
+        """Dispatch to the surface's paraxial record method.
+
+        Args:
+            surface (Surface): The surface to record onto.
+
+        """
+        surface._record_paraxial(self)
 
     def propagate(self, t: ScalarOrArray):
         """Propagates the rays by a given distance.

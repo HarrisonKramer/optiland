@@ -14,6 +14,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
+from optiland.aperture import FloatByStopAperture
 from optiland.rays import RealRays
 
 if TYPE_CHECKING:
@@ -65,7 +66,7 @@ class ParaxialReferenceStrategy(StopSizeStrategy):
 
         # Determine marginal ray height at the stop surface
         y_marginal, _ = para.marginal_ray()
-        return be.abs(float(y_marginal[stop_index]))
+        return float(be.abs(y_marginal[stop_index].item()))
 
 
 class RealReferenceStrategy(StopSizeStrategy):
@@ -150,8 +151,23 @@ class RealReferenceStrategy(StopSizeStrategy):
             if be.any(be.isnan(rays.x)):
                 raise ValueError("Ray trace resulted in NaNs (TIR or missed surface).")
 
-        # Return intersection radial height at Stop
-        return float(be.sqrt(rays.x[0] ** 2 + rays.y[0] ** 2))
+        # Localize rays to the stop surface's local frame so the radial
+        # height is measured from the stop center, not the global origin.
+        stop_cs = self.optic.surface_group.surfaces[stop_index].geometry.cs
+        local_rays = RealRays(
+            be.copy(rays.x),
+            be.copy(rays.y),
+            be.copy(rays.z),
+            be.copy(rays.L),
+            be.copy(rays.M),
+            be.copy(rays.N),
+            intensity=be.copy(rays.i),
+            wavelength=rays.w,
+        )
+        stop_cs.localize(local_rays)
+
+        # Return intersection radial height at Stop in local coords
+        return float(be.sqrt(local_rays.x[0] ** 2 + local_rays.y[0] ** 2))
 
 
 def get_stop_radius_strategy(optic: Optic, aiming_mode: str) -> StopSizeStrategy:
@@ -164,7 +180,7 @@ def get_stop_radius_strategy(optic: Optic, aiming_mode: str) -> StopSizeStrategy
     Returns:
         The instantiated strategy instance.
     """
-    if optic.aperture and optic.aperture.ap_type == "float_by_stop_size":
+    if optic.aperture and isinstance(optic.aperture, FloatByStopAperture):
         return FloatByStopStrategy(optic)
 
     if aiming_mode in ["iterative", "robust"]:

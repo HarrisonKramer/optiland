@@ -87,8 +87,8 @@ class ChebyshevConfig(GeometryConfig):
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
-    norm_x: float = 1.0
-    norm_y: float = 1.0
+    norm_x: float | None = None
+    norm_y: float | None = None
 
 
 @dataclass
@@ -99,7 +99,7 @@ class ZernikeConfig(GeometryConfig):
     coefficients: list[float] = field(default_factory=list)
     tol: float = 1e-6
     max_iter: int = 100
-    norm_radius: float = 1.0
+    norm_radius: float | None = None
     zernike_type: ZernikeType = "fringe"
 
 
@@ -131,7 +131,7 @@ class ForbesQbfsConfig(GeometryConfig):
     radius: float = be.inf
     conic: float = 0.0
     radial_terms: dict[int, float] = field(default_factory=dict)
-    norm_radius: float = 1.0
+    norm_radius: float | None = None
     tol: float = 1e-6
     max_iter: int = 100
 
@@ -142,7 +142,7 @@ class ForbesQ2dConfig(GeometryConfig):
     radius: float = be.inf
     conic: float = 0.0
     freeform_coeffs: dict[tuple[str, int, int], float] = field(default_factory=dict)
-    norm_radius: float = 1.0
+    norm_radius: float | None = None
     tol: float = 1e-6
     max_iter: int = 100
 
@@ -156,8 +156,8 @@ class NurbsConfig(GeometryConfig):
     weights: list[float] | None = None
     u_knots: list[float] | None = None
     v_knots: list[float] | None = None
-    nurbs_norm_x: float = 0.0
-    nurbs_norm_y: float = 0.0
+    nurbs_norm_x: float | None = None
+    nurbs_norm_y: float | None = None
     nurbs_x_center: float = 0.0
     nurbs_y_center: float = 0.0
     u_degree: int = 3

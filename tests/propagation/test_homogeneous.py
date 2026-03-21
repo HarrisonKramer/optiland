@@ -1,17 +1,19 @@
 """Unit tests for the HomogeneousPropagation model."""
-
-import pytest
+from __future__ import annotations
 
 from optiland import backend as be
 from optiland.materials.ideal import IdealMaterial
 from optiland.propagation.homogeneous import HomogeneousPropagation
 from optiland.rays.real_rays import RealRays
+
 from ..utils import assert_allclose
 
 
 def test_homogeneous_propagation_position_update(set_test_backend):
     """Verify that ray coordinates are updated correctly."""
-    basic_rays = RealRays(x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5])
+    basic_rays = RealRays(
+        x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5]
+    )
     material = IdealMaterial(n=1.0)  # k=0 by default
     model = HomogeneousPropagation(material)
     t = 10.0
@@ -25,7 +27,9 @@ def test_homogeneous_propagation_position_update(set_test_backend):
 
 def test_homogeneous_propagation_no_attenuation_with_k0(set_test_backend):
     """Verify ray intensity is unchanged when k=0."""
-    basic_rays = RealRays(x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5])
+    basic_rays = RealRays(
+        x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5]
+    )
     material = IdealMaterial(n=1.0, k=0.0)
     model = HomogeneousPropagation(material)
     t = 10.0
@@ -38,7 +42,9 @@ def test_homogeneous_propagation_no_attenuation_with_k0(set_test_backend):
 
 def test_homogeneous_propagation_attenuation_with_k_gt_0(set_test_backend):
     """Verify ray intensity is correctly attenuated when k > 0."""
-    basic_rays = RealRays(x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5])
+    basic_rays = RealRays(
+        x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5]
+    )
     k_val = 0.1
     wavelength = be.to_numpy(basic_rays.w)[0]
     t = 10.0  # distance in mm
@@ -61,7 +67,9 @@ def test_homogeneous_propagation_attenuation_with_k_gt_0(set_test_backend):
 
 def test_homogeneous_propagation_normalizes_rays(set_test_backend):
     """Verify that unnormalized rays are normalized after propagation."""
-    basic_rays = RealRays(x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5])
+    basic_rays = RealRays(
+        x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1.0], wavelength=[0.5]
+    )
     material = IdealMaterial(n=1.0)
     model = HomogeneousPropagation(material)
 

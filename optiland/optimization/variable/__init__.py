@@ -10,7 +10,11 @@ from .decenter import DecenterVariable
 from .index import IndexVariable
 from .material import MaterialVariable
 from .asphere_coeff import AsphereCoeffVariable
-from .forbes_coeff import ForbesQbfsCoeffVariable, ForbesQ2dCoeffVariable
+from .forbes_coeff import (
+    ForbesQbfsCoeffVariable,  # Deprecated alias
+    ForbesQ2dCoeffVariable,
+    ForbesQNormalSlopeCoeffVariable,
+)
 from .polynomial_coeff import PolynomialCoeffVariable
 from .chebyshev_coeff import ChebyshevCoeffVariable
 from .zernike_coeff import ZernikeCoeffVariable

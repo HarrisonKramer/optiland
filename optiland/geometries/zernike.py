@@ -84,7 +84,8 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         zernike_type (str, optional): The type of Zernike polynomial to use.
             Defaults to "standard". Options are "standard", "noll", or "fringe".
         norm_radius (float, optional): The normalization radius for the
-            Zernike polynomial coordinates. Defaults to 1.
+            Zernike polynomial coordinates. If None, the radius scales
+            automatically during paraxial updates. Defaults to None.
     """
 
     def __init__(
@@ -96,7 +97,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
         max_iter: int = 100,
         coefficients: NDArray | None = None,
         zernike_type: ZernikeType = "standard",
-        norm_radius: float = 1,
+        norm_radius: float | None = None,
     ):
         super().__init__(coordinate_system, radius, conic, tol, max_iter)
 
@@ -105,7 +106,7 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
                 "Zernike type must be one of 'standard', 'noll', or 'fringe', got "
                 f"{zernike_type}",
             )
-        if norm_radius <= 0:
+        if norm_radius is not None and norm_radius <= 0:
             raise ValueError(
                 f"Normalization radius must be positive, got {norm_radius}"
             )
@@ -114,7 +115,12 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
         self.zernike = _ZERNIKE_TYPES[zernike_type](coeffs=coefficients)
         self.zernike_type: ZernikeType = zernike_type
-        self.norm_radius = norm_radius
+        if norm_radius is not None:
+            self.norm_radius = norm_radius
+            self.normalization_mode = "manual"
+        else:
+            self.norm_radius = 1.0
+            self.normalization_mode = "auto"
         self.is_symmetric = False
 
     @property
@@ -129,6 +135,20 @@ class ZernikePolynomialGeometry(NewtonRaphsonGeometry):
 
     def __str__(self) -> str:
         return "Zernike Polynomial"
+
+    def scale(self, scale_factor: float):
+        """Scale the geometry parameters.
+
+        Args:
+            scale_factor (float): The factor by which to scale the geometry.
+        """
+        super().scale(scale_factor)
+        self.norm_radius = self.norm_radius * scale_factor
+        self.coefficients = self.coefficients * scale_factor
+
+    def update_normalization(self, semi_aperture: float) -> None:
+        if self.normalization_mode == "auto":
+            self.norm_radius = semi_aperture * 1.25
 
     def sag(self, x: NDArray, y: NDArray) -> NDArray:  # type: ignore
         """Calculate the sag of the Zernike polynomial surface at the given

@@ -1,22 +1,24 @@
-import pytest
+from __future__ import annotations
+
 import matplotlib
+import pytest
 
 matplotlib.use("Agg")  # ensure non-interactive backend for testing
+
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from unittest.mock import patch
 
 import optiland.backend as be
-from optiland.mtf import GeometricMTF, FFTMTF
+from optiland.mtf import FFTMTF, GeometricMTF
 from optiland.samples.objectives import CookeTriplet
 
-# Parametrize every test over the two backends
+# Parametrize every test over the available backends
 pytestmark = pytest.mark.parametrize(
     "set_test_backend",
-    ["numpy", "torch"],
+    be.list_available_backends(),
     indirect=True,
-    ids=["backend=numpy", "backend=torch"],
+    ids=[f"backend={b}" for b in be.list_available_backends()],
 )
 
 

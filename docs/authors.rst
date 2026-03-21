@@ -32,6 +32,9 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **Melquiades Xiong** (`GitHub <https://github.com/Xiong-Ziyi>`_)
 - **Scott Paine** (`GitHub <https://github.com/scottpaine>`_)
 - **Jie Cai** (`GitHub <https://github.com/zhazhajust>`_)
+- **Renato Ferracini Alves** (`GitHub <https://github.com/RFerraciniAlves>`_)
+- **Gustavo Vasconcelos** (`GitHub <https://github.com/gustavu92>`_)
+- **cyberstudio10** (`GitHub <https://github.com/cyberstudio10>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.

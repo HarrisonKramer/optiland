@@ -10,6 +10,7 @@ import optiland.backend as be
 from .base import BaseFieldDefinition
 
 
+@BaseFieldDefinition.register("paraxial_image_height")
 class ParaxialImageHeightField(BaseFieldDefinition):
     """Defines fields by the chief ray's paraxial height at the image plane."""
 
@@ -146,14 +147,14 @@ class ParaxialImageHeightField(BaseFieldDefinition):
 
         if plane == "image":
             z_start = pos[stop_idx]
-            y, u = optic.paraxial._trace_generic(
+            y, u = optic.paraxial.trace_generic(
                 y=0, u=1, z=z_start, wavelength=wavelength, skip=stop_idx
             )
             return y[-1], u[-1]
         elif plane == "object":
             z_start = pos[-1] - pos[stop_idx]
             skip = num_surf - stop_idx
-            y, u = optic.paraxial._trace_generic(
+            y, u = optic.paraxial.trace_generic(
                 y=0, u=1, z=z_start, wavelength=wavelength, reverse=True, skip=skip
             )
             return y[-1], u[-1]

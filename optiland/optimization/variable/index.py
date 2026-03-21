@@ -65,7 +65,7 @@ class IndexVariable(VariableBehavior):
             new_value (float): The new value of the index of refraction.
 
         """
-        self.optic.set_index(new_value, self.surface_number)
+        self.optic.updater.set_index(new_value, self.surface_number)
 
     def __str__(self):
         """Return a string representation of the variable.

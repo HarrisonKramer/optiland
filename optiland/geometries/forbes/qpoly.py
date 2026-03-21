@@ -11,30 +11,11 @@ Copyright (c) 2017 Brandon Dube
 from __future__ import annotations
 
 from collections import defaultdict
-from functools import lru_cache, wraps
+from functools import cache
 
 from scipy import special
 
 import optiland.backend as be
-
-
-def autograd_aware_cache(func):
-    """
-    A decorator that provides LRU caching but automatically bypasses the
-    cache if the PyTorch backend is active with gradient tracking enabled
-    """
-    cached_func = lru_cache(2000)(func)
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if be.get_backend() == "torch" and be.grad_mode.requires_grad:
-            # If gradients are on, bypass the cache and run the original function
-            return func(*args, **kwargs)
-        else:
-            # Otherwise (Numpy backend or PyTorch with no_grad), use the cache
-            return cached_func(*args, **kwargs)
-
-    return wrapper
 
 
 def kronecker(i: int, j: int) -> int:
@@ -42,7 +23,7 @@ def kronecker(i: int, j: int) -> int:
     return 1 if i == j else 0
 
 
-@autograd_aware_cache
+@cache
 def gamma_func(n: int, m: int) -> float:
     """Recursive gamma function for Q2D polynomials."""
     if n == 1 and m == 2:
@@ -59,10 +40,20 @@ def gamma_func(n: int, m: int) -> float:
     return (num / den) * gamma_func(nm1, m)
 
 
-# bfs polynomials logic
+# -----------------------------------------------------------------------------
+# Forbes slope-orthogonal (Q^bfs) polynomial basis functions
+# -----------------------------------------------------------------------------
+# NOTE: The "qbfs" suffix in function names below is a historical identifier
+# from Forbes' 2007 paper, where these polynomials were called Q^bfs for
+# "best-fit sphere." However, the modern formulation (Forbes 2011) uses these
+# same polynomial basis functions with a general conic reference surface
+# (conic constant k may be nonzero). The "qbfs" naming is retained here for
+# code stability and to match the original literature, but users should NOT
+# infer that a spherical reference is required or used.
+# -----------------------------------------------------------------------------
 
 
-@autograd_aware_cache
+@cache
 def g_qbfs(n_minus_1: int) -> float:
     """Recurrence coefficient g for Q-BFS polynomials."""
     if n_minus_1 == 0:
@@ -71,24 +62,26 @@ def g_qbfs(n_minus_1: int) -> float:
     return -(1 + g_qbfs(n_minus_2) * h_qbfs(n_minus_2)) / f_qbfs(n_minus_1)
 
 
-@autograd_aware_cache
+@cache
 def h_qbfs(n_minus_2: int) -> float:
     """Recurrence coefficient h for Q-BFS polynomials."""
     n = n_minus_2 + 2
     return -n * (n - 1) / (2 * f_qbfs(n_minus_2))
 
 
-@autograd_aware_cache
+@cache
 def f_qbfs(n: int) -> float:
     """Recurrence coefficient f for Q-BFS polynomials."""
     if n == 0:
         return 2.0
     if n == 1:
-        return be.sqrt(19) / 2
+        return 19**0.5 / 2
+
     term1 = float(n * (n + 1) + 3)
     term2 = g_qbfs(n - 1) ** 2
     term3 = h_qbfs(n - 2) ** 2
-    return be.sqrt(term1 - term2 - term3)
+
+    return (term1 - term2 - term3) ** 0.5
 
 
 def change_basis_qbfs_to_pn(cs: list[float]) -> be.array:
@@ -293,7 +286,7 @@ def compute_z_zprime_qbfs(
 # q2d polynomials logic
 
 
-@autograd_aware_cache
+@cache
 def _g_q2d_raw(n: int, m: int) -> float:
     """Raw G coefficient for Q2D polynomials."""
     if n == 0:
@@ -317,7 +310,7 @@ def _g_q2d_raw(n: int, m: int) -> float:
     return term1 * gamma_func(n, m)
 
 
-@autograd_aware_cache
+@cache
 def _f_q2d_raw(n: int, m: int) -> float:
     """Raw F coefficient for Q2D polynomials."""
     if n == 0 and m == 1:
@@ -344,24 +337,24 @@ def _f_q2d_raw(n: int, m: int) -> float:
     return term1 * gamma_func(n, m)
 
 
-@autograd_aware_cache
+@cache
 def g_q2d(n: int, m: int) -> float:
     """Recurrence coefficient g for Q2D polynomials."""
     return _g_q2d_raw(n, m) / f_q2d(n, m)
 
 
-@autograd_aware_cache
+@cache
 def f_q2d(n: int, m: int) -> float:
     """Recurrence coefficient f for Q2D polynomials."""
     if n == 0:
-        return be.sqrt(_f_q2d_raw(n=0, m=m))
-    return be.sqrt(_f_q2d_raw(n, m) - g_q2d(n - 1, m) ** 2)
+        return _f_q2d_raw(n=0, m=m) ** 0.5
+
+    return (_f_q2d_raw(n, m) - g_q2d(n - 1, m) ** 2) ** 0.5
 
 
 def change_basis_q2d_to_pnm(cns: list[float], m: int) -> be.array:
     """
     Changes the basis of Q2D coefficients to orthonormal Pnm coefficients.
-    This version is autograd-safe and avoids in-place operations.
     """
     m = abs(m)
     n_max = len(cns) - 1
@@ -386,7 +379,7 @@ _ABC_Q2D_SPECIAL_CASES = {
 }
 
 
-@autograd_aware_cache
+@cache
 def abc_q2d(n: int, m: int) -> tuple[float, float, float]:
     """Recurrence coefficients A, B, C for Q2D Clenshaw algorithm."""
     d = (4 * n**2 - 1) * (m + n - 2) * (m + 2 * n - 3)

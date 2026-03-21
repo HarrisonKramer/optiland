@@ -1,4 +1,5 @@
 """Tests for GridSagVariable"""
+from __future__ import annotations
 
 import pytest
 
@@ -51,7 +52,6 @@ def test_grid_sag_variable_torch_backend(backend, grid_sag_optic):
     """Test GridSagVariable with the PyTorch backend."""
     be.set_backend(backend)
     if be.get_backend() == "torch":
-        import torch
 
         variable = GridSagVariable(grid_sag_optic, 0)
         original_sag = variable.get_value()

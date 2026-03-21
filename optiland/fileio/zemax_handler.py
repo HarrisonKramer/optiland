@@ -21,6 +21,7 @@ import requests
 import optiland.backend as be
 from optiland.fileio.converters import ZemaxToOpticConverter
 from optiland.materials import AbbeMaterial, BaseMaterial, Material
+from optiland.physical_apertures import RadialAperture
 
 
 def load_zemax_file(source: str):
@@ -61,6 +62,7 @@ class ZemaxDataModel:
         - Glass Catalogs
     """
 
+    name: str | None = None
     aperture: dict[str, Any] = field(default_factory=dict)
     fields: dict[str, Any] = field(default_factory=dict)
     wavelengths: dict[str, Any] = field(default_factory=lambda: {"data": []})
@@ -70,6 +72,7 @@ class ZemaxDataModel:
     def to_dict(self) -> dict[str, Any]:
         """Return the data model as a plain dictionary."""
         result = {
+            "name": self.name,
             "aperture": self.aperture,
             "fields": self.fields,
             "wavelengths": self.wavelengths,
@@ -121,6 +124,7 @@ class ZemaxDataParser:
 
         # Operand dispatch table
         self._operand_table = {
+            "NAME": self._read_name,
             "FNUM": self._read_fno,
             "ENPD": self._read_epd,
             "OBNA": self._read_object_na,
@@ -147,6 +151,7 @@ class ZemaxDataParser:
             "VCXN": self._read_vignette_compress_x,
             "VCYN": self._read_vignette_compress_y,
             "VANN": self._read_vignette_tangent_angle,
+            "CLAP": self._read_circular_aperture,
         }
 
     def parse(self) -> ZemaxDataModel:
@@ -178,6 +183,9 @@ class ZemaxDataParser:
         return self.data_model
 
     # ------------------ Parsing methods ------------------
+    def _read_name(self, data):
+        self.data_model.name = " ".join(data[1:])
+
     def _read_fno(self, data):
         if int(data[2]) == 0:
             self.data_model.aperture["imageFNO"] = float(data[1])
@@ -239,6 +247,7 @@ class ZemaxDataParser:
             "is_stop": False,
             "conic": 0.0,
             "material": "air",
+            "aperture": None,
         }
 
     def _read_radius(self, data):
@@ -348,6 +357,11 @@ class ZemaxDataParser:
         self.data_model.fields["vignette_tangent_angle"] = [
             float(v) for v in data[1 : n + 1]
         ]
+
+    def _read_circular_aperture(self, data):
+        self._current_surf_data["aperture"] = RadialAperture(
+            r_min=float(data[1]), r_max=float(data[2])
+        )
 
     # ------------------ Helpers ------------------
     def _finalize_fields(self):

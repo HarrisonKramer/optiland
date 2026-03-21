@@ -204,7 +204,14 @@ class TorchSummation(HuygensFresnelSummation):
         pupil_x = be.to_tensor(pupil_x, device=self.device)
         pupil_y = be.to_tensor(pupil_y, device=self.device)
         pupil_z = be.to_tensor(pupil_z, device=self.device)
-        pupil_amp = be.to_tensor(pupil_amp, device=self.device)
+        # pupil_amp may be complex (vectorial case); use complex dtype if needed
+        pupil_amp_np = be.to_numpy(pupil_amp)
+        if np.iscomplexobj(pupil_amp_np):
+            pupil_amp = torch.tensor(
+                pupil_amp_np, device=self.device, dtype=be.get_complex_precision()
+            )
+        else:
+            pupil_amp = be.to_tensor(pupil_amp, device=self.device)
         pupil_opd = be.to_tensor(pupil_opd, device=self.device)
 
         k = 2.0 * torch.pi / wavelength

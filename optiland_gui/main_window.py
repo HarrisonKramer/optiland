@@ -567,7 +567,7 @@ class MainWindow(FramelessWindow):
             self,
             "Open Optiland System",
             "",
-            "Optiland JSON Files (*.json);;All Files (*)",
+            "Optiland JSON Files (*.json);;Zemax Files (*.zmx);;All Files (*)",
         )
         if filepath:
             self.connector.load_optic_from_file(filepath)

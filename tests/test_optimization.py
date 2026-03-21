@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import warnings
 
-import optiland.backend as be
 import pytest
 
-from optiland.optimization import optimization, glass_expert
+import optiland.backend as be
+from optiland.optimization import glass_expert, optimization
 from optiland.samples.microscopes import (
     Microscope20x,
     Objective60x,

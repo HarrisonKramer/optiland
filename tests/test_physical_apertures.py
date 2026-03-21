@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 import tempfile
-from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-import pytest
 
 import optiland.backend as be
 from optiland.physical_apertures import (
@@ -22,6 +23,7 @@ from optiland.physical_apertures import (
 )
 from optiland.physical_apertures.radial import configure_aperture
 from optiland.rays import RealRays
+
 from .utils import assert_allclose
 
 matplotlib.use("Agg")  # use non-interactive backend for testing

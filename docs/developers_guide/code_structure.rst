@@ -41,8 +41,9 @@ This page provides a high-level overview of the `optiland` package's structure. 
     │
     └── backend/
         ├── __init__.py (dynamic backend dispatcher)
-        ├── numpy_backend.py
-        └── torch_backend.py
+        ├── base.py (AbstractBackend class)
+        ├── numpy_backend.py (NumpyBackend class)
+        └── torch_backend.py (TorchBackend class)
 
 Key Relationships
 -----------------

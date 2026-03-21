@@ -13,21 +13,18 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
 from optiland.aberrations import Aberrations
-from optiland.aperture import Aperture
-from optiland.apodization import BaseApodization
+from optiland.aperture import BaseSystemAperture, make_system_aperture
 from optiland.fields import (
-    AngleField,
     BaseFieldDefinition,
     Field,
     FieldGroup,
-    ObjectHeightField,
-    ParaxialImageHeightField,
-    RealImageHeightField,
 )
+from optiland.optic.optic_serializer import OpticSerializer
 from optiland.optic.optic_updater import OpticUpdater
 from optiland.paraxial import Paraxial
 from optiland.pickup import PickupManager
@@ -59,6 +56,7 @@ if TYPE_CHECKING:
         Unpack,
         WavelengthUnit,
     )
+    from optiland.apodization import BaseApodization
     from optiland.distribution import BaseDistribution
     from optiland.materials.base import BaseMaterial
     from optiland.rays import RealRays
@@ -107,6 +105,7 @@ class Optic:
         obj_space_telecentric (bool): If True, the system is object-space
             telecentric. Defaults to False.
 
+
     """
 
     def __init__(self, name: str | None = None):
@@ -122,7 +121,7 @@ class Optic:
 
     def _initialize_attributes(self):
         """Initialize the attributes of the optical system."""
-        self.aperture: Aperture | None = None
+        self.aperture: BaseSystemAperture | None = None
         self.field_definition: BaseFieldDefinition | None = None
 
         self.surface_group: SurfaceGroup = SurfaceGroup()
@@ -144,7 +143,7 @@ class Optic:
         self.pickups: PickupManager = PickupManager(self)
         self.solves: SolveManager = SolveManager(self)
         self.obj_space_telecentric: bool = False
-        self._updater = OpticUpdater(self)
+        self.updater: OpticUpdater = OpticUpdater(self)
 
     def __add__(self, other: Optic) -> Optic:
         """Add two Optic objects together.
@@ -251,6 +250,20 @@ class Optic:
             **kwargs,
         )
 
+    def remove_surface(
+        self,
+        index: int,
+    ):
+        """Removes a surface from the optic.
+
+        Args:
+            index (int, optional): The index of the surface to remove.
+
+        """
+        self.surface_group.remove_surface(
+            index=index,
+        )
+
     def add_field(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
         """Add a field to the optical system.
 
@@ -299,7 +312,7 @@ class Optic:
             value (float): The value of the aperture.
 
         """
-        self.aperture = Aperture(aperture_type, value)
+        self.aperture = make_system_aperture(aperture_type, value)
 
     def set_field_type(self, field_type: FieldType):
         """Set the type of field used in the optical system.
@@ -311,80 +324,127 @@ class Optic:
         Raises:
             ValueError: If the field type is invalid.
         """
-        if field_type == "angle":
-            self.field_definition = AngleField()
-        elif field_type == "object_height":
-            self.field_definition = ObjectHeightField()
-        elif field_type == "paraxial_image_height":
-            self.field_definition = ParaxialImageHeightField()
-        elif field_type == "real_image_height":
-            self.field_definition = RealImageHeightField()
-        else:
-            raise ValueError(f"Invalid field type: {field_type}.")
+        self.field_definition = BaseFieldDefinition.create(field_type)
 
     def set_radius(self, value: float, surface_number: int):
         """Set the radius of curvature of a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_radius()`` instead.
 
         Args:
             value (float): The value of the radius.
             surface_number (int): The index of the surface.
 
         """
-        self._updater.set_radius(value, surface_number)
+        warnings.warn(
+            "Optic.set_radius() is deprecated; use optic.updater.set_radius() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_radius(value, surface_number)
 
     def set_conic(self, value: float, surface_number: int):
         """Set the conic constant of a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_conic()`` instead.
 
         Args:
             value (float): The value of the conic constant.
             surface_number (int): The index of the surface.
 
         """
-        self._updater.set_conic(value, surface_number)
+        warnings.warn(
+            "Optic.set_conic() is deprecated; use optic.updater.set_conic() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_conic(value, surface_number)
 
     def set_thickness(self, value: float, surface_number: int):
         """Set the thickness of a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_thickness()`` instead.
 
         Args:
             value (float): The value of the thickness.
             surface_number (int): The index of the surface.
 
         """
-        self._updater.set_thickness(value, surface_number)
+        warnings.warn(
+            "Optic.set_thickness() is deprecated; "
+            "use optic.updater.set_thickness() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_thickness(value, surface_number)
 
     def set_index(self, value: float, surface_number: int):
         """Set the index of refraction of a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_index()`` instead.
 
         Args:
             value (float): The value of the index of refraction.
             surface_number (int): The index of the surface.
 
         """
-        self._updater.set_index(value, surface_number)
+        warnings.warn(
+            "Optic.set_index() is deprecated; use optic.updater.set_index() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_index(value, surface_number)
 
     def set_material(self, material: BaseMaterial, surface_number: int):
         """Set the material of a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_material()`` instead.
 
         Args:
             material (BaseMaterial): The material.
             surface_number (int): The index of the surface.
 
         """
-        self._updater.set_material(material, surface_number)
+        warnings.warn(
+            "Optic.set_material() is deprecated; "
+            "use optic.updater.set_material() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_material(material, surface_number)
 
-    def set_norm_radius(self, value: float, surface_number: int):
+    def set_norm_radius(self, value: float, surface_number: int, is_fixed: bool = True):
         """Set the normalization radius of a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_norm_radius()`` instead.
 
         Args:
             value (float): The value of the normalization radius.
             surface_number (int): The index of the surface.
+            is_fixed (bool, optional): Whether to lock the normalization radius
+                from automatic paraxial updates. Defaults to True.
         """
-        self._updater.set_norm_radius(value, surface_number)
+        warnings.warn(
+            "Optic.set_norm_radius() is deprecated; "
+            "use optic.updater.set_norm_radius() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_norm_radius(value, surface_number, is_fixed)
 
     def set_asphere_coeff(
         self, value: float, surface_number: int, aspher_coeff_idx: int
     ):
         """Set an aspheric coefficient on a surface.
+
+        .. deprecated::
+            Use ``optic.updater.set_asphere_coeff()`` instead.
 
         Args:
             value (float): The value of the aspheric coefficient.
@@ -393,10 +453,19 @@ class Optic:
                 set.
 
         """
-        self._updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
+        warnings.warn(
+            "Optic.set_asphere_coeff() is deprecated; "
+            "use optic.updater.set_asphere_coeff() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
     def set_polarization(self, polarization: PolarizationState | Literal["ignore"]):
         """Set the polarization state of the optic.
+
+        .. deprecated::
+            Use ``optic.updater.set_polarization()`` instead.
 
         Args:
             polarization (PolarizationState | Literal['ignore']): The polarization
@@ -404,7 +473,13 @@ class Optic:
                 'ignore'.
 
         """
-        self._updater.set_polarization(polarization)
+        warnings.warn(
+            "Optic.set_polarization() is deprecated; "
+            "use optic.updater.set_polarization() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.updater.set_polarization(polarization)
 
     def set_apodization(
         self, apodization: BaseApodization | str | dict = None, **kwargs
@@ -424,7 +499,7 @@ class Optic:
             **kwargs: Additional keyword arguments used to initialize the
                 apodization class when `apodization` is a string.
         """
-        self._updater.set_apodization(apodization, **kwargs)
+        self.updater.set_apodization(apodization, **kwargs)
 
     def scale_system(self, scale_factor: float):
         """Scales the optical system by a given scale factor.
@@ -433,15 +508,15 @@ class Optic:
             scale_factor (float): The factor by which to scale the system.
 
         """
-        self._updater.scale_system(scale_factor)
+        self.updater.scale_system(scale_factor)
 
     def update_paraxial(self):
         """Update the semi-aperture of the surfaces based on paraxial analysis."""
-        self._updater.update_paraxial()
+        self.updater.update_paraxial()
 
     def update_normalization(self, surface: Surface) -> None:
         """Update the normalization radius of surfaces."""
-        self._updater.update_normalization(surface)
+        self.updater.update_normalization(surface)
 
     def set_ray_aiming(
         self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs
@@ -463,13 +538,13 @@ class Optic:
 
     def update(self) -> None:
         """Update the surface properties (pickups, solves, paraxial properties)."""
-        self._updater.update()
+        self.updater.update()
 
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the optical axis
         at the image location.
         """
-        self._updater.image_solve()
+        self.updater.image_solve()
 
     def flip(self):
         """Flips the optical system.
@@ -480,7 +555,7 @@ class Optic:
         that the new first optical surface (originally the last one in the
         flipped segment) is placed at z=0.0.
         """
-        self._updater.flip()
+        self.updater.flip()
 
     def draw(
         self,
@@ -488,12 +563,15 @@ class Optic:
         wavelengths: list[float] | Literal["primary"] = "primary",
         num_rays: int = 3,
         distribution: DistributionType | None = None,
+        show_apertures: bool = True,
+        hide_vignetted: bool = False,
         figsize: tuple[float, float] = (10, 4),
         xlim: tuple[float, float] | None = None,
         ylim: tuple[float, float] | None = None,
         title: str | None = None,
         reference: ReferenceRay | None = None,
         projection: Literal["XY", "XZ", "YZ"] = "YZ",
+        ax: Axes | None = None,
     ) -> tuple[Figure, Axes]:
         """Draw a 2D representation of the optical system.
 
@@ -507,6 +585,10 @@ class Optic:
                 field and wavelength. Defaults to 3.
             distribution (str | None, optional): The distribution of rays.
                 Defaults to None, which selects a default based on projection.
+            show_apertures (bool, optional): If True, overlays aperture graphics
+                on the system view. Defaults to True.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
             figsize (tuple[float, float], optional): The size of the figure.
                 Defaults to (10, 4).
             xlim (tuple[float, float] | None, optional): The x-axis limits of
@@ -519,6 +601,8 @@ class Optic:
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
             projection (Literal["XY", "XZ", "YZ"], optional): The projection
                 plane. Defaults to "YZ".
+            ax (matplotlib.axes.Axes, optional): The axes to plot on.
+                If None, a new figure and axes are created. Defaults to None.
 
         Returns:
             tuple[Figure, Axes]: A tuple containing the matplotlib Figure and
@@ -531,12 +615,15 @@ class Optic:
             wavelengths,
             num_rays,
             distribution=distribution,
+            show_apertures=show_apertures,
+            hide_vignetted=hide_vignetted,
             figsize=figsize,
             xlim=xlim,
             ylim=ylim,
             title=title,
             reference=reference,
             projection=projection,
+            ax=ax,
         )
         return fig, ax
 
@@ -549,6 +636,7 @@ class Optic:
         figsize: tuple[float, float] = (1200, 800),
         dark_mode: bool = False,
         reference: ReferenceRay | None = None,
+        hide_vignetted: bool = False,
     ):
         """Draw a 3D representation of the optical system.
 
@@ -568,6 +656,8 @@ class Optic:
                 plot. Defaults to False.
             reference (ReferenceRay | None, optional): The reference rays to
                 plot, e.g., 'chief' or 'marginal'. Defaults to None.
+            hide_vignetted (bool, optional): If True, rays that vignette at any
+                surface are not shown. Defaults to False.
 
         """
         viewer = OpticViewer3D(self)
@@ -579,6 +669,7 @@ class Optic:
             figsize=figsize,
             dark_mode=dark_mode,
             reference=reference,
+            hide_vignetted=hide_vignetted,
         )
 
     def info(self):
@@ -666,7 +757,14 @@ class Optic:
         )
 
     def plot_surface_sag(
-        self, surface_index: int, y_cross_section: float = 0, x_cross_section: float = 0
+        self,
+        surface_index: int,
+        y_cross_section: float = 0,
+        x_cross_section: float = 0,
+        fig_to_plot_on: Figure | None = None,
+        max_extent: float | None = None,
+        num_points_grid: int = 50,
+        buffer_factor: float = 1.1,
     ):
         """Analyzes and visualizes the sag of a given lens surface.
 
@@ -678,7 +776,15 @@ class Optic:
                 y-sag plot. Defaults to 0.
         """
         viewer = SurfaceSagViewer(self)
-        viewer.view(surface_index, y_cross_section, x_cross_section)
+        viewer.view(
+            surface_index=surface_index,
+            y_cross_section=y_cross_section,
+            x_cross_section=x_cross_section,
+            fig_to_plot_on=fig_to_plot_on,
+            max_extent=max_extent,
+            num_points_grid=num_points_grid,
+            buffer_factor=buffer_factor,
+        )
 
     def to_dict(self) -> dict:
         """Convert the optical system to a dictionary.
@@ -687,23 +793,7 @@ class Optic:
             The dictionary representation of the optical system.
 
         """
-        data = {
-            "version": 1.0,
-            "aperture": self.aperture.to_dict() if self.aperture else None,
-            "fields": self.fields.to_dict(),
-            "wavelengths": self.wavelengths.to_dict(),
-            "apodization": self.apodization.to_dict() if self.apodization else None,
-            "pickups": self.pickups.to_dict(),
-            "solves": self.solves.to_dict(),
-            "surface_group": self.surface_group.to_dict(),
-        }
-
-        data["wavelengths"]["polarization"] = self.polarization
-        data["fields"]["field_definition"] = (
-            self.field_definition.to_dict() if self.field_definition else None
-        )
-        data["fields"]["object_space_telecentric"] = self.obj_space_telecentric
-        return data
+        return OpticSerializer.to_dict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Optic:
@@ -716,32 +806,4 @@ class Optic:
             The optical system.
 
         """
-        optic = cls()
-        optic.aperture = Aperture.from_dict(data["aperture"])
-        optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
-        optic.fields = FieldGroup.from_dict(data["fields"])
-        optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
-
-        apodization_data = data.get("apodization")
-        if apodization_data:
-            optic.apodization = BaseApodization.from_dict(apodization_data)
-
-        optic.pickups = PickupManager.from_dict(optic, data["pickups"])
-        optic.solves = SolveManager.from_dict(optic, data["solves"])
-
-        optic.polarization = data["wavelengths"]["polarization"]
-        if data["fields"].get("field_definition"):
-            optic.field_definition = BaseFieldDefinition.from_dict(
-                data["fields"]["field_definition"]
-            )
-        elif data["fields"].get("field_type"):
-            optic.set_field_type(data["fields"]["field_type"])
-        else:
-            optic.field_definition = None
-        optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
-
-        optic.paraxial = Paraxial(optic)
-        optic.aberrations = Aberrations(optic)
-        optic.ray_tracer = RealRayTracer(optic)
-
-        return optic
+        return OpticSerializer.from_dict(data)

@@ -65,8 +65,8 @@ class PhaseInteractionModel(BaseInteractionModel):
         k_iz = n1 * k0 * n_i
 
         # 3. Get phase and ambient gradient (grad(f))
-        phase_val = self.phase_profile.get_phase(x, y)
-        phi_x, phi_y, phi_z = self.phase_profile.get_gradient(x, y)
+        phase_val = self.phase_profile.get_phase(x, y, rays.w)
+        phi_x, phi_y, phi_z = self.phase_profile.get_gradient(x, y, rays.w)
         grad_f_x = phi_x
         grad_f_y = phi_y
         grad_f_z = phi_z

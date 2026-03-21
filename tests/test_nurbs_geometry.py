@@ -1,5 +1,4 @@
-
-import pytest
+from __future__ import annotations
 
 from optiland import backend as be
 from optiland.coordinate_system import CoordinateSystem
@@ -9,7 +8,9 @@ from tests.utils import assert_allclose
 
 def test_nurbs_geometry_init(set_test_backend):
     cs = CoordinateSystem()
-    geo = NurbsGeometry(cs, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10)
+    geo = NurbsGeometry(
+        cs, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+    )
     geo.fit_surface()
     assert geo is not None
 
@@ -17,7 +18,13 @@ def test_nurbs_geometry_init(set_test_backend):
 def test_nurbs_geometry_sag(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
-        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+        cs,
+        radius=100,
+        conic=-1,
+        nurbs_norm_x=20,
+        nurbs_norm_y=20,
+        n_points_u=10,
+        n_points_v=10,
     )
     geo.fit_surface()
     sag = geo.sag(
@@ -36,7 +43,13 @@ class MockRays:
 def test_nurbs_geometry_normal(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
-        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+        cs,
+        radius=100,
+        conic=-1,
+        nurbs_norm_x=20,
+        nurbs_norm_y=20,
+        n_points_u=10,
+        n_points_v=10,
     )
     geo.fit_surface()
     rays = MockRays(
@@ -51,7 +64,13 @@ def test_nurbs_geometry_normal(set_test_backend):
 def test_nurbs_get_value(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
-        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+        cs,
+        radius=100,
+        conic=-1,
+        nurbs_norm_x=20,
+        nurbs_norm_y=20,
+        n_points_u=10,
+        n_points_v=10,
     )
     geo.fit_surface()
     # Test a point that should be on the surface
@@ -64,7 +83,13 @@ def test_nurbs_get_value(set_test_backend):
 def test_nurbs_get_derivative(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
-        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+        cs,
+        radius=100,
+        conic=-1,
+        nurbs_norm_x=20,
+        nurbs_norm_y=20,
+        n_points_u=10,
+        n_points_v=10,
     )
     geo.fit_surface()
     # Test derivative at a point
@@ -90,7 +115,13 @@ class MockRaysDistance:
 def test_nurbs_distance(set_test_backend):
     cs = CoordinateSystem()
     geo = NurbsGeometry(
-        cs, radius=100, conic=-1, nurbs_norm_x=20, nurbs_norm_y=20, n_points_u=10, n_points_v=10
+        cs,
+        radius=100,
+        conic=-1,
+        nurbs_norm_x=20,
+        nurbs_norm_y=20,
+        n_points_u=10,
+        n_points_v=10,
     )
     geo.fit_surface()
     # Test distance to a ray

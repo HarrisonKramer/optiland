@@ -12,6 +12,7 @@
       DifferentialEvolution
       DualAnnealing
       LeastSquares
+      OrthogonalDescent
       OptimizationProblem
       OptimizerGeneric
       SHGO

@@ -1,14 +1,17 @@
-import optiland.backend as be
+from __future__ import annotations
+
 import pytest
 
+import optiland.backend as be
 from optiland.coatings import SimpleCoating
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import Plane
+from optiland.interactions import ThinLensInteractionModel
 from optiland.materials import IdealMaterial
 from optiland.optic import Optic
 from optiland.rays import ParaxialRays, RealRays
-from optiland.interactions import ThinLensInteractionModel
 from optiland.surfaces import Surface
+
 from .utils import assert_allclose
 
 

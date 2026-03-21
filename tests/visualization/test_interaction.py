@@ -1,15 +1,13 @@
-"""Unit tests for the visualization interaction module.
+"""Unit tests for the visualization interaction module."""
+from __future__ import annotations
 
-"""
-
-import pytest
-import time
 import matplotlib.pyplot as plt
-from matplotlib.backend_bases import MouseEvent, PickEvent
+import pytest
+from matplotlib.backend_bases import MouseEvent
 
 from optiland.samples import CookeTriplet
-from optiland.visualization.system.surface import Surface2D
 from optiland.visualization.system.optic_viewer import OpticViewer
+from optiland.visualization.system.surface import Surface2D
 
 
 @pytest.fixture
@@ -50,11 +48,11 @@ def test_hover_highlight_and_tooltip(optic_viewer):
     # Get the center of the artist
     x_data = surface_artist.get_xdata()
     y_data = surface_artist.get_ydata()
-    x, y = x_data[len(x_data)//2], y_data[len(y_data)//2]
+    x, y = x_data[len(x_data) // 2], y_data[len(y_data) // 2]
     x_pix, y_pix = ax.transData.transform((x, y))
 
     # Simulate a hover event
-    event = MouseEvent('motion_notify_event', fig.canvas, x_pix, y_pix)
+    event = MouseEvent("motion_notify_event", fig.canvas, x_pix, y_pix)
     event.inaxes = ax
     im.show_tooltip(surface_artist, event)
 
@@ -66,7 +64,3 @@ def test_hover_highlight_and_tooltip(optic_viewer):
     assert "Surface" in im.tooltip.get_text()
 
     plt.close(fig)
-
-
-
-
