@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -14,7 +15,13 @@ import optiland.backend as be
 from optiland import fields
 from optiland.coordinate_system import CoordinateSystem
 from optiland.geometries import BaseGeometry, EvenAsphere
-from optiland.materials import AbbeMaterial, BaseMaterial, IdealMaterial, MaterialFile
+from optiland.materials import (
+    AbbeMaterial,
+    BaseMaterial,
+    GradientMaterial,
+    IdealMaterial,
+    MaterialFile,
+)
 from optiland.optic import Optic
 from optiland.samples.microscopes import UVReflectingMicroscope
 from optiland.samples.objectives import ReverseTelephoto, TessarLens
@@ -61,6 +68,25 @@ class InvalidMaterial(BaseMaterial):
 
     def _calculate_k(self, wavelength):
         return -42
+
+
+def create_grin_test_optic():
+    optic = Optic()
+    optic.add_surface(index=0, radius=be.inf, thickness=be.inf)
+    optic.add_surface(
+        index=1,
+        radius=be.inf,
+        thickness=5.0,
+        material=GradientMaterial(n0=1.5, nr2=0.02),
+        is_stop=True,
+    )
+    optic.add_surface(index=2, radius=be.inf, thickness=20.0, material="air")
+    optic.add_surface(index=3, radius=be.inf)
+    optic.set_aperture(aperture_type="EPD", value=2.0)
+    optic.set_field_type(field_type="angle")
+    optic.add_field(y=0.0)
+    optic.add_wavelength(value=0.587, is_primary=True)
+    return optic
 
 
 class TestBaseViewer:
@@ -206,6 +232,42 @@ class TestOpticViewer:
         assert len(ax.get_lines()) > 0  # Ensure rays were drawn
         plt.close(fig)
 
+    def test_grin_view_uses_recorded_path_samples(self, set_test_backend):
+        optic = create_grin_test_optic()
+        fig, ax = optic.draw(num_rays=3, distribution="line_y")
+
+        ray_lines = [line for line in ax.get_lines() if len(line.get_xdata()) > 0]
+        assert ray_lines
+        assert any(
+            len(line.get_xdata()) > optic.surface_group.num_surfaces
+            for line in ray_lines
+        )
+        plt.close(fig)
+
+    def test_grin_recorded_path_stays_global_across_air_segments(self, set_test_backend):
+        optic = create_grin_test_optic()
+        traced_ray = optic.trace_generic(
+            Hx=0.0,
+            Hy=0.0,
+            Px=0.0,
+            Py=0.75,
+            wavelength=optic.primary_wavelength,
+            record_path=True,
+        )
+
+        _, y_path, z_path = traced_ray.get_paths()[0]
+        assert np.min(z_path) >= -3.0 - 1e-6
+
+        grin_exit_z = float(optic.surface_group.surfaces[2].geometry.cs.z)
+        exit_index = np.where(np.isclose(z_path, grin_exit_z))[0][-1]
+        post_exit_z = z_path[exit_index:]
+        post_exit_y = y_path[exit_index:]
+
+        assert len(post_exit_z) >= 2
+        slope = (post_exit_y[-1] - post_exit_y[0]) / (post_exit_z[-1] - post_exit_z[0])
+        expected_line = post_exit_y[0] + slope * (post_exit_z - post_exit_z[0])
+        assert np.allclose(post_exit_y, expected_line, atol=1e-6)
+
     def test_view_uv_reflecting_microscope(self, set_test_backend):
         """Regression test: drawing a catadioptric system with small-radius
         mirrors must not produce RuntimeWarnings."""
@@ -227,7 +289,6 @@ class TestOpticViewer:
         assert isinstance(fig, Figure)
         assert isinstance(ax, Axes)
         plt.close(fig)
-
 
 class TestOpticViewer3D:
     def test_init(self, set_test_backend):
@@ -395,6 +456,22 @@ class TestOpticViewer3D:
             viewer.view(reference="marginal", distribution=None)
             mock_start.assert_called_once()
             mock_render.assert_called()
+
+    def test_grin_view_requests_recorded_paths(self, set_test_backend):
+        optic = create_grin_test_optic()
+        viewer = OpticViewer3D(optic)
+
+        with (
+            patch.object(optic, "trace", wraps=optic.trace) as mock_trace,
+            patch.object(viewer.iren, "Start") as mock_start,
+            patch.object(viewer.ren_win, "Render") as mock_render,
+        ):
+            viewer.view(num_rays=3, distribution="line_y")
+
+        mock_start.assert_called_once()
+        mock_render.assert_called()
+        assert mock_trace.called
+        assert all(call.kwargs.get("record_path") is True for call in mock_trace.call_args_list)
 
 
 class TestLensInfoViewer:
