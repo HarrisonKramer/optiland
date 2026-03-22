@@ -73,6 +73,8 @@ This learning guide breaks down Optiland into a series of tutorials that cover t
    examples/Tutorial_6d_Thin_Film_Optimization
    examples/Tutorial_6e_Color_Analysis_For_Thin_Film
    examples/Tutorial_6f_AR_Coating_System
+   examples/Tutorial_6h_Needle_Synthesis
+   examples/Tutorial_6i_Thin_Film_Tolerance_Analysis
 
 7. Advanced Optical Design
 --------------------------

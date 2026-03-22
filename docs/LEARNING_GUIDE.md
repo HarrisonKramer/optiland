@@ -73,6 +73,18 @@ Welcome to the Optiland Learning Guide! This guide walks you through key concept
         - Basics of polarization in Optiland
         - Analyzing polarization performance using exact matrix formalisms
         - Modeling polarizer and retarder coatings
+    - [Tutorial 6c - Multilayer Stack](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6c_Multilayer_Stack.ipynb)
+        - Transfer matrix method for thin films
+    - [Tutorial 6d - Thin Film Optimization](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6d_Thin_Film_Optimization.ipynb)
+        - Optimizing thin film layer thicknesses
+    - [Tutorial 6e - Color Analysis for Thin Films](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6e_Color_Analysis_For_Thin_Film.ipynb)
+        - Colorimetric performance of coatings
+    - [Tutorial 6f - AR Coating System](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6f_AR_Coating_System.ipynb)
+        - Designing an anti-reflective coating
+    - [Tutorial 6h - Needle Synthesis](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6h_Needle_Synthesis.ipynb)
+        - Automated layer insertion and iterative optimization
+    - [Tutorial 6i - Thin Film Tolerance Analysis](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_6i_Thin_Film_Tolerance_Analysis.ipynb)
+        - Sensitivity and Monte Carlo simulations for coatings
 7. **Advanced Optical Design**
     - [Tutorial 7a - Lithographic Projection System](https://github.com/HarrisonKramer/optiland/blob/master/docs/examples/Tutorial_7a_Lithographic_Projection_System.ipynb)
         - Optimizing and Analyzing a Complex Lithography System

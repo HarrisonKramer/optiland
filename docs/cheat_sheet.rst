@@ -253,6 +253,7 @@ Advanced Features (Brief Overview)
 ----------------------------------
 
 * **Coatings** (``coatings.py``): Model anti-reflection or reflective coatings (``SimpleCoating``, ``FresnelCoating``).
+* **Thin Films** (``thin_film/*``): Define and optimize multilayer thin-film stacks, including tolerancing and Needle Synthesis.
 * **Polarization** (``polarized_rays.py``, ``jones.py``): Trace polarized light and apply Jones calculus for polarizing elements.
 * **Pickups** (``pickup.py``): Link a parameter of one surface to another (e.g., make radius of S2 = -radius of S1).
 * **Solves** (``solves``): Automatically adjust parameters to meet certain conditions (e.g., ``QuickFocusSolve`` adjusts image plane for best focus).

@@ -34,6 +34,7 @@ We sincerely appreciate the contributions of the following individuals, whose ef
 - **Renato Ferracini Alves** (`GitHub <https://github.com/RFerraciniAlves>`_)
 - **Gustavo Vasconcelos** (`GitHub <https://github.com/gustavu92>`_)
 - **cyberstudio10** (`GitHub <https://github.com/cyberstudio10>`_)
+- **lutzerb** (`GitHub <https://github.com/lutzerb>`_)
 
 
 Your contributions, whether in the form of code, documentation, feedback, or discussions, are what make **Optiland** better for everyone.
