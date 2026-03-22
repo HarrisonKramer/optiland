@@ -369,8 +369,9 @@ class TorchBackend(AbstractBackend):
             if any(isinstance(v, torch.Tensor) for v in x):
                 # Ensure all are tensors and stack them to preserve gradients
                 tensors = [
-                    v if isinstance(v, torch.Tensor) 
-                    else torch.tensor(v, device=self._device(), dtype=self._dtype()) 
+                    v
+                    if isinstance(v, torch.Tensor)
+                    else torch.tensor(v, device=self._device(), dtype=self._dtype())
                     for v in x
                 ]
                 return torch.stack(tensors)
