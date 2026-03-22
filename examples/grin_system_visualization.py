@@ -108,7 +108,7 @@ def visualize_grin_system():
 
 def visualize_axial_grin_system():
     """Draw an oblique ray through a z-gradient GRIN slab."""
-    optic, grin_thickness = build_axial_grin_slab()
+    optic, _ = build_axial_grin_slab()
 
     optic.draw(
         distribution=None,
@@ -119,17 +119,6 @@ def visualize_axial_grin_system():
 
     # If you need to draw onto an existing matplotlib subplot, use
     # OpticViewer(optic).view(ax=your_axis, ...) instead of optic.draw().
-
-    plt.tight_layout()
-    plt.savefig("axial_grin_system_visualization.png", dpi=150, bbox_inches="tight")
-
-    print("\n" + "=" * 60)
-    print("Axial GRIN System Visualization")
-    print("=" * 60)
-    print("Built an axial GRIN slab with oblique incidence.")
-    print(f"GRIN thickness: {grin_thickness:.1f} mm")
-    print("Material profile: n(z) = 2.0 - 0.3*z")
-    print("Saved figure as 'axial_grin_system_visualization.png'.")
 
     plt.show()
 

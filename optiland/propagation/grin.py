@@ -24,19 +24,35 @@ class GRINPropagation(BasePropagationModel):
     This model implements ray propagation through gradient-index media
     using numerical integration (RK4 method) to solve the ray equation.
 
+    Args:
+        material: A reference to the parent material instance, used to
+            query for refractive index and gradient.
+        step_size: The step size for RK4 integration (in mm). If None,
+            uses the material's step_size attribute, or defaults to 0.01.
+        max_iterations: Maximum number of iterations to prevent infinite
+            loops. If None, dynamically calculated based on propagation
+            distance and step size with a 3x safety factor.
+
     """
 
-    def __init__(self, material: BaseMaterial) -> None:
+    def __init__(
+        self,
+        material: BaseMaterial,
+        step_size: float | None = None,
+        max_iterations: int | None = None,
+    ) -> None:
         """Initializes the GRINPropagation model.
 
         Args:
-            material: A reference to the parent material instance, used to
-                query for refractive index and gradient.
+            material: A reference to the parent material instance.
             step_size: The step size for RK4 integration (in mm).
+            max_iterations: Maximum iterations to prevent infinite loops.
 
         """
         self.material = material
-        self.step_size = 0.001 # material.step_size
+        # Use provided value, or fall back to material attribute, then default
+        self.step_size = step_size if step_size is not None else getattr(material, "step_size", 0.01)
+        self._max_iterations = max_iterations if max_iterations is not None else getattr(material, "max_iterations", None)
 
     def propagate(self, rays: RealRays, t: float) -> None:
         """Propagates rays through the GRIN medium to the exit surface.
@@ -63,8 +79,30 @@ class GRINPropagation(BasePropagationModel):
         # Target z position (exit surface)
         z_target = z_initial + t
 
-        # Maximum iterations to prevent infinite loops
-        max_iterations = 10000
+        # Calculate maximum iterations based on estimated path length
+        # In GRIN media, rays follow curved paths, so we need to account for:
+        # 1. The z-distance to travel
+        # 2. Potential lateral movement (curved paths)
+        # 3. Possible internal reflection (rays may travel back and forth)
+        #
+        # Use a generous safety factor: path_length / step_size * safety_factor
+        # where path_length is estimated as sqrt(t^2 + (aperture_diameter)^2)
+        # and safety_factor accounts for curved paths and potential reflections
+        z_distance = float(be.abs(t).max()) if be.is_array_like(t) else abs(t)
+
+        # Estimate maximum lateral excursion (use a reasonable upper bound)
+        # This accounts for rays that may curve significantly
+        max_lateral = 50.0  # mm - generous upper bound for most optical systems
+        estimated_path_length = be.sqrt(z_distance**2 + max_lateral**2)
+
+        # Safety factor of 5 to handle:
+        # - Curved paths (actual path > straight line)
+        # - Internal reflections (rays may reverse direction)
+        # - Numerical precision issues
+        safety_factor = 5.0
+        max_iterations = self._max_iterations or max(
+            int(estimated_path_length / self.step_size * safety_factor), 2000
+        )
 
         # Pre-calculate bounds for all rays
         z_min_all = be.minimum(z_initial, z_target)

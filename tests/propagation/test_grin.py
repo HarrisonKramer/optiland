@@ -18,17 +18,6 @@ def test_grin_material_initialization():
     assert material.nr4 == 0.01
 
 
-def test_grin_propagation_raises_not_implemented_error():
-    """Verify that GRINPropagation.propagate raises NotImplementedError."""
-    model = GRINPropagation()
-    rays = RealRays(
-        x=[0], y=[0], z=[0], L=[0], M=[0], N=[1], intensity=[1], wavelength=[0.5]
-    )
-
-    with pytest.raises(NotImplementedError):
-        model.propagate(rays, t=1.0)
-
-
 def test_grin_material_refractive_index():
     """Verify that GradientMaterial calculates refractive index correctly."""
     material = GradientMaterial(n0=1.5, nr2=0.1, nz1=0.05)
@@ -70,7 +59,38 @@ def test_grin_propagation_initialization():
     material = GradientMaterial(n0=1.5, nr2=0.1)
     model = GRINPropagation(material)
     assert model.material is material
+    # Should use material's step_size (default 0.01)
     assert model.step_size == 0.01
+
+
+def test_grin_propagation_custom_step_size():
+    """Verify that custom step_size is respected."""
+    # Test 1: step_size from material
+    material = GradientMaterial(n0=1.5, nr2=0.1, step_size=0.005)
+    model = GRINPropagation(material)
+    assert model.step_size == 0.005
+
+    # Test 2: explicit step_size overrides material
+    model2 = GRINPropagation(material, step_size=0.002)
+    assert model2.step_size == 0.002
+
+    # Test 3: explicit step_size with default material
+    material3 = GradientMaterial(n0=1.5)
+    model3 = GRINPropagation(material3, step_size=0.001)
+    assert model3.step_size == 0.001
+
+
+def test_grin_propagation_custom_max_iterations():
+    """Verify that custom max_iterations is respected."""
+    material = GradientMaterial(n0=1.5)
+
+    # Test with explicit max_iterations
+    model = GRINPropagation(material, max_iterations=5000)
+    assert model._max_iterations == 5000
+
+    # Test with None (dynamic calculation)
+    model2 = GRINPropagation(material, max_iterations=None)
+    assert model2._max_iterations is None
 
 
 def test_grin_propagation_straight_line():

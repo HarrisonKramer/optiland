@@ -35,6 +35,8 @@ class GradientMaterial(BaseMaterial):
         nz1: Coefficient for z term in axial gradient.
         nz2: Coefficient for z^2 term in axial gradient.
         nz3: Coefficient for z^3 term in axial gradient.
+        step_size: Integration step size for RK4 propagation (mm). Default 0.01.
+        max_iterations: Maximum RK4 iterations. If None, dynamically calculated.
 
     """
 
@@ -48,13 +50,10 @@ class GradientMaterial(BaseMaterial):
         nz2: float = 0.0,
         nz3: float = 0.0,
         step_size: float = 0.01,
+        max_iterations: int | None = None,
     ):
         """Initializes the gradient-index material."""
-        # Initialize with GRIN propagation model
-        super().__init__(propagation_model=None)
-        self.propagation_model = GRINPropagation(self)
-
-        # Store gradient coefficients
+        # Store gradient coefficients first (needed by GRINPropagation)
         self.n0 = n0
         self.nr2 = nr2
         self.nr4 = nr4
@@ -63,6 +62,13 @@ class GradientMaterial(BaseMaterial):
         self.nz2 = nz2
         self.nz3 = nz3
         self.step_size = step_size
+        self.max_iterations = max_iterations
+
+        # Initialize with GRIN propagation model
+        super().__init__(propagation_model=None)
+        self.propagation_model = GRINPropagation(
+            self, step_size=step_size, max_iterations=max_iterations
+        )
 
     def _calculate_n(
         self, wavelength: float | be.ndarray, **kwargs
@@ -183,6 +189,8 @@ class GradientMaterial(BaseMaterial):
                 "nz1": self.nz1,
                 "nz2": self.nz2,
                 "nz3": self.nz3,
+                "step_size": self.step_size,
+                "max_iterations": self.max_iterations,
             }
         )
         return data
@@ -206,4 +214,6 @@ class GradientMaterial(BaseMaterial):
             nz1=data.get("nz1", 0.0),
             nz2=data.get("nz2", 0.0),
             nz3=data.get("nz3", 0.0),
+            step_size=data.get("step_size", 0.01),
+            max_iterations=data.get("max_iterations", None),
         )
