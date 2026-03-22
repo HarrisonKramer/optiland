@@ -374,7 +374,14 @@ class TorchBackend(AbstractBackend):
                     else torch.tensor(v, device=self._device(), dtype=self._dtype())
                     for v in x
                 ]
-                return torch.stack(tensors)
+                # Normalize 0-d (scalar) tensors to 1-d to ensure consistent
+                # shapes before stacking (e.g. mix of [] and [1] tensors)
+                if len(set(t.shape for t in tensors)) > 1:
+                    tensors = [t.unsqueeze(0) if t.dim() == 0 else t for t in tensors]
+                try:
+                    return torch.stack(tensors)
+                except RuntimeError:
+                    return torch.cat(tensors)
             elif isinstance(x[0], np.ndarray):
                 x = np.array(x)
 
