@@ -524,7 +524,7 @@ class BatchedRayEvaluator:
         computed_residuals = [None] * num_operands
 
         # --- 1. Process Batched Ray Traces (Vectorized) ---
-        for job_idx, job in enumerate(self._generic_jobs):
+        for _job_idx, job in enumerate(self._generic_jobs):
             try:
                 sg = job.execute()
             except Exception:
@@ -537,16 +537,18 @@ class BatchedRayEvaluator:
 
             # Map operand types to surface_group tensor attributes
             attr_map = {
-                "real_x_intercept": "x", "real_y_intercept": "y",
+                "real_x_intercept": "x",
+                "real_y_intercept": "y",
                 "real_z_intercept": "z",
-                "real_L": "L", "real_M": "M", "real_N": "N",
+                "real_L": "L",
+                "real_M": "M",
+                "real_N": "N",
             }
 
             # Vectorize extraction by grouping operands of the same type
             for op_type, attr in attr_map.items():
                 mask = [
-                    self.problem.operands[i].operand_type == op_type
-                    for i in op_indices
+                    self.problem.operands[i].operand_type == op_type for i in op_indices
                 ]
                 if not any(mask):
                     continue
@@ -554,9 +556,7 @@ class BatchedRayEvaluator:
                 matching_op_indices = [
                     op_indices[idx] for idx, is_match in enumerate(mask) if is_match
                 ]
-                ray_indices = [
-                    idx for idx, is_match in enumerate(mask) if is_match
-                ]
+                ray_indices = [idx for idx, is_match in enumerate(mask) if is_match]
                 surfs = [
                     self.problem.operands[i].input_data["surface_number"]
                     for i in matching_op_indices
@@ -568,12 +568,12 @@ class BatchedRayEvaluator:
                 extracted_vals = data_tensor[surfs, ray_indices]
 
                 # Vectorized target and weight arrays
-                targets = be.array([
-                    self.problem.operands[i].target for i in matching_op_indices
-                ])
-                weights = be.array([
-                    self.problem.operands[i].weight for i in matching_op_indices
-                ])
+                targets = be.array(
+                    [self.problem.operands[i].target for i in matching_op_indices]
+                )
+                weights = be.array(
+                    [self.problem.operands[i].weight for i in matching_op_indices]
+                )
 
                 # Compute all deltas for this group simultaneously
                 deltas = weights * (extracted_vals - targets)
