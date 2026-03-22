@@ -71,6 +71,16 @@ Material Database
 - **User-Defined Materials**:
   Create and register new materials with custom dispersion models.
 
+Coating and Thin Film Modeling
+------------------------------
+
+- **Multilayer Thin Film Stacks**:
+  Define, analyze, and optimize thin film stacks using the Transfer Matrix Method.
+- **Needle Synthesis**:
+  An iterative layer-insertion optimizer based on the Tikhonravov & Trubetskov algorithm. Configurable candidate materials and spectral/angular targets let you automatically design optimal thin-film coatings.
+- **Thin Film Tolerancing**:
+  Perform sensitivity analysis and Monte Carlo simulations to assess how manufacturing variations in layer thickness and refractive index affect spectral performance.
+
 Visualization
 -------------
 

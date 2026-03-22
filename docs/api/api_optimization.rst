@@ -6,6 +6,8 @@ provides a set of tools for optimizing optical systems. It includes a variety of
 such as gradient-based and evolutionary algorithms, as well as tools for defining optimization variables
 and objectives.
 
+For thin film and coating specific optimization (e.g., Needle Synthesis), see the :doc:`api_thin_film` module.
+
 The optimization module is divided into four subcategories:
 
 1. Core Functionalities - Problem definition and optimizers
