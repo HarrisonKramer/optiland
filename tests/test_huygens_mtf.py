@@ -129,13 +129,15 @@ class TestScalarHuygensMTF:
         mtf.resolved_fields = [(0, 0)]
         mtf.resolved_wavelength = 0.55
         mtf._calculate_psf()
-        # _get_mtf_units now requires a field index
-        df = mtf._get_mtf_units(0)
-        assert df > 0
+        # _get_mtf_units was split into tang and sag versions
+        df_tang = mtf._get_mtf_units_tang(0)
+        df_sag = mtf._get_mtf_units_sag(0)
+        assert df_tang > 0
+        assert df_sag > 0
 
         mtf.psf_instances[0].pixel_pitch = 0
         with pytest.raises(ValueError, match="Pixel pitch"):
-            mtf._get_mtf_units(0)
+            mtf._get_mtf_units_tang(0)
 
     def test_integration(self, real_optic):
         """Full PSF + MTF calculation (low resolution for speed)."""

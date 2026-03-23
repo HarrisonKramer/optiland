@@ -77,6 +77,7 @@ class ScalarHuygensPSF(BasePSF):
         remove_tilt=False,
         oversample: float = None,
         pixel_pitch: float = None,
+        normalization: float = None,
         **kwargs,
     ):
         super().__init__(
@@ -95,6 +96,7 @@ class ScalarHuygensPSF(BasePSF):
 
         self.image_size = image_size
         self.oversample = oversample
+        self.normalization = normalization
 
         self._summation_strategy = self._create_summation_strategy()
         self.psf = self._compute_psf()
@@ -315,8 +317,9 @@ class ScalarHuygensPSF(BasePSF):
         )
 
         # Normalize the PSF
-        normalization = self._get_normalization()
-        psf = psf / normalization * 100.0
+        if self.normalization is None:
+            self.normalization = self._get_normalization()
+        psf = psf / self.normalization * 100.0
 
         return psf
 
@@ -379,6 +382,7 @@ class HuygensPSF:
         remove_tilt=False,
         oversample: float = None,
         pixel_pitch: float = None,
+        normalization: float = None,
         **kwargs,
     ):
         if optic.polarization_state is not None:
@@ -394,6 +398,7 @@ class HuygensPSF:
                 remove_tilt=remove_tilt,
                 oversample=oversample,
                 pixel_pitch=pixel_pitch,
+                normalization=normalization,
                 **kwargs,
             )
         else:
@@ -407,5 +412,6 @@ class HuygensPSF:
                 remove_tilt=remove_tilt,
                 oversample=oversample,
                 pixel_pitch=pixel_pitch,
+                normalization=normalization,
                 **kwargs,
             )

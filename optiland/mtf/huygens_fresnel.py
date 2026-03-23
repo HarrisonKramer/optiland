@@ -105,6 +105,18 @@ class ScalarHuygensMTF(BaseMTF):
         """
         self.psf_data = []
         self.psf_instances = []
+
+        # Pre-calculate normalization once (on-axis, primary wavelength)
+        # This avoiding redundant PSF peak calculations for every field.
+        norm_psf = ScalarHuygensPSF(
+            optic=self.optic,
+            field=(0, 0),
+            wavelength=self.resolved_wavelength,
+            num_rays=self.num_rays,
+            image_size=self.image_size,
+        )
+        normalization = norm_psf.normalization
+
         for field_coord in self.resolved_fields:
             psf_calculator = ScalarHuygensPSF(
                 optic=self.optic,
@@ -113,6 +125,7 @@ class ScalarHuygensMTF(BaseMTF):
                 num_rays=self.num_rays,
                 image_size=self.image_size,
                 oversample=4.0,
+                normalization=normalization,
             )
             self.psf_data.append(psf_calculator.psf)
             self.psf_instances.append(psf_calculator)
@@ -280,6 +293,18 @@ class VectorialHuygensMTF(ScalarHuygensMTF):
 
         self.psf_data = []
         self.psf_instances = []
+
+        # Pre-calculate normalization once (on-axis, primary wavelength)
+        # This avoiding redundant PSF peak calculations for every field.
+        norm_psf = VectorialHuygensPSF(
+            optic=self.optic,
+            field=(0, 0),
+            wavelength=self.resolved_wavelength,
+            num_rays=self.num_rays,
+            image_size=self.image_size,
+        )
+        normalization = norm_psf.normalization
+
         for field_coord in self.resolved_fields:
             psf_calculator = VectorialHuygensPSF(
                 optic=self.optic,
@@ -288,6 +313,7 @@ class VectorialHuygensMTF(ScalarHuygensMTF):
                 num_rays=self.num_rays,
                 image_size=self.image_size,
                 oversample=4.0,
+                normalization=normalization,
             )
             self.psf_data.append(psf_calculator.psf)
             self.psf_instances.append(psf_calculator)
