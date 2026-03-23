@@ -109,8 +109,12 @@ def resolve_fields(optic, fields):
             raise ValueError("Invalid field string. Must be 'all'.")
     elif isinstance(fields, list):
         return fields
+    elif isinstance(fields, tuple):
+        return [fields]
+    elif isinstance(fields, int):
+        return [optic.fields.get_field_coords()[fields]]
     else:
-        raise TypeError("Fields must be a string ('all') or a list.")
+        raise TypeError("Fields must be a string ('all'), a list, a tuple, or an int.")
 
 
 def resolve_wavelength(optic, wavelength):
