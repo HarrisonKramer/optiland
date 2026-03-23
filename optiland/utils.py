@@ -54,7 +54,18 @@ def get_working_FNO(optic, field, wavelength):
     angles = be.arccos(dot)
 
     numerical_apertures_squared = (n * be.sin(angles)) ** 2
-    avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
+
+    # Exclude geometrically vignetted marginal rays (intensity == 0)
+    marginal_intensities = be.to_numpy(rays.i[1:])
+    valid_indices = [i for i, v in enumerate(marginal_intensities) if v > 0]
+
+    if valid_indices:
+        valid_na_sq = be.stack([numerical_apertures_squared[i] for i in valid_indices])
+        avg_NA_squared = be.mean(valid_na_sq)
+    else:
+        # Degenerate fallback: all marginal rays vignetted (should not occur in
+        # a well-formed system).
+        avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
 
     fno = be.inf if avg_NA_squared <= 0 else 1 / (2 * be.sqrt(avg_NA_squared))
 
