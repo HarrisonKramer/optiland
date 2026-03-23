@@ -478,7 +478,7 @@ class TestLensOperand:
 
         sa1 = self.optic.surface_group.surfaces[2].semi_aperture
         sa2 = self.optic.surface_group.surfaces[3].semi_aperture
-        semi_aperture = self.optic.surface_group.surfaces[3].semi_aperture
+        semi_aperture = be.maximum(be.array(sa1), be.array(sa2))
 
         r1 = 50.0
         r2 = -50.0
@@ -521,11 +521,11 @@ class TestLensOperand:
         self.optic.surface_group.surfaces[2].semi_aperture = 10.0
         self.optic.surface_group.surfaces[3].semi_aperture = 8.0
 
-        # expected value calculation
+        # expected value calculation — uses max semi-aperture (10.0)
         r1 = 50.0
         r2 = -50.0
         t = 5.0
-        semi_aperture = 8.0
+        semi_aperture = 10.0
 
         sag1 = r1 - be.sqrt(r1**2 - semi_aperture**2)
         sag2 = r2 + be.sqrt(r2**2 - semi_aperture**2)
@@ -553,7 +553,7 @@ class TestLensOperand:
 
         sa1 = self.optic.surface_group.surfaces[2].semi_aperture
         sa2 = self.optic.surface_group.surfaces[3].semi_aperture
-        semi_aperture = be.minimum(sa1, sa2)
+        semi_aperture = be.maximum(be.array(sa1), be.array(sa2))
 
         r1 = 50.0
         r2 = -50.0
