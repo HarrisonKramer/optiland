@@ -86,10 +86,17 @@ class ScalarFFTMTF(BaseMTF):
         else:
             self.max_freq = max_freq
 
-        self.freq = [
-            be.arange(self.grid_size // 2) * self._get_mtf_units(k)
-            for k in range(len(self.resolved_fields))
+        n_fields = len(self.resolved_fields)
+        self.freq_tang = [
+            be.arange(self.grid_size // 2) * self._get_mtf_units_tang(k)
+            for k in range(n_fields)
         ]
+        self.freq_sag = [
+            be.arange(self.grid_size // 2) * self._get_mtf_units_sag(k)
+            for k in range(n_fields)
+        ]
+        # Backward-compatible alias (tangential is the primary reference).
+        self.freq = self.freq_tang
 
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Function (PSF).
@@ -123,10 +130,10 @@ class ScalarFFTMTF(BaseMTF):
         """
         current_field_label_info = self.resolved_fields[field_index]
 
-        # Plot tangential MTF
+        # Plot tangential MTF (uses the image-plane-corrected frequency axis)
         ax.plot(
-            be.to_numpy(self.freq[field_index]),
-            be.to_numpy(mtf_field_data[0]),  # Tangential data
+            be.to_numpy(self.freq_tang[field_index]),
+            be.to_numpy(mtf_field_data[0]),
             label=(
                 f"Hx: {current_field_label_info[0]:.1f}, "
                 f"Hy: {current_field_label_info[1]:.1f}, Tangential"
@@ -134,10 +141,10 @@ class ScalarFFTMTF(BaseMTF):
             color=color,
             linestyle="-",
         )
-        # Plot sagittal MTF
+        # Plot sagittal MTF (no tilt in the sagittal plane — use per-field axis)
         ax.plot(
-            be.to_numpy(self.freq[field_index]),
-            be.to_numpy(mtf_field_data[1]),  # Sagittal data
+            be.to_numpy(self.freq_sag[field_index]),
+            be.to_numpy(mtf_field_data[1]),
             label=(
                 f"Hx: {current_field_label_info[0]:.1f}, "
                 f"Hy: {current_field_label_info[1]:.1f}, Sagittal"
@@ -186,19 +193,46 @@ class ScalarFFTMTF(BaseMTF):
             mtf.append([norm_tangential, norm_sagittal])
         return mtf
 
-    def _get_mtf_units(self, k):
-        """Calculate the MTF units for a given field index.
+    def _get_mtf_units_tang(self, k):
+        """Tangential frequency step (cycles/mm) with image-plane correction.
+
+        The chief ray tilts in the tangential plane.  Converting the per-field
+        working F/# (measured in the chief-ray frame) to the flat image plane
+        introduces a cos(θ_chief) ≈ FNO_on/FNO_off compression:
+
+            df_tang = df_chief * (FNO_on / FNO_off)
+
+        For on-axis fields FNO_on == FNO_off and the correction is unity.
 
         Args:
             k (int): Field index.
 
         Returns:
-            float: The MTF units calculated based on the grid size, number
-                of rays, wavelength (from BaseMTF), and the field's FNO.
+            float: Tangential frequency step in cycles/mm.
         """
-        dx = 1 / ((self.num_rays - 1) * self.resolved_wavelength * 1e-3 * self.FNO[k])
+        on_axis_fno = self._get_fno()
+        off_axis_fno = self.FNO[k]
+        df_chief = 1 / (
+            (self.num_rays - 1) * self.resolved_wavelength * 1e-3 * off_axis_fno
+        )
+        return df_chief * (on_axis_fno / off_axis_fno)
 
-        return dx
+    def _get_mtf_units_sag(self, k):
+        """Sagittal frequency step (cycles/mm).
+
+        There is no chief-ray tilt in the sagittal plane, so the per-field
+        working F/# (chief-ray frame) is used directly.
+
+        Args:
+            k (int): Field index.
+
+        Returns:
+            float: Sagittal frequency step in cycles/mm.
+        """
+        off_axis_fno = self.FNO[k]
+        return 1 / (
+            (self.num_rays - 1) * self.resolved_wavelength * 1e-3 * off_axis_fno
+        )
 
 
 class FFTMTF:
