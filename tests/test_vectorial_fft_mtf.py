@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import matplotlib
 import pytest
+import numpy as np
 
 matplotlib.use("Agg")  # ensure non-interactive backend for testing
 
@@ -102,7 +103,7 @@ class TestVectorialFFTMTFInit:
 
     def test_cutoff_max_freq(self, set_test_backend, polarized_optic):
         mtf = VectorialFFTMTF(polarized_optic, num_rays=_NUM_RAYS, grid_size=_GRID_SIZE)
-        expected = 1.0 / (mtf.resolved_wavelength * 1e-3 * mtf.FNO)
+        expected = 1.0 / (mtf.resolved_wavelength * 1e-3 * mtf.FNO[0])
         assert_allclose(mtf.max_freq, expected)
 
     def test_custom_max_freq(self, set_test_backend, polarized_optic):
@@ -114,16 +115,16 @@ class TestVectorialFFTMTFInit:
     def test_fno_attribute_is_set(self, set_test_backend, polarized_optic):
         mtf = VectorialFFTMTF(polarized_optic, num_rays=_NUM_RAYS, grid_size=_GRID_SIZE)
         assert mtf.FNO is not None
-        assert be.to_numpy(mtf.FNO) > 0
+        assert np.all(be.to_numpy(mtf.FNO) > 0)
 
     def test_freq_array_length(self, set_test_backend, polarized_optic):
         mtf = VectorialFFTMTF(polarized_optic, num_rays=_NUM_RAYS, grid_size=_GRID_SIZE)
-        freq_np = be.to_numpy(mtf.freq)
+        freq_np = be.to_numpy(mtf.freq[0])
         assert len(freq_np) == _GRID_SIZE // 2
 
     def test_freq_array_starts_at_zero(self, set_test_backend, polarized_optic):
         mtf = VectorialFFTMTF(polarized_optic, num_rays=_NUM_RAYS, grid_size=_GRID_SIZE)
-        assert_allclose(mtf.freq[0], 0.0)
+        assert_allclose(mtf.freq[0][0], 0.0)
 
     def test_psf_list_length_matches_fields(self, set_test_backend, polarized_optic):
         mtf = VectorialFFTMTF(

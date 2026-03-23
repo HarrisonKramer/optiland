@@ -65,22 +65,27 @@ class TestScalarHuygensMTF:
         mtf = ScalarHuygensMTF(real_optic, max_freq="cutoff", image_size=16)
         assert mtf.num_rays == 128
         assert mtf.image_size == 16
-        assert_allclose(mtf.max_freq, 1 / (0.5876e-3 * mtf.FNO), rtol=1e-4)
-        assert len(be.to_numpy(mtf.freq)) == 16 // 2
+        # max_freq is calibrated to the on-axis working F/#, per OpticStudio convention.
+        on_axis_fno = mtf._get_fno()
+        assert_allclose(mtf.max_freq, 1 / (0.5876e-3 * on_axis_fno), rtol=1e-4)
+        # freq is a list of per-field arrays; check the first field.
+        assert len(be.to_numpy(mtf.freq[0])) == 16 // 2
 
     def test_init_non_primary_wavelength(self, real_optic):
         mtf = ScalarHuygensMTF(
             real_optic, max_freq="cutoff", image_size=16, wavelength=0.55
         )
-        assert_allclose(mtf.max_freq, 1 / (0.55e-3 * mtf.FNO), rtol=1e-4)
+        on_axis_fno = mtf._get_fno()
+        assert_allclose(mtf.max_freq, 1 / (0.55e-3 * on_axis_fno), rtol=1e-4)
 
     def test_init_with_numeric_max_freq(self, real_optic):
         mtf = ScalarHuygensMTF(real_optic, max_freq=200.0, image_size=8)
         assert mtf.max_freq == 200.0
 
     def test_get_fno(self, real_optic):
-        mtf = ScalarHuygensMTF(real_optic, image_size=8)
-        assert_allclose(mtf.FNO, 4.992598838013766, rtol=1e-4)
+        mtf = ScalarHuygensMTF(real_optic, fields=[(0, 0)], image_size=8)
+        # FNO is now a per-field list; check the on-axis (first) field.
+        assert_allclose(mtf.FNO[0], 4.992598838013766, rtol=1e-4)
 
     def test_calculate_psf_stores_data(self, real_optic):
         mtf = ScalarHuygensMTF(real_optic, image_size=8)
@@ -112,7 +117,8 @@ class TestScalarHuygensMTF:
     def test_plot_field_mtf_runs(self, real_optic):
         mtf = ScalarHuygensMTF(real_optic, image_size=8)
         mtf.resolved_fields = [(1.0, 2.0)]
-        mtf.freq = be.arange(4)
+        # freq is a list of per-field arrays
+        mtf.freq = [be.arange(4)]
         mtf_field_data = [be.linspace(0, 1, 4), be.linspace(1, 0, 4)]
         fig, ax = plt.subplots()
         mtf._plot_field_mtf(ax, 0, mtf_field_data, color="blue")
@@ -123,12 +129,15 @@ class TestScalarHuygensMTF:
         mtf.resolved_fields = [(0, 0)]
         mtf.resolved_wavelength = 0.55
         mtf._calculate_psf()
-        df = mtf._get_mtf_units()
-        assert df > 0
+        # _get_mtf_units was split into tang and sag versions
+        df_tang = mtf._get_mtf_units_tang(0)
+        df_sag = mtf._get_mtf_units_sag(0)
+        assert df_tang > 0
+        assert df_sag > 0
 
         mtf.psf_instances[0].pixel_pitch = 0
         with pytest.raises(ValueError, match="Pixel pitch"):
-            mtf._get_mtf_units()
+            mtf._get_mtf_units_tang(0)
 
     def test_integration(self, real_optic):
         """Full PSF + MTF calculation (low resolution for speed)."""
@@ -196,7 +205,8 @@ class TestVectorialHuygensMTF:
         mtf = VectorialHuygensMTF(
             polarized_optic, fields=[(0, 0)], image_size=image_size
         )
-        assert len(be.to_numpy(mtf.freq)) == image_size // 2
+        # freq is now a list of per-field arrays; check the first field.
+        assert len(be.to_numpy(mtf.freq[0])) == image_size // 2
 
     def test_unpolarized_mtf_valid(self, unpolarized_optic):
         """An unpolarized source produces a valid MTF."""

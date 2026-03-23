@@ -100,8 +100,10 @@ class VectorialHuygensPSF(ScalarHuygensPSF):
                 )
                 psf = component_psf if psf is None else psf + component_psf
 
-        normalization = self._get_normalization()
-        return psf / normalization * 100.0
+        # Normalize the PSF
+        if self.normalization is None:
+            self.normalization = self._get_normalization()
+        return psf / self.normalization * 100.0
 
     def _get_normalization(self):
         """Compute the normalization factor for the vectorial Huygens PSF.

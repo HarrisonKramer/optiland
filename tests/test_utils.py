@@ -53,7 +53,7 @@ def test_resolve_fields_invalid_string(optic):
 
 def test_resolve_fields_invalid_type(optic):
     with pytest.raises(TypeError):
-        resolve_fields(optic, 123)
+        resolve_fields(optic, {"invalid": "type"})
 
 
 def test_resolve_wavelength_primary(optic):

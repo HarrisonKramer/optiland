@@ -54,7 +54,18 @@ def get_working_FNO(optic, field, wavelength):
     angles = be.arccos(dot)
 
     numerical_apertures_squared = (n * be.sin(angles)) ** 2
-    avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
+
+    # Exclude geometrically vignetted marginal rays (intensity == 0)
+    marginal_intensities = be.to_numpy(rays.i[1:])
+    valid_indices = [i for i, v in enumerate(marginal_intensities) if v > 0]
+
+    if valid_indices:
+        valid_na_sq = be.stack([numerical_apertures_squared[i] for i in valid_indices])
+        avg_NA_squared = be.mean(valid_na_sq)
+    else:
+        # Degenerate fallback: all marginal rays vignetted (should not occur in
+        # a well-formed system).
+        avg_NA_squared = be.mean(be.array(numerical_apertures_squared))
 
     fno = be.inf if avg_NA_squared <= 0 else 1 / (2 * be.sqrt(avg_NA_squared))
 
@@ -109,8 +120,12 @@ def resolve_fields(optic, fields):
             raise ValueError("Invalid field string. Must be 'all'.")
     elif isinstance(fields, list):
         return fields
+    elif isinstance(fields, tuple):
+        return [fields]
+    elif isinstance(fields, int):
+        return [optic.fields.get_field_coords()[fields]]
     else:
-        raise TypeError("Fields must be a string ('all') or a list.")
+        raise TypeError("Fields must be a string ('all'), a list, a tuple, or an int.")
 
 
 def resolve_wavelength(optic, wavelength):

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import optiland.backend as be
 from optiland.psf.huygens_fresnel import ScalarHuygensPSF
+from optiland.utils import get_working_FNO
 
 from .base import BaseMTF
 
@@ -71,15 +72,28 @@ class ScalarHuygensMTF(BaseMTF):
 
         super().__init__(optic, fields, wavelength)
 
-        self.FNO = self._get_fno()
+        self.FNO = [
+            get_working_FNO(self.optic, field, self.resolved_wavelength)
+            for field in self.resolved_fields
+        ]
 
         if max_freq == "cutoff":
-            # wavelength in um, FNO is unitless. max_freq in cycles/mm
-            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
+            on_axis_fno = self._get_fno()
+            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * on_axis_fno)
         else:
             self.max_freq = max_freq
 
-        self.freq = be.arange(self.image_size // 2) * self._get_mtf_units()
+        n_fields = len(self.resolved_fields)
+        self.freq_tang = [
+            be.arange(self.image_size // 2) * self._get_mtf_units_tang(k)
+            for k in range(n_fields)
+        ]
+        self.freq_sag = [
+            be.arange(self.image_size // 2) * self._get_mtf_units_sag(k)
+            for k in range(n_fields)
+        ]
+        # Backward-compatible alias (tangential is the primary reference).
+        self.freq = self.freq_tang
 
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Functions (PSFs).
@@ -91,6 +105,18 @@ class ScalarHuygensMTF(BaseMTF):
         """
         self.psf_data = []
         self.psf_instances = []
+
+        # Pre-calculate normalization once (on-axis, primary wavelength)
+        # This avoiding redundant PSF peak calculations for every field.
+        norm_psf = ScalarHuygensPSF(
+            optic=self.optic,
+            field=(0, 0),
+            wavelength=self.resolved_wavelength,
+            num_rays=self.num_rays,
+            image_size=self.image_size,
+        )
+        normalization = norm_psf.normalization
+
         for field_coord in self.resolved_fields:
             psf_calculator = ScalarHuygensPSF(
                 optic=self.optic,
@@ -98,7 +124,8 @@ class ScalarHuygensMTF(BaseMTF):
                 wavelength=self.resolved_wavelength,
                 num_rays=self.num_rays,
                 image_size=self.image_size,
-                oversample=2.0,
+                oversample=4.0,
+                normalization=normalization,
             )
             self.psf_data.append(psf_calculator.psf)
             self.psf_instances.append(psf_calculator)
@@ -167,10 +194,11 @@ class ScalarHuygensMTF(BaseMTF):
         current_field_label_info = self.resolved_fields[field_index]
 
         num_mtf_points = mtf_field_data[0].shape[0]
-        freq_for_plot = self.freq[:num_mtf_points]
+        freq_tang = self.freq_tang[field_index][:num_mtf_points]
+        freq_sag = self.freq_sag[field_index][:num_mtf_points]
 
         ax.plot(
-            be.to_numpy(freq_for_plot),
+            be.to_numpy(freq_tang),
             be.to_numpy(mtf_field_data[0]),
             label=(
                 f"Hx: {current_field_label_info[0]:.1f}, "
@@ -180,7 +208,7 @@ class ScalarHuygensMTF(BaseMTF):
             linestyle="-",
         )
         ax.plot(
-            be.to_numpy(freq_for_plot),
+            be.to_numpy(freq_sag),
             be.to_numpy(mtf_field_data[1]),
             label=(
                 f"Hx: {current_field_label_info[0]:.1f}, "
@@ -190,22 +218,56 @@ class ScalarHuygensMTF(BaseMTF):
             linestyle="--",
         )
 
-    def _get_mtf_units(self):
-        """Calculate the MTF frequency step (spatial frequency units).
+    def _get_mtf_units_tang(self, k):
+        """Tangential frequency step (cycles/mm) with image-plane correction.
 
-        The frequency unit is cycles per mm. It's determined by the pixel
-        pitch of the PSF image and the total number of pixels (image_size).
-        The frequency step df = 1 / (image_size * pixel_pitch).
+        The chief ray tilts in the tangential plane. Converting the per-field
+        working F/# (measured in the chief-ray frame) to the flat image plane
+        introduces a cos(θ_chief) ≈ FNO_on/FNO_off compression:
+
+            df_tang = df_per_field * (FNO_on / FNO_off)
+
+        For on-axis fields FNO_on == FNO_off and the correction is unity.
+
+        Args:
+            k (int): Field index.
 
         Returns:
-            float: The frequency step for MTF calculation (cycles/mm).
+            float: Tangential frequency step in cycles/mm.
+
+        Raises:
+            ValueError: If the PSF pixel pitch is zero or None.
         """
-        pixel_pitch_mm = self.psf_instances[0].pixel_pitch
+        pixel_pitch_mm = self.psf_instances[k].pixel_pitch
         if pixel_pitch_mm is None or pixel_pitch_mm == 0:
             raise ValueError("Pixel pitch from HuygensPSF is invalid.")
 
-        df = 1.0 / (self.image_size * pixel_pitch_mm)
-        return df
+        on_axis_fno = self._get_fno()
+        off_axis_fno = self.FNO[k]
+
+        df_per_field = 1.0 / (self.image_size * pixel_pitch_mm)
+        return df_per_field * (on_axis_fno / off_axis_fno)
+
+    def _get_mtf_units_sag(self, k):
+        """Sagittal frequency step (cycles/mm).
+
+        There is no chief-ray tilt in the sagittal plane, so the per-field
+        pixel-pitch-derived step is used directly without correction.
+
+        Args:
+            k (int): Field index.
+
+        Returns:
+            float: Sagittal frequency step in cycles/mm.
+
+        Raises:
+            ValueError: If the PSF pixel pitch is zero or None.
+        """
+        pixel_pitch_mm = self.psf_instances[k].pixel_pitch
+        if pixel_pitch_mm is None or pixel_pitch_mm == 0:
+            raise ValueError("Pixel pitch from HuygensPSF is invalid.")
+
+        return 1.0 / (self.image_size * pixel_pitch_mm)
 
 
 class VectorialHuygensMTF(ScalarHuygensMTF):
@@ -231,6 +293,18 @@ class VectorialHuygensMTF(ScalarHuygensMTF):
 
         self.psf_data = []
         self.psf_instances = []
+
+        # Pre-calculate normalization once (on-axis, primary wavelength)
+        # This avoiding redundant PSF peak calculations for every field.
+        norm_psf = VectorialHuygensPSF(
+            optic=self.optic,
+            field=(0, 0),
+            wavelength=self.resolved_wavelength,
+            num_rays=self.num_rays,
+            image_size=self.image_size,
+        )
+        normalization = norm_psf.normalization
+
         for field_coord in self.resolved_fields:
             psf_calculator = VectorialHuygensPSF(
                 optic=self.optic,
@@ -238,7 +312,8 @@ class VectorialHuygensMTF(ScalarHuygensMTF):
                 wavelength=self.resolved_wavelength,
                 num_rays=self.num_rays,
                 image_size=self.image_size,
-                oversample=2.0,
+                oversample=4.0,
+                normalization=normalization,
             )
             self.psf_data.append(psf_calculator.psf)
             self.psf_instances.append(psf_calculator)
