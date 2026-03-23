@@ -190,13 +190,6 @@ def test_quadrature_exp(set_test_backend):
     assert_allclose(
         ((be.exp(-(d.x**2) - d.y**2)) * d.weights).sum(), (be.exp(1) - 1) / be.exp(1)
     )
-        # 6 rings
-        d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
-        weights = d.get_weights(num_rings=6)
-        assert_allclose(
-            weights / scale[k],
-            be.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
-        )
 
 
 @pytest.mark.parametrize("num_points", [16, 64, 256, 1024])
