@@ -39,6 +39,11 @@ This page provides a high-level overview of the `optiland` package's structure. 
     │   ├── real_ray_tracer.py (RealRayTracer class)
     │   └── paraxial_ray_tracer.py (ParaxialRayTracer class)
     │
+    ├── optimization/
+    │   ├── problem.py (OptimizationProblem class)
+    │   ├── batched_evaluator.py (BatchedRayEvaluator class)
+    │   └── ... (operands, variables, and optimizers)
+    │
     └── backend/
         ├── __init__.py (dynamic backend dispatcher)
         ├── base.py (AbstractBackend class)
@@ -54,4 +59,5 @@ Key Relationships
 - The **InteractionModel** defines how rays interact with the surface.
 - Each **Material** has a **PropagationModel**, which defines how rays propagate through the material.
 - The **RealRayTracer** and **ParaxialRayTracer** use the **SurfaceGroup** to trace **Rays** through the system.
+- The **OptimizationProblem** coordinates operands and variables, and can delegate merit evaluation to **BatchedRayEvaluator** to reduce redundant tracing.
 - All numerical operations are dispatched to the active **Backend**.
