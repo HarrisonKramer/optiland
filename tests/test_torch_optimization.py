@@ -367,10 +367,90 @@ class TestTorchOptimizerScaledSpace:
         )
         problem.add_variable(lens, "thickness", surface_number=2)
 
+        initial_loss = problem.sum_squared().item()
         optimizer = TorchAdamOptimizer(problem)
         result = optimizer.optimize(n_steps=10, disp=False)
 
         assert not math.isnan(result.fun), (
             f"Loss should not be NaN with Material('N-BK7') and bounded "
             f"variables, got {result.fun}"
+        )
+        assert result.fun < initial_loss, (
+            "Optimizer should reduce loss for the real-material bounded case; "
+            "otherwise gradients may be disconnected."
+        )
+
+    def test_legacy_array_behavior_breaks_gradient_flow(self, monkeypatch):
+        """Regression guard for the historical graph-break behavior.
+
+        The legacy TorchBackend.array implementation converted lists containing
+        tensors with torch.tensor(...), which detached them from autograd.
+        This test monkeypatches that legacy behavior and verifies gradients on
+        optimizer parameters become None, proving learning was broken.
+        """
+        import numpy as np
+        import torch
+
+        from optiland.backend.torch_backend import TorchBackend
+        from optiland.optic import Optic
+
+        def _legacy_array(self, x):
+            if isinstance(x, torch.Tensor):
+                return x
+            if isinstance(x, (list, tuple)) and len(x) > 0 and isinstance(x[0], np.ndarray):
+                x = np.array(x)
+            return torch.tensor(
+                x,
+                device=self._device(),
+                dtype=self._dtype(),
+                requires_grad=self._grad(),
+            )
+
+        monkeypatch.setattr(TorchBackend, "array", _legacy_array)
+
+        lens = Optic()
+        lens.add_surface(index=0, thickness=be.inf)
+        lens.add_surface(
+            index=1,
+            thickness=7,
+            radius=15,
+            material="N-BK7",
+            is_stop=True,
+        )
+        lens.add_surface(index=2, thickness=30, radius=-1000)
+        lens.add_surface(index=3)
+        lens.set_aperture(aperture_type="EPD", value=15)
+        lens.set_field_type(field_type="angle")
+        lens.add_field(y=0)
+        lens.add_wavelength(value=0.55, is_primary=True)
+
+        problem = OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=50,
+            weight=1,
+            input_data={"optic": lens},
+        )
+        problem.add_variable(
+            lens,
+            "radius",
+            surface_number=1,
+            min_val=10,
+            max_val=30,
+        )
+        problem.add_variable(lens, "thickness", surface_number=2)
+
+        optimizer = TorchAdamOptimizer(problem)
+        torch_opt, _ = optimizer._create_optimizer_and_scheduler(lr=1e-2, gamma=0.99)
+
+        torch_opt.zero_grad()
+        for k, param in enumerate(optimizer.params):
+            problem.variables[k].update(param)
+        problem.update_optics()
+        loss = problem.sum_squared()
+        loss.backward()
+
+        assert all(param.grad is None for param in optimizer.params), (
+            "Legacy array behavior should detach tensors and break gradients; "
+            "expected all parameter grads to be None."
         )
