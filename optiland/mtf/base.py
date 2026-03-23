@@ -114,8 +114,10 @@ class BaseMTF(abc.ABC):
                 If None, a new figure will be created. Defaults to None.
             figsize (tuple, optional): The size of the figure.
                 Defaults to (12, 4).
-            add_reference (bool, optional): Whether to add the diffraction
-                limit reference line. Defaults to False.
+            add_reference (bool, optional): Whether to overlay the theoretical
+                diffraction-limited MTF curve for a clear circular aperture.
+                The reference is computed using the *on-axis* working F/# and
+                the resolved wavelength. Defaults to False.
         Returns:
             tuple: A tuple containing the figure and axes objects.
         """
@@ -132,15 +134,28 @@ class BaseMTF(abc.ABC):
             self._plot_field_mtf(ax, k, field_mtf_item, color=f"C{k}")
 
         if add_reference:
-            ratio = be.clip(self.freq / self.max_freq, 0.0, 1.0)
+            # The reference curve shows the theoretical diffraction-limited OTF for
+            # a clear circular aperture evaluated at the *on-axis* working F/# and
+            # the resolved wavelength. For off-axis fields the working F/# may
+            # differ; the on-axis reference provides a consistent, field-independent
+            # benchmark.
+            #
+            # Formula (incoherent OTF for a circular aperture):
+            #   MTF(u) = (2/π)(arccos(u) − u √(1 − u²))  for u ∈ [0, 1]
+            # where u = f / f_c  and  f_c = 1 / (λ · F/#_on-axis).
+            on_axis_fno = self._get_fno()
+            cutoff_freq = 1 / (self.resolved_wavelength * 1e-3 * on_axis_fno)
+            ref_freq = be.linspace(0, cutoff_freq, 256)
+
+            ratio = be.clip(ref_freq / cutoff_freq, 0.0, 1.0)
             phi = be.arccos(ratio)
             diff_limited_mtf = (2 / be.pi) * (phi - be.cos(phi) * be.sin(phi))
 
             ax.plot(
-                be.to_numpy(self.freq),
+                be.to_numpy(ref_freq),
                 be.to_numpy(diff_limited_mtf),
                 "k--",
-                label="Diffraction Limit",
+                label="Diffraction Limit (on-axis)",
             )
 
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
