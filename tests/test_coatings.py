@@ -255,3 +255,51 @@ class TestRetarderCoating:
         coating_dict_2 = {"type": "RetarderCoating", "retardance": 1.57}
         coating2 = coatings.RetarderCoating.from_dict(coating_dict_2)
         assert coating2.axis == (1.0, 0.0, 0.0)
+
+
+class TestThinFilmCoatings:
+    def test_jones_thin_film_matrix_transmit_and_reflect(
+        self, set_test_backend, rays_parallel_polarized
+    ):
+        air = materials.IdealMaterial(n=1.0)
+        glass = materials.IdealMaterial(n=1.5)
+        stack = coatings.ThinFilmStack(air, glass)
+        stack.add_layer_nm(materials.IdealMaterial(n=1.3), 120.0, name="L1")
+
+        jones_tf = coatings.JonesThinFilm(stack)
+
+        j_transmit = jones_tf.calculate_matrix(rays_parallel_polarized, reflect=False)
+        j_reflect = jones_tf.calculate_matrix(rays_parallel_polarized, reflect=True)
+
+        assert j_transmit.shape == (10, 3, 3)
+        assert j_reflect.shape == (10, 3, 3)
+
+    def test_thin_film_coating_init_and_interaction(
+        self, set_test_backend, rays_parallel_polarized
+    ):
+        air = materials.IdealMaterial(n=1.0)
+        glass = materials.IdealMaterial(n=1.5)
+        layer_mat = materials.IdealMaterial(n=1.3)
+
+        coating = coatings.ThinFilmCoating(
+            material_pre=air,
+            material_post=glass,
+            layers=[(layer_mat, 95.0, "L1")],
+        )
+
+        assert len(coating.stack.layers) == 1
+        assert coating.jones is not None
+
+        nx = be.zeros_like(rays_parallel_polarized.x)
+        ny = be.zeros_like(rays_parallel_polarized.y)
+        nz = be.ones_like(rays_parallel_polarized.z)
+
+        state = rays.PolarizationState(is_polarized=False)
+        rays_r = coating.reflect(rays_parallel_polarized, nx, ny, nz)
+        rays_r.update_intensity(state)
+
+        rays_t = coating.transmit(rays_parallel_polarized, nx, ny, nz)
+        rays_t.update_intensity(state)
+
+        assert be.all(rays_r.i >= 0)
+        assert be.all(rays_t.i >= 0)

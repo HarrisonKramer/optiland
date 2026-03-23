@@ -8,7 +8,7 @@ Kramer Harrison, 2024
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.jones import (
@@ -18,8 +18,9 @@ from optiland.jones import (
     JonesLinearRetarder,
 )
 from optiland.materials import BaseMaterial
+from optiland.thin_film import ThinFilmStack
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from optiland.rays import RealRays
 
 
@@ -49,7 +50,7 @@ class BaseCoating(ABC):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Performs an interaction with the coating.
 
         Args:
@@ -68,7 +69,9 @@ class BaseCoating(ABC):
             return self.reflect(rays, nx, ny, nz)
         return self.transmit(rays, nx, ny, nz)
 
-    def _compute_aoi(self, rays, nx, ny, nz):
+    def _compute_aoi(
+        self, rays: RealRays, nx: be.ndarray, ny: be.ndarray, nz: be.ndarray
+    ) -> be.ndarray:
         """Computes the angle of incidence for the given rays and surface normals.
 
         Args:
@@ -95,7 +98,7 @@ class BaseCoating(ABC):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Abstract method to handle reflection interaction.
 
         Args:
@@ -117,7 +120,7 @@ class BaseCoating(ABC):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Abstract method to handle transmission interaction.
 
         Args:
@@ -132,7 +135,7 @@ class BaseCoating(ABC):
         """
         # pragma: no cover
 
-    def to_dict(self):  # pragma: no cover
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover
         """Converts the coating to a dictionary.
 
         Returns:
@@ -144,7 +147,7 @@ class BaseCoating(ABC):
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict[str, Any]) -> BaseCoating:
         """Creates a coating from a dictionary.
 
         Args:
@@ -183,7 +186,7 @@ class SimpleCoating(BaseCoating):
 
     """
 
-    def __init__(self, transmittance, reflectance=0):
+    def __init__(self, transmittance: float, reflectance: float = 0):
         self.transmittance = transmittance
         self.reflectance = reflectance
         self.absorptance = 1 - reflectance - transmittance
@@ -194,7 +197,7 @@ class SimpleCoating(BaseCoating):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Reflects the rays based on the reflectance of the coating.
 
         Args:
@@ -216,7 +219,7 @@ class SimpleCoating(BaseCoating):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Transmits the rays through the coating by multiplying their intensity
         with the transmittance.
 
@@ -233,7 +236,7 @@ class SimpleCoating(BaseCoating):
         rays.i = rays.i * self.transmittance
         return rays
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary.
 
         Returns:
@@ -247,7 +250,7 @@ class SimpleCoating(BaseCoating):
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict[str, Any]) -> SimpleCoating:
         """Creates a coating from a dictionary.
 
         Args:
@@ -285,7 +288,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Reflects the rays off the coating.
 
         Args:
@@ -309,7 +312,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         nx: be.ndarray = None,
         ny: be.ndarray = None,
         nz: be.ndarray = None,
-    ):
+    ) -> RealRays:
         """Transmits the rays through the coating.
 
         Args:
@@ -327,7 +330,7 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         rays.update(jones)
         return rays
 
-    def to_dict(self):  # pragma: no cover
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover
         """Converts the coating to a dictionary.
 
         Returns:
@@ -341,7 +344,9 @@ class BaseCoatingPolarized(BaseCoating, ABC):
         }
 
     @classmethod
-    def from_dict(cls, data):  # pragma: no cover
+    def from_dict(
+        cls, data: dict[str, Any]
+    ) -> BaseCoatingPolarized:  # pragma: no cover
         """Creates a coating from a dictionary.
 
         Args:
@@ -370,7 +375,7 @@ class FresnelCoating(BaseCoatingPolarized):
 
     """
 
-    def __init__(self, material_pre, material_post):
+    def __init__(self, material_pre: BaseMaterial, material_post: BaseMaterial):
         self.material_pre = material_pre
         self.material_post = material_post
 
@@ -380,7 +385,7 @@ class FresnelCoating(BaseCoatingPolarized):
     def jones(self) -> JonesFresnel:
         return self._jones
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary.
 
         Returns:
@@ -394,7 +399,7 @@ class FresnelCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict[str, Any]) -> FresnelCoating:
         """Creates a coating from a dictionary.
 
         Args:
@@ -418,7 +423,10 @@ class PolarizerCoating(BaseCoatingPolarized):
             axis in global coordinates. Defaults to [1.0, 0.0, 0.0] (horizontal).
     """
 
-    def __init__(self, axis=(1.0, 0.0, 0.0)):
+    def __init__(
+        self,
+        axis: tuple[float, float, float] | list[float] | be.ndarray = (1.0, 0.0, 0.0),
+    ):
         self.axis = axis
         self._jones = JonesLinearPolarizer(axis)
 
@@ -426,7 +434,7 @@ class PolarizerCoating(BaseCoatingPolarized):
     def jones(self) -> JonesLinearPolarizer:
         return self._jones
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary."""
         return {
             "type": self.__class__.__name__,
@@ -434,7 +442,7 @@ class PolarizerCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict[str, Any]) -> PolarizerCoating:
         """Creates a coating from a dictionary."""
         return cls(axis=data.get("axis", (1.0, 0.0, 0.0)))
 
@@ -448,7 +456,11 @@ class RetarderCoating(BaseCoatingPolarized):
             in global coordinates. Defaults to [1.0, 0.0, 0.0] (horizontal).
     """
 
-    def __init__(self, retardance, axis=(1.0, 0.0, 0.0)):
+    def __init__(
+        self,
+        retardance: float,
+        axis: tuple[float, float, float] | list[float] | be.ndarray = (1.0, 0.0, 0.0),
+    ):
         self.retardance = retardance
         self.axis = axis
         self._jones = JonesLinearRetarder(retardance, axis)
@@ -457,7 +469,7 @@ class RetarderCoating(BaseCoatingPolarized):
     def jones(self) -> JonesLinearRetarder:
         return self._jones
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Converts the coating to a dictionary."""
         return {
             "type": self.__class__.__name__,
@@ -466,9 +478,128 @@ class RetarderCoating(BaseCoatingPolarized):
         }
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data: dict[str, Any]) -> RetarderCoating:
         """Creates a coating from a dictionary."""
         return cls(
-            retardance=data["retardance"],
-            axis=data.get("axis", (1.0, 0.0, 0.0)),
+            retardance=data["retardance"], axis=data.get("axis", (1.0, 0.0, 0.0))
+        )
+
+
+class JonesThinFilm(BaseJones):
+    """Jones matrix generator for a thin-film stack.
+
+    Builds diagonal Jones matrices in the s/p basis using thin-film r/t
+    amplitude coefficients. Reflect or transmit selection mirrors JonesFresnel.
+
+    Args:
+        stack: ThinFilmStack configured with incident/substrate and layers.
+        wavelength_nm: Optional wavelength override (nm); if None uses rays.w (µm)
+        converted.
+        aoi_override_rad: Optional AOI override (radians); if None uses computed AOI.
+    """
+
+    def __init__(self, stack: ThinFilmStack):
+        self.stack = stack
+
+    def calculate_matrix(
+        self,
+        rays: RealRays,
+        reflect: bool = False,
+        aoi: be.ndarray = None,
+    ) -> be.ndarray:
+        # wavelengths: rays.w is in microns in Optiland
+        wl_um = be.atleast_1d(rays.w)
+        th = be.atleast_1d(aoi if aoi is not None else be.zeros_like(rays.w))
+
+        # Compute s/p amplitudes per-ray; expect broadcasting over (N,)
+        r_s, t_s, _, _ = self._coeffs_amp(wl_um, th, pol="s", reflect=reflect)
+        r_p, t_p, _, _ = self._coeffs_amp(wl_um, th, pol="p", reflect=reflect)
+
+        z = be.zeros_like(r_s)
+        o = be.ones_like(r_s)
+
+        if reflect:
+            col0 = be.stack([r_s, z, z], axis=-1)
+            col1 = be.stack([z, -r_p, z], axis=-1)
+            col2 = be.stack([z, z, -o], axis=-1)
+        else:
+            col0 = be.stack([t_s, z, z], axis=-1)
+            col1 = be.stack([z, t_p, z], axis=-1)
+            col2 = be.stack([z, z, o], axis=-1)
+
+        jones = be.stack([col0, col1, col2], axis=-2)
+        return jones
+
+    def _coeffs_amp(
+        self, wl_um: be.ndarray, th_rad: be.ndarray, pol: str, reflect: bool
+    ) -> tuple[be.ndarray, be.ndarray, be.ndarray, be.ndarray]:
+        # Use internal helpers returning amplitudes from the stack TMM
+        # We compute on per-ray vectors so shapes are (N,)
+        out = self.stack.compute_rtRTA_elementwise(wl_um, th_rad, pol)
+        r, t = out["r"], out["t"]
+        R, T = out["R"], out["T"]
+        return r, t, R, T
+
+
+class ThinFilmCoating(BaseCoatingPolarized):
+    """Polarized coating that applies a thin-film stack to rays.
+
+    This class mirrors FresnelCoating but uses a ThinFilmStack to compute the
+    s/p amplitude coefficients and builds a Jones matrix per ray via JonesThinFilm.
+
+    Args:
+        material_pre: Material before the stack (incident medium of the stack).
+        material_post: Material after the stack (substrate of the stack).
+        layers: Optional list of (material, thickness_nm, name) to build the stack.
+    """
+
+    def __init__(
+        self,
+        material_pre: BaseMaterial,
+        material_post: BaseMaterial,
+        layers: list[tuple[BaseMaterial, float, str | None]] | None = None,
+    ):
+        self.material_pre = material_pre
+        self.material_post = material_post
+        self.stack = ThinFilmStack(material_pre, material_post)
+        if layers:
+            for mat, thickness_nm, name in layers:
+                self.stack.add_layer_nm(mat, thickness_nm, name)
+        self._jones = JonesThinFilm(self.stack)
+
+    @property
+    def jones(self) -> JonesThinFilm:
+        """The Jones matrix model associated with the thin-film coating."""
+        return self._jones
+
+    def to_dict(self) -> dict[str, Any]:  # pragma: no cover
+        return {
+            "type": self.__class__.__name__,
+            "material_pre": self.material_pre.to_dict(),
+            "material_post": self.material_post.to_dict(),
+            "layers": [
+                {
+                    "material": layer.material.to_dict(),
+                    "thickness_nm": layer.thickness_um * 1000.0,
+                    "name": layer.name,
+                }
+                for layer in self.stack.layers
+            ],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> ThinFilmCoating:  # pragma: no cover
+        mats = []
+        for d in data.get("layers", []):
+            mats.append(
+                (
+                    BaseMaterial.from_dict(d["material"]),
+                    d["thickness_nm"],
+                    d.get("name"),
+                )
+            )
+        return cls(
+            BaseMaterial.from_dict(data["material_pre"]),
+            BaseMaterial.from_dict(data["material_post"]),
+            mats,
         )

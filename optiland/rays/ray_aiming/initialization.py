@@ -14,6 +14,7 @@ import warnings
 from typing import TYPE_CHECKING
 
 import optiland.backend as be
+from optiland.aperture import FloatByStopAperture
 from optiland.rays import RealRays
 
 if TYPE_CHECKING:
@@ -179,7 +180,7 @@ def get_stop_radius_strategy(optic: Optic, aiming_mode: str) -> StopSizeStrategy
     Returns:
         The instantiated strategy instance.
     """
-    if optic.aperture and optic.aperture.ap_type == "float_by_stop_size":
+    if optic.aperture and isinstance(optic.aperture, FloatByStopAperture):
         return FloatByStopStrategy(optic)
 
     if aiming_mode in ["iterative", "robust"]:

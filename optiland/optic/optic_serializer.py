@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from optiland.aberrations import Aberrations
-from optiland.aperture import Aperture
+from optiland.aperture import BaseSystemAperture
 from optiland.apodization import BaseApodization
 from optiland.fields import BaseFieldDefinition, FieldGroup
 from optiland.paraxial import Paraxial
@@ -73,7 +73,7 @@ class OpticSerializer:
 
         optic = Optic()
         optic.name = data.get("name")
-        optic.aperture = Aperture.from_dict(data["aperture"])
+        optic.aperture = BaseSystemAperture.from_dict(data["aperture"])
         optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
         optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])

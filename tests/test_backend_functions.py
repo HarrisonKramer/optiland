@@ -9,27 +9,21 @@ import optiland.backend as be
 def test_config(set_test_backend):
     # Test setting device/precision (mostly for torch)
     if be.get_backend() == "torch":
+        import torch
+
         # Check current settings
         assert be.get_device() in ["cpu", "cuda"]
-        assert be.get_precision() in [
-            float,
-            np.float32,
-            np.float64,
-            "float32",
-            "float64",
-            be.torch.float32,
-            be.torch.float64,
-        ]
+        assert be.get_precision() in [32, 64]
 
-        # Test changing precision
+        # Test changing precision — get_precision() now returns int (32 or 64)
         be.set_precision("float32")
-        assert be.get_precision() == be.torch.float32
+        assert be.get_precision() == 32
         be.set_precision("float64")
-        assert be.get_precision() == be.torch.float64
+        assert be.get_precision() == 64
 
         # Test complex precision
         c_prec = be.get_complex_precision()
-        assert c_prec == be.torch.complex128
+        assert c_prec == torch.complex128
 
 
 def test_creation_zeros_ones_full(set_test_backend):

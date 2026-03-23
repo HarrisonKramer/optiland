@@ -190,3 +190,29 @@ def test_quadrature_exp(set_test_backend):
     assert_allclose(
         ((be.exp(-(d.x**2) - d.y**2)) * d.weights).sum(), (be.exp(1) - 1) / be.exp(1)
     )
+        # 6 rings
+        d = distribution.GaussianQuadrature(is_symmetric=is_symmetric)
+        weights = d.get_weights(num_rings=6)
+        assert_allclose(
+            weights / scale[k],
+            be.array([0.04283, 0.09019, 0.11698, 0.11698, 0.09019, 0.04283]),
+        )
+
+
+@pytest.mark.parametrize("num_points", [16, 64, 256, 1024])
+def test_sobol_distribution(set_test_backend, num_points):
+    seed = 42
+    d = distribution.SobolDistribution(seed=seed)
+    d.generate_points(num_points=num_points)
+
+    sampler = be.sobol_sampler(dim=2, num_samples=num_points, scramble=True, seed=seed)
+    u1 = sampler[:, 0]
+    u2 = sampler[:, 1]
+    r = be.sqrt(u1)
+    theta = 2 * be.pi * u2
+    x = r * be.cos(theta)
+    y = r * be.sin(theta)
+
+    assert_allclose(d.x, x)
+    assert_allclose(d.y, y)
+    assert be.all(d.x**2 + d.y**2 <= 1.0 + 1e-7)

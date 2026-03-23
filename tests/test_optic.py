@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 import optiland.backend as be
-from optiland.aperture import Aperture
+from optiland.aperture import BaseSystemAperture
 from optiland.apodization import GaussianApodization
 from optiland.fields import AngleField, FieldGroup
 from optiland.optic import Optic
@@ -100,7 +100,7 @@ class TestOptic:
 
     def test_set_aperture(self, set_test_backend):
         self.optic.set_aperture("EPD", 5.0)
-        assert isinstance(self.optic.aperture, Aperture)
+        assert isinstance(self.optic.aperture, BaseSystemAperture)
         assert self.optic.aperture.ap_type == "EPD"
         assert self.optic.aperture.value == 5.0
 

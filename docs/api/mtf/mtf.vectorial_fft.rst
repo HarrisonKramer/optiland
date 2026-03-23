@@ -1,4 +1,4 @@
-mtf.vectorial_fft
+﻿mtf.vectorial\_fft
 ==================
 
 .. automodule:: mtf.vectorial_fft
@@ -9,3 +9,4 @@ mtf.vectorial_fft
    .. autosummary::
    
       VectorialFFTMTF
+   

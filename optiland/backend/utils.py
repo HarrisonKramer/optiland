@@ -43,7 +43,7 @@ def to_numpy(obj: ScalarOrArrayT) -> NDArray:
         return np.array([obj])
 
     # Handle lists: Iterate and convert elements individually
-    elif isinstance(obj, list):
+    elif isinstance(obj, list | tuple):
         # Recursively call to_numpy on each element to handle tensors correctly
         # This will use the CONVERTERS loop for tensor elements within the list
         # Then, construct a 1D numpy array from the processed scalar elements.

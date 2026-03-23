@@ -111,11 +111,8 @@ class ParaxialRayAimer(BaseRayAimer):
             raise ValueError(
                 'Field type cannot be "angle" for telecentric object space.'
             )
-        if self.optic.aperture.ap_type == "EPD":
+        if not self.optic.aperture.supports_telecentric:
             raise ValueError(
-                'Aperture type cannot be "EPD" for telecentric object space.'
-            )
-        if self.optic.aperture.ap_type == "imageFNO":
-            raise ValueError(
-                'Aperture type cannot be "imageFNO" for telecentric object space.'
+                f'Aperture type "{self.optic.aperture.ap_type}" is not compatible '
+                f"with telecentric object space."
             )

@@ -178,6 +178,7 @@ Not sure what to type in the shell? Here are a few ideas to explore Optiland rig
    api/api_solves
    api/api_sources
    api/api_surfaces
+   api/api_thin_film
    api/api_tolerancing
    api/api_visualization
    api/api_wavefront

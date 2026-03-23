@@ -28,7 +28,7 @@ At its heart, Optiland revolves around a few key components:
 
 * **Geometries** (``BaseGeometry``): These define the mathematical shape of a surface (e.g., plane, sphere, asphere).
 
-* **Aperture** (``Aperture``): Defines the system's limiting aperture. This can be specified as Entrance Pupil Diameter (EPD), Image Space F-number (imageFNO), Object Space Numerical Aperture (objectNA), or Float by Stop Size (float_by_stop_size).
+* **Aperture** (``BaseSystemAperture``): Defines the system's limiting aperture. This can be specified as Entrance Pupil Diameter (EPD), Image Space F-number (imageFNO), Object Space Numerical Aperture (objectNA), or Float by Stop Size (float_by_stop_size).
 
 * **Fields** (``Field``, ``FieldGroup``): Define the points in the object plane that are being imaged. Can be specified by angle or object height. Vignetting can also be applied.
 
@@ -253,6 +253,7 @@ Advanced Features (Brief Overview)
 ----------------------------------
 
 * **Coatings** (``coatings.py``): Model anti-reflection or reflective coatings (``SimpleCoating``, ``FresnelCoating``).
+* **Thin Films** (``thin_film/*``): Define and optimize multilayer thin-film stacks, including tolerancing and Needle Synthesis.
 * **Polarization** (``polarized_rays.py``, ``jones.py``): Trace polarized light and apply Jones calculus for polarizing elements.
 * **Pickups** (``pickup.py``): Link a parameter of one surface to another (e.g., make radius of S2 = -radius of S1).
 * **Solves** (``solves``): Automatically adjust parameters to meet certain conditions (e.g., ``QuickFocusSolve`` adjusts image plane for best focus).

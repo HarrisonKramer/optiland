@@ -1,4 +1,4 @@
-psf.fft
+﻿psf.fft
 =======
 
 .. automodule:: psf.fft
@@ -16,3 +16,4 @@ psf.fft
    
       FFTPSF
       ScalarFFTPSF
+   
