@@ -225,15 +225,17 @@ class Rays2D:
         bundle_id = f"bundle_{color_idx}"
 
         if self.traced_rays is not None and self.traced_rays.has_paths():
+            path_i_list = self.traced_rays.path_i
             for k, (xk, yk, zk) in enumerate(self.traced_rays.get_paths()):
-                if self.traced_rays.path_i and self.traced_rays.path_i[k]:
-                    ik = np.asarray(self.traced_rays.path_i[k])
-                    xk = xk.copy()
-                    yk = yk.copy()
-                    zk = zk.copy()
-                    xk[ik == 0] = np.nan
-                    yk[ik == 0] = np.nan
-                    zk[ik == 0] = np.nan
+                if path_i_list is not None and k < len(path_i_list):
+                    ik = np.asarray(path_i_list[k])
+                    if len(ik) > 0 and not np.all(ik > 0):
+                        xk = xk.copy()
+                        yk = yk.copy()
+                        zk = zk.copy()
+                        xk[ik == 0] = np.nan
+                        yk[ik == 0] = np.nan
+                        zk[ik == 0] = np.nan
 
                 artist, ray_bundle = self._plot_single_line(
                     ax,
@@ -412,9 +414,10 @@ class Rays3D(Rays2D):
         self, ax, color_idx, field, linewidth=1, theme=None, hide_vignetted=False
     ):
         if self.traced_rays is not None and self.traced_rays.has_paths():
+            path_i = self.traced_rays.path_i
             for k, (xk, yk, zk) in enumerate(self.traced_rays.get_paths()):
-                if self.traced_rays.path_i and self.traced_rays.path_i[k]:
-                    ik = np.asarray(self.traced_rays.path_i[k])
+                if path_i is not None and k < len(path_i) and len(path_i[k]) > 0:
+                    ik = np.asarray(path_i[k])
                     xk = xk.copy()
                     yk = yk.copy()
                     zk = zk.copy()
