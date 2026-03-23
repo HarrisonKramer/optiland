@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import optiland.backend as be
 from optiland.psf.fft import ScalarFFTPSF, calculate_grid_size
+from optiland.utils import get_working_FNO
 
 from .base import BaseMTF
 
@@ -74,14 +75,21 @@ class ScalarFFTMTF(BaseMTF):
 
         super().__init__(optic, fields, wavelength, strategy, remove_tilt, **kwargs)
 
-        self.FNO = self._get_fno()
+        self.FNO = [
+            get_working_FNO(self.optic, field, self.resolved_wavelength)
+            for field in self.resolved_fields
+        ]
 
         if max_freq == "cutoff":
-            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * self.FNO)
+            on_axis_fno = self._get_fno()
+            self.max_freq = 1 / (self.resolved_wavelength * 1e-3 * on_axis_fno)
         else:
             self.max_freq = max_freq
 
-        self.freq = be.arange(self.grid_size // 2) * self._get_mtf_units()
+        self.freq = [
+            be.arange(self.grid_size // 2) * self._get_mtf_units(k)
+            for k in range(len(self.resolved_fields))
+        ]
 
     def _calculate_psf(self):
         """Calculates and stores the Point Spread Function (PSF).
@@ -117,7 +125,7 @@ class ScalarFFTMTF(BaseMTF):
 
         # Plot tangential MTF
         ax.plot(
-            be.to_numpy(self.freq),
+            be.to_numpy(self.freq[field_index]),
             be.to_numpy(mtf_field_data[0]),  # Tangential data
             label=(
                 f"Hx: {current_field_label_info[0]:.1f}, "
@@ -128,7 +136,7 @@ class ScalarFFTMTF(BaseMTF):
         )
         # Plot sagittal MTF
         ax.plot(
-            be.to_numpy(self.freq),
+            be.to_numpy(self.freq[field_index]),
             be.to_numpy(mtf_field_data[1]),  # Sagittal data
             label=(
                 f"Hx: {current_field_label_info[0]:.1f}, "
@@ -141,29 +149,54 @@ class ScalarFFTMTF(BaseMTF):
     def _generate_mtf_data(self):
         """Generates the MTF data for each field.
 
-        The calculation is based on the PSF, which is calculated during
-        construction of the class.
+        The OTF is computed as the 2D FFT of the PSF. The DC component (zero
+        spatial frequency) is located at index ``(grid_size // 2, grid_size // 2)``
+        after ``fftshift``. The tangential and sagittal MTF slices are extracted
+        from that center outward and normalized by the DC value so that MTF(0) = 1,
+        consistent with the incoherent imaging convention used by OpticStudio.
 
         Returns:
-            list: A list of MTF data for each field. Each MTF data is a list
-                containing the tangential and sagittal MTF values.
+            list: A list of MTF data for each field. Each element is a list
+                ``[tangential_mtf, sagittal_mtf]`` where each is a 1-D array of
+                length ``grid_size // 2`` with values in ``[0, 1]``.
         """
         mtf_data = [be.abs(be.fft.fftshift(be.fft.fft2(psf))) for psf in self.psf]
         mtf = []
+        center = self.grid_size // 2
         for data in mtf_data:
-            tangential = data[self.grid_size // 2 :, self.grid_size // 2]
-            sagittal = data[self.grid_size // 2, self.grid_size // 2 :]
-            mtf.append([tangential / be.max(tangential), sagittal / be.max(sagittal)])
+            # Extract 1-D slices from the DC bin outward, clipped to grid_size // 2
+            tangential = data[center:, center][:center]
+            sagittal = data[center, center:][:center]
+
+            # Normalize by the DC value (OTF at zero frequency = total PSF power).
+            # Physical MTF must satisfy MTF(0) = 1; the DC bin is always the maximum
+            # for a well-behaved incoherent system.
+            dc_value = data[center, center]
+            if dc_value == 0:
+                norm_tangential = be.zeros_like(tangential)
+                norm_sagittal = be.zeros_like(sagittal)
+            else:
+                norm_tangential = tangential / dc_value
+                norm_sagittal = sagittal / dc_value
+
+            # Guard against floating-point overshoot beyond the physical [0, 1] range.
+            norm_tangential = be.clip(norm_tangential, 0.0, 1.0)
+            norm_sagittal = be.clip(norm_sagittal, 0.0, 1.0)
+
+            mtf.append([norm_tangential, norm_sagittal])
         return mtf
 
-    def _get_mtf_units(self):
-        """Calculate the MTF units.
+    def _get_mtf_units(self, k):
+        """Calculate the MTF units for a given field index.
+
+        Args:
+            k (int): Field index.
 
         Returns:
             float: The MTF units calculated based on the grid size, number
-                of rays, wavelength (from BaseMTF), and FNO.
+                of rays, wavelength (from BaseMTF), and the field's FNO.
         """
-        dx = 1 / ((self.num_rays - 1) * self.resolved_wavelength * 1e-3 * self.FNO)
+        dx = 1 / ((self.num_rays - 1) * self.resolved_wavelength * 1e-3 * self.FNO[k])
 
         return dx
 
