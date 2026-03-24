@@ -214,6 +214,14 @@ class WavelengthGroup:
 
         self.wavelengths.append(Wavelength(value, is_primary, unit, weight))
 
+    def remove(self, index: int) -> None:
+        """Remove a wavelength from the group.
+
+        Args:
+            index: The index of the wavelength to remove.
+        """
+        self.wavelengths.pop(index)
+
     def get_wavelength(self, wavelength_number: int) -> float:
         """Get the value of a specific wavelength.
 

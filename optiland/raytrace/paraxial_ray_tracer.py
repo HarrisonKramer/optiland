@@ -45,9 +45,9 @@ class ParaxialRayTracer:
 
         y1 = Py * EPD / 2
 
-        if self.optic.field_definition is None:
+        if self.optic.fields.field_definition is None:
             raise ValueError()
-        y0, z0 = self.optic.field_definition.get_paraxial_object_position(
+        y0, z0 = self.optic.fields.field_definition.get_paraxial_object_position(
             self.optic, Hy, y1, EPL
         )
         u0 = (y1 - y0) / (EPL - z0)

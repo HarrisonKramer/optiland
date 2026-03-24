@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import optiland.backend as be
 from optiland.fields.field import Field
+from optiland.fields.field_types import BaseFieldDefinition
 
 if TYPE_CHECKING:
     from optiland._types import ScalarOrArray
@@ -35,6 +36,7 @@ class FieldGroup:
 
     def __init__(self):
         self.fields = []
+        self.field_definition: BaseFieldDefinition | None = None
         self.telecentric = False
 
     @property
@@ -155,6 +157,15 @@ class FieldGroup:
         new_field = Field(x, y, vx, vy)
         self.fields.append(new_field)
 
+    def set_type(self, field_type: str) -> None:
+        """Set the type of field used in the optical system.
+
+        Args:
+            field_type: The type of field, e.g., 'angle',
+                'object_height', or 'paraxial_image_height'.
+        """
+        self.field_definition = BaseFieldDefinition.create(field_type)
+
     def get_field(self, field_number: int) -> Field:
         """Retrieve the field at the specified field_number.
 
@@ -199,10 +210,16 @@ class FieldGroup:
             dict: A dictionary representation of the field group.
 
         """
-        return {
+        data = {
             "fields": [field.to_dict() for field in self.fields],
             "telecentric": self.telecentric,
+            "field_definition": (
+                self.field_definition.to_dict()
+                if self.field_definition is not None
+                else None
+            ),
         }
+        return data
 
     @classmethod
     def from_dict(cls, data):

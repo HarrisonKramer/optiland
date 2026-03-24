@@ -70,7 +70,7 @@ class TestOptic:
 
     def test_initialization(self, set_test_backend):
         assert self.optic.aperture is None
-        assert self.optic.field_definition is None
+        assert self.optic.fields.field_definition is None
         assert isinstance(self.optic.surface_group, SurfaceGroup)
         assert isinstance(self.optic.fields, FieldGroup)
         assert isinstance(self.optic.wavelengths, WavelengthGroup)
@@ -105,8 +105,17 @@ class TestOptic:
         assert self.optic.aperture.value == 5.0
 
     def test_set_field_type(self, set_test_backend):
-        self.optic.set_field_type("angle")
-        assert isinstance(self.optic.field_definition, AngleField)
+        self.optic.fields.set_type("paraxial_image_height")
+        assert isinstance(
+            self.optic.fields.field_definition, ParaxialImageHeightField
+        )
+
+    def test_set_field_type_deprecated(self, set_test_backend):
+        with pytest.warns(DeprecationWarning, match="v0.7.0"):
+            self.optic.set_field_type("paraxial_image_height")
+        assert isinstance(
+            self.optic.fields.field_definition, ParaxialImageHeightField
+        )
 
     def test_set_comment(self, set_test_backend):
         self.optic.surfaces.add(
@@ -134,8 +143,9 @@ class TestOptic:
             material="SF11",
             thickness=5,
         )
-        self.optic.set_radius(10.0, 0)
-        assert self.optic.surface_group.surfaces[0].geometry.radius == 10.0
+        with pytest.warns(DeprecationWarning, match="v0.7.0"):
+            self.optic.set_radius(10.0, 0)
+        assert self.optic.surfaces[0].geometry.radius == 10.0
 
     def test_set_conic(self, set_test_backend):
         self.optic.surfaces.add(
@@ -145,7 +155,7 @@ class TestOptic:
             thickness=5,
         )
         self.optic.set_conic(-1.0, 0)
-        assert self.optic.surface_group.surfaces[0].geometry.k == -1.0
+        assert self.optic.surfaces[0].geometry.k == -1.0
 
     def test_set_thickness(self, set_test_backend):
         self.optic.surfaces.add(
@@ -167,7 +177,7 @@ class TestOptic:
             thickness=10,
         )
         self.optic.set_thickness(10.0, 1)
-        assert self.optic.surface_group.get_thickness(1) == 10.0
+        assert self.optic.surfaces.get_thickness(1) == 10.0
 
     def test_set_index(self, set_test_backend):
         self.optic.surfaces.add(
@@ -189,7 +199,7 @@ class TestOptic:
             thickness=10,
         )
         self.optic.set_index(1.5, 1)
-        assert self.optic.surface_group.surfaces[1].material_post.n(1) == 1.5
+        assert self.optic.surfaces[1].material_post.n(1) == 1.5
 
     def test_set_material(self, set_test_backend):
         self.optic.surfaces.add(
@@ -213,7 +223,7 @@ class TestOptic:
         surface_number = 1
         material_post = MaterialFactory._configure_post_material("N-BK7")
         self.optic.set_material(material_post, surface_number)
-        surface = self.optic.surface_group.surfaces[surface_number]
+        surface = self.optic.surfaces[surface_number]
         assert surface.material_post == material_post
 
     def test_set_asphere_coeff(self, set_test_backend):
@@ -225,7 +235,7 @@ class TestOptic:
             coefficients=[0.0, 0.0, 0.0],
         )
         self.optic.set_asphere_coeff(0.1, 0, 2)
-        assert self.optic.surface_group.surfaces[0].geometry.coefficients[2] == 0.1
+        assert self.optic.surfaces[0].geometry.coefficients[2] == 0.1
 
     def test_set_polarization(self, set_test_backend):
         self.optic.set_polarization("ignore")
@@ -314,7 +324,7 @@ class TestOptic:
         )
         self.optic.reset()
         assert self.optic.aperture is None
-        assert self.optic.field_definition is None
+        assert self.optic.fields.field_definition is None
         assert len(self.optic.surface_group.surfaces) == 0
         assert len(self.optic.fields.fields) == 0
         assert len(self.optic.wavelengths.wavelengths) == 0

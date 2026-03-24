@@ -105,6 +105,18 @@ def test_field_group_telecentric(set_test_backend):
     assert f.telecentric is True
 
 
+def test_field_group_set_type(set_test_backend):
+    f = fields.FieldGroup()
+    f.set_type("angle")
+    assert isinstance(f.field_definition, fields.AngleField)
+
+    f.set_type("object_height")
+    assert isinstance(f.field_definition, fields.ObjectHeightField)
+
+    f.set_type("paraxial_image_height")
+    assert isinstance(f.field_definition, fields.ParaxialImageHeightField)
+
+
 def test_field_to_dict(set_test_backend):
     f = fields.Field(0, 0)
     assert f.to_dict() == {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0}
@@ -116,15 +128,23 @@ def test_field_group_to_dict(set_test_backend):
     for field_data in input_data:
         f.add(x=field_data[0], y=field_data[1])
 
-    assert f.to_dict() == {
-        "fields": [
-            {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0},
-            {"x": 2.5, "y": 0, "vx": 0.0, "vy": 0.0},
-            {"x": 0, "y": 2, "vx": 0.0, "vy": 0.0},
-            {"x": 4, "y": 3, "vx": 0.0, "vy": 0.0},
-        ],
-        "telecentric": False,
-    }
+    data = f.to_dict()
+    assert data["fields"] == [
+        {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0},
+        {"x": 2.5, "y": 0, "vx": 0.0, "vy": 0.0},
+        {"x": 0, "y": 2, "vx": 0.0, "vy": 0.0},
+        {"x": 4, "y": 3, "vx": 0.0, "vy": 0.0},
+    ]
+    assert data["telecentric"] is False
+    assert data["field_definition"] is None
+
+
+def test_field_group_to_dict_with_definition(set_test_backend):
+    f = fields.FieldGroup()
+    f.set_type("angle")
+    data = f.to_dict()
+    assert "field_definition" in data
+    assert data["field_definition"]["field_type"] == "AngleField"
 
 
 def test_field_from_dict(set_test_backend):

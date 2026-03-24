@@ -87,6 +87,16 @@ class TestWavelengthGroups:
         assert wg.num_wavelengths == 1
         assert wg.get_wavelength(0) == 0.5
 
+    def test_remove_wavelength(self, set_test_backend):
+        wg = WavelengthGroup()
+        wg.add(500, unit="nm")
+        wg.add(600, unit="nm")
+        wg.add(700, unit="nm")
+        assert wg.num_wavelengths == 3
+        wg.remove(1)
+        assert wg.num_wavelengths == 2
+        assert_allclose(wg.get_wavelength(1), 0.7)
+
     def test_primary_wavelength(self, set_test_backend):
         wg = WavelengthGroup()
         wg.add(500, unit="nm")

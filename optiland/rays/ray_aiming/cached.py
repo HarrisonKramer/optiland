@@ -142,6 +142,6 @@ class CachedRayAimer(BaseRayAimer):
             self.optic.fields.to_dict(),
             self.optic.wavelengths.to_dict(),
             self.optic.aperture.to_dict() if self.optic.aperture else None,
-            self.optic.ray_aiming_config,
+            self.optic.ray_tracer.ray_aiming_config,
         )
         return hashlib.md5(str(data).encode("utf-8")).hexdigest()

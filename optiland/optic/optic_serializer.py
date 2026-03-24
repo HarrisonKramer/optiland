@@ -52,10 +52,7 @@ class OpticSerializer:
         }
 
         data["wavelengths"]["polarization"] = optic.polarization
-        data["fields"]["field_definition"] = (
-            optic.field_definition.to_dict() if optic.field_definition else None
-        )
-        data["fields"]["object_space_telecentric"] = optic.obj_space_telecentric
+        data["ray_tracer"] = {"ray_aiming_config": optic.ray_tracer.ray_aiming_config}
         return data
 
     @classmethod
@@ -87,17 +84,22 @@ class OpticSerializer:
 
         optic.polarization = data["wavelengths"]["polarization"]
         if data["fields"].get("field_definition"):
-            optic.field_definition = BaseFieldDefinition.from_dict(
+            optic.fields.field_definition = BaseFieldDefinition.from_dict(
                 data["fields"]["field_definition"]
             )
         elif data["fields"].get("field_type"):
-            optic.set_field_type(data["fields"]["field_type"])
+            optic.fields.set_type(data["fields"]["field_type"])
         else:
-            optic.field_definition = None
+            optic.fields.field_definition = None
         optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
 
         optic.paraxial = Paraxial(optic)
         optic.aberrations = Aberrations(optic)
         optic.ray_tracer = RealRayTracer(optic)
+
+        if data.get("ray_tracer"):
+            optic.ray_tracer.ray_aiming_config = data["ray_tracer"].get(
+                "ray_aiming_config", optic.ray_tracer.ray_aiming_config
+            )
 
         return optic

@@ -33,6 +33,27 @@ class RealRayTracer:
     def __init__(self, optic):
         self.optic = optic
         self.ray_generator = RayGenerator(optic)
+        self.ray_aiming_config = {
+            "mode": "paraxial",
+            "max_iter": 10,
+            "tol": 1e-6,
+        }
+
+    def set_aiming(self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs):
+        """Configure the ray aiming strategy.
+
+        Args:
+            mode: The aiming mode ("paraxial", "iterative", "robust").
+            max_iter: Maximum iterations for iterative solvers.
+            tol: Convergence tolerance for iterative solvers.
+            **kwargs: Additional configuration parameters.
+        """
+        self.ray_aiming_config = {
+            "mode": mode,
+            "max_iter": max_iter,
+            "tol": tol,
+            **kwargs,
+        }
 
     def trace(
         self,

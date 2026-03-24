@@ -65,8 +65,8 @@ class RayGenerator:
             RealRays object containing the generated rays.
 
         """
-        if hasattr(self.optic, "ray_aiming_config"):
-            config = self.optic.ray_aiming_config
+        if hasattr(self.optic.ray_tracer, "ray_aiming_config"):
+            config = self.optic.ray_tracer.ray_aiming_config
             if not hasattr(self, "_current_config") or self._current_config != config:
                 self.set_ray_aiming(**config)
                 self._current_config = config.copy()

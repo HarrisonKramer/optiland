@@ -109,7 +109,7 @@ class ReferenceStrategy(ABC):
         Returns:
             ndarray: The OPD array with tilt correction applied.
         """
-        if not isinstance(self.optic.field_definition, AngleField):
+        if not isinstance(self.optic.fields.field_definition, AngleField):
             return opd
 
         hx, hy = field

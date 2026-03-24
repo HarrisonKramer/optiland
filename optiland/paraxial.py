@@ -379,16 +379,16 @@ class Paraxial:
         u_obj_unit = u_rev_unit[-1]
 
         # Scale based on field definition
-        if self.optic.field_definition is None:
+        if self.optic.fields.field_definition is None:
             # TODO: make some nice error message
             raise ValueError()
 
-        scaling_factor = self.optic.field_definition.scale_chief_ray_for_field(
+        scaling_factor = self.optic.fields.field_definition.scale_chief_ray_for_field(
             self.optic, y_obj_unit, u_obj_unit, y_img_unit
         )
 
         # Determine initial ray parameters for final forward trace
-        if isinstance(self.optic.field_definition, ParaxialImageHeightField):
+        if isinstance(self.optic.fields.field_definition, ParaxialImageHeightField):
             y_obj_start = y_obj_unit * scaling_factor
         else:
             y_obj_start = -(y_obj_unit * scaling_factor)

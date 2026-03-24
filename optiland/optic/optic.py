@@ -20,7 +20,6 @@ from typing import TYPE_CHECKING, Any, Literal
 from optiland.aberrations import Aberrations
 from optiland.aperture import BaseSystemAperture, make_system_aperture
 from optiland.fields import (
-    BaseFieldDefinition,
     FieldGroup,
 )
 from optiland.optic.optic_serializer import OpticSerializer
@@ -75,10 +74,6 @@ class Optic:
     Attributes:
         name (str | None): An optional name for the optical system.
         aperture (Aperture | None): The aperture of the optical system.
-        field_definition (BaseFieldDefinition | None): The definition of the field used
-            in the optical system, e.g., AngleField or ObjectHeightField.
-        surface_group (SurfaceGroup): The group of surfaces that constitute
-            the optical system.
         fields (FieldGroup): The group of fields defined for the system.
         wavelengths (WavelengthGroup): The group of wavelengths used for
             analysis.
@@ -115,7 +110,6 @@ class Optic:
     def _initialize_attributes(self):
         """Initialize the attributes of the optical system."""
         self.aperture: BaseSystemAperture | None = None
-        self.field_definition: BaseFieldDefinition | None = None
 
         self.surfaces: SurfaceGroup = SurfaceGroup()
         self.fields: FieldGroup = FieldGroup()
@@ -124,11 +118,6 @@ class Optic:
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
-        self.ray_aiming_config = {
-            "mode": "paraxial",
-            "max_iter": 10,
-            "tol": 1e-6,
-        }
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 
@@ -252,7 +241,7 @@ class Optic:
 
         """
         warnings.warn(
-            "This method will be removed in version 0.7.0. Please use the fluent "
+            "This method will be removed in v0.7.0. Please use the hierarchical "
             "API instead (e.g., optic.surfaces.add()).",
             DeprecationWarning,
             stacklevel=2,
@@ -278,7 +267,7 @@ class Optic:
 
         """
         warnings.warn(
-            "This method will be removed in version 0.7.0. Please use the fluent "
+            "This method will be removed in v0.7.0. Please use the hierarchical "
             "API instead (e.g., optic.surfaces.remove()).",
             DeprecationWarning,
             stacklevel=2,
@@ -301,7 +290,7 @@ class Optic:
 
         """
         warnings.warn(
-            "This method will be removed in version 0.7.0. Please use the fluent "
+            "This method will be removed in v0.7.0. Please use the hierarchical "
             "API instead (e.g., optic.fields.add()).",
             DeprecationWarning,
             stacklevel=2,
@@ -328,7 +317,7 @@ class Optic:
 
         """
         warnings.warn(
-            "This method will be removed in version 0.7.0. Please use the fluent "
+            "This method will be removed in v0.7.0. Please use the hierarchical "
             "API instead (e.g., optic.wavelengths.add()).",
             DeprecationWarning,
             stacklevel=2,
@@ -358,7 +347,13 @@ class Optic:
         Raises:
             ValueError: If the field type is invalid.
         """
-        self.field_definition = BaseFieldDefinition.create(field_type)
+        warnings.warn(
+            "This method will be removed in v0.7.0. Please use the hierarchical "
+            "API instead (e.g., optic.fields.set_type()).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.fields.set_type(field_type)
 
     def set_radius(self, value: float, surface_number: int):
         """Set the radius of curvature of a surface.
@@ -372,7 +367,8 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_radius() is deprecated; use optic.updater.set_radius() instead.",
+            "Optic.set_radius() is deprecated and will be removed in v0.7.0; "
+            "use optic.updater.set_radius() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -390,7 +386,8 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_conic() is deprecated; use optic.updater.set_conic() instead.",
+            "Optic.set_conic() is deprecated and will be removed in v0.7.0; "
+            "use optic.updater.set_conic() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -408,7 +405,7 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_thickness() is deprecated; "
+            "Optic.set_thickness() is deprecated and will be removed in v0.7.0; "
             "use optic.updater.set_thickness() instead.",
             DeprecationWarning,
             stacklevel=2,
@@ -427,7 +424,8 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_index() is deprecated; use optic.updater.set_index() instead.",
+            "Optic.set_index() is deprecated and will be removed in v0.7.0; "
+            "use optic.updater.set_index() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -445,7 +443,7 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_material() is deprecated; "
+            "Optic.set_material() is deprecated and will be removed in v0.7.0; "
             "use optic.updater.set_material() instead.",
             DeprecationWarning,
             stacklevel=2,
@@ -465,7 +463,7 @@ class Optic:
                 from automatic paraxial updates. Defaults to True.
         """
         warnings.warn(
-            "Optic.set_norm_radius() is deprecated; "
+            "Optic.set_norm_radius() is deprecated and will be removed in v0.7.0; "
             "use optic.updater.set_norm_radius() instead.",
             DeprecationWarning,
             stacklevel=2,
@@ -488,7 +486,7 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_asphere_coeff() is deprecated; "
+            "Optic.set_asphere_coeff() is deprecated and will be removed in v0.7.0; "
             "use optic.updater.set_asphere_coeff() instead.",
             DeprecationWarning,
             stacklevel=2,
@@ -508,7 +506,7 @@ class Optic:
 
         """
         warnings.warn(
-            "Optic.set_polarization() is deprecated; "
+            "Optic.set_polarization() is deprecated and will be removed in v0.7.0; "
             "use optic.updater.set_polarization() instead.",
             DeprecationWarning,
             stacklevel=2,
@@ -563,12 +561,13 @@ class Optic:
             tol: Convergence tolerance for iterative solvers.
             **kwargs: Additional configuration parameters.
         """
-        self.ray_aiming_config = {
-            "mode": mode,
-            "max_iter": max_iter,
-            "tol": tol,
-            **kwargs,
-        }
+        warnings.warn(
+            "This method will be removed in v0.7.0. Please use the hierarchical "
+            "API instead (e.g., optic.ray_tracer.set_aiming()).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.ray_tracer.set_aiming(mode, max_iter, tol, **kwargs)
 
     def update(self) -> None:
         """Update the surface properties (pickups, solves, paraxial properties)."""
