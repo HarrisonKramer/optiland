@@ -193,7 +193,7 @@ class WavelengthGroup:
     def add(
         self,
         value: float,
-        is_primary: bool = True,
+        is_primary: bool = False,
         unit: str = "um",
         weight: float = 1.0,
     ):
