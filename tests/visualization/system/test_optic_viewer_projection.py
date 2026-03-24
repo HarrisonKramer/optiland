@@ -53,8 +53,8 @@ def test_optic_viewer_view_valid_projections(
         # Check that the circle for the first lens is centered correctly
         first_lens_patch = next(p for p in ax.patches if isinstance(p, Circle))
         center = first_lens_patch.center
-        assert np.isclose(center[0], optic.surface_group.surfaces[1].geometry.cs.x)
-        assert np.isclose(center[1], optic.surface_group.surfaces[1].geometry.cs.y)
+        assert np.isclose(center[0], optic.surfaces[1].geometry.cs.x)
+        assert np.isclose(center[1], optic.surfaces[1].geometry.cs.y)
 
     else:  # XZ, YZ
         from matplotlib.patches import Polygon

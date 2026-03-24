@@ -183,7 +183,7 @@ class PupilAberration(BaseAnalysis):
             dict: The pupil aberration data.
 
         """
-        stop_idx = self.optic.surface_group.stop_index
+        stop_idx = self.optic.surfaces.stop_index
 
         # Maybe use a data class for complex return values
         data: dict[str, Any] = {
@@ -193,11 +193,11 @@ class PupilAberration(BaseAnalysis):
 
         # determine size of stop
         self.optic.paraxial.trace(0, 1, self.optic.primary_wavelength)
-        d = self.optic.surface_group.y[stop_idx, 0]
+        d = self.optic.surfaces.y[stop_idx, 0]
 
         # Paraxial trace
         self.optic.paraxial.trace(0, data["Py"], self.optic.primary_wavelength)
-        parax_ref = self.optic.surface_group.y[stop_idx, :]
+        parax_ref = self.optic.surfaces.y[stop_idx, :]
 
         for field in self.fields:
             Hx = field[0]
@@ -215,8 +215,8 @@ class PupilAberration(BaseAnalysis):
                     num_rays=self.num_points,
                     distribution="line_x",
                 )
-                real_x = self.optic.surface_group.x[stop_idx, :]
-                real_int_x = self.optic.surface_group.intensity[stop_idx, :]
+                real_x = self.optic.surfaces.x[stop_idx, :]
+                real_int_x = self.optic.surfaces.intensity[stop_idx, :]
 
                 # Trace along the y-axis
                 self.optic.trace(
@@ -226,8 +226,8 @@ class PupilAberration(BaseAnalysis):
                     num_rays=self.num_points,
                     distribution="line_y",
                 )
-                real_y = self.optic.surface_group.y[stop_idx, :]
-                real_int_y = self.optic.surface_group.intensity[stop_idx, :]
+                real_y = self.optic.surfaces.y[stop_idx, :]
+                real_int_y = self.optic.surfaces.intensity[stop_idx, :]
 
                 # Compute error
                 error_x = (parax_ref - real_x) / d * 100

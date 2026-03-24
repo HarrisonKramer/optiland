@@ -204,15 +204,13 @@ class Pickup:
 
         """
         # Legacy support
-        surface = self.source_optic.surface_group.surfaces[self.source_surface_idx]
+        surface = self.source_optic.surfaces[self.source_surface_idx]
         if self.attr_type == "radius":
             return surface.geometry.radius
         if self.attr_type == "conic":
             return surface.geometry.k
         if self.attr_type == "thickness":
-            return self.source_optic.surface_group.get_thickness(
-                self.source_surface_idx
-            )
+            return self.source_optic.surfaces.get_thickness(self.source_surface_idx)
 
         # Generic path support
         try:

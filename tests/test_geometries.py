@@ -1532,7 +1532,7 @@ class TestToroidalGeometry:
         )
 
         # Trace Y-Fan Rays
-        rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
+        rays_out_yfan = lens.surfaces.trace(rays_in_yfan)
 
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
@@ -1593,7 +1593,7 @@ class TestToroidalGeometry:
             intensity=intensity_xfan,
         )
 
-        rays_out_xfan = lens.surface_group.trace(rays_in_xfan)
+        rays_out_xfan = lens.surfaces.trace(rays_in_xfan)
 
         zemax_x_out_xfan = be.array(
             [
@@ -1679,7 +1679,7 @@ class TestToroidalGeometry:
         )
 
         # Calculate sag using Optiland
-        optiland_z_sag = lens.surface_group.surfaces[1].geometry.sag(x_coords, y_coords)
+        optiland_z_sag = lens.surfaces[1].geometry.sag(x_coords, y_coords)
 
         assert be.allclose(optiland_z_sag, zemax_z_sag, rtol=1e-5, atol=1e-6)
 
@@ -1708,7 +1708,7 @@ class TestToroidalGeometry:
         )
 
         # Trace Y-Fan Rays
-        rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
+        rays_out_yfan = lens.surfaces.trace(rays_in_yfan)
         # (Lines removed as they are unnecessary debug print statements)
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
@@ -1750,7 +1750,7 @@ class TestToroidalGeometry:
         assert be.allclose(rays_out_yfan.N, zemax_N_out_yfan, rtol=1e-5, atol=1e-6)
 
         # --- Surface Normal Comparison ---
-        geom = lens.surface_group.surfaces[1].geometry
+        geom = lens.surfaces[1].geometry
         # choose a test point or array of points
         x_norm = be.array([2.5, -2.5, 2.5, -2.5])
         y_norm = be.array([0.0, 0.0, -2.5, 2.5])
@@ -1799,7 +1799,7 @@ class TestToroidalGeometry:
             intensity=intensity_xfan,
         )
 
-        rays_out_xfan = lens.surface_group.trace(rays_in_xfan)
+        rays_out_xfan = lens.surfaces.trace(rays_in_xfan)
 
         zemax_x_out_xfan = be.array(
             [
@@ -2311,7 +2311,7 @@ class TestForbesQbfsGeometry:
         zmx_rays_M = be.array([3.128052326230352e-002, 0.0, -3.128052326230352e-002])
         zmx_rays_N = be.array([9.995106446979125e-001, 1.0, 9.995106446979125e-001])
 
-        rays_out = system.surface_group.trace(test_rays)
+        rays_out = system.surfaces.trace(test_rays)
 
         assert be.allclose(rays_out.x, zmx_rays_x, rtol=1e-7, atol=1e-7)
         assert be.allclose(rays_out.y, zmx_rays_y, rtol=1e-7, atol=1e-7)
@@ -2351,7 +2351,7 @@ class TestForbesQbfsGeometry:
             pytest.skip("Autodiff test requires the torch backend.")
 
         optic = self._create_forbes_autodiff_optic()
-        forbes_surface = optic.surface_group.surfaces[3].geometry
+        forbes_surface = optic.surfaces[3].geometry
         coeffs_to_test = forbes_surface.radial_terms
 
         for coeff_tensor in coeffs_to_test.values():
@@ -2361,7 +2361,7 @@ class TestForbesQbfsGeometry:
         initial_rays = RealRays(
             x=0.1, y=0.1, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55
         )
-        optic.surface_group.trace(initial_rays)
+        optic.surfaces.trace(initial_rays)
         final_x = initial_rays.x
 
         loss = be.sum(final_x**2)
@@ -2386,14 +2386,14 @@ class TestForbesQbfsGeometry:
         optic = self._create_forbes_autodiff_optic()
 
         # We will test the gradient with respect to the radius
-        trainable_radius = optic.surface_group.surfaces[3].geometry.radius
+        trainable_radius = optic.surfaces[3].geometry.radius
         trainable_radius.requires_grad_(True)
 
         # Ray trace a ray hitting the VERTEX
         initial_rays = RealRays(
             x=0.0, y=0.0, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55
         )
-        optic.surface_group.trace(initial_rays)
+        optic.surfaces.trace(initial_rays)
         final_y = initial_rays.y
 
         loss = be.sum(final_y**2)
@@ -2719,7 +2719,7 @@ class TestForbesQ2dGeometry:
         vertex_ray = RealRays(
             x=0.0, y=0.0, z=0.0, L=0.0, M=0.0, N=1.0, intensity=1.0, wavelength=0.55
         )
-        final_ray = optic.surface_group.trace(vertex_ray)
+        final_ray = optic.surfaces.trace(vertex_ray)
 
         # define loss and compute gradient
         loss = be.sum(final_ray.y**2)
@@ -3012,9 +3012,9 @@ class TestForbesValidation:
         )
 
         # trace and group for comparison
-        rays_out_1 = optic.surface_group.trace(rays_1)
-        rays_out_2 = optic.surface_group.trace(rays_2)
-        rays_out_3 = optic.surface_group.trace(rays_3)
+        rays_out_1 = optic.surfaces.trace(rays_1)
+        rays_out_2 = optic.surfaces.trace(rays_2)
+        rays_out_3 = optic.surfaces.trace(rays_3)
 
         rays_out_1 = be.stack(
             [

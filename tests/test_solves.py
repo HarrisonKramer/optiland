@@ -47,7 +47,7 @@ class TestMarginalRayHeightThicknessSolve:
 
         offset = (height - ya[surface_idx]) / u_incident
 
-        surf = optic.surface_group.surfaces[surface_idx]
+        surf = optic.surfaces[surface_idx]
         z_orig = be.copy(surf.geometry.cs.z)
 
         solve = MarginalRayHeightThicknessSolve(optic, surface_idx, height)
@@ -116,7 +116,7 @@ class TestChiefRayHeightThicknessSolve:
             )
 
         offset = (height - yc[surface_idx]) / u_incident
-        surf = optic.surface_group.surfaces[surface_idx]
+        surf = optic.surfaces[surface_idx]
         z_orig = be.copy(surf.geometry.cs.z)
 
         solve = ChiefRayHeightThicknessSolve(optic, surface_idx, height)
@@ -212,7 +212,7 @@ class TestChiefRayAngleCurvatureSolve:
 class TestQuickfocusSolve:
     def test_quick_focus_solve_constructor(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[
+        optic.surfaces[-1].geometry.cs.z = optic.surfaces[
             -1
         ].geometry.cs.z - be.array(10)
         solve = QuickFocusSolve(optic)
@@ -220,15 +220,15 @@ class TestQuickfocusSolve:
 
     def test_quick_focus_solve_apply(self, set_test_backend):
         optic = CookeTriplet()
-        optic.surface_group.surfaces[-1].geometry.cs.z = optic.surface_group.surfaces[
+        optic.surfaces[-1].geometry.cs.z = optic.surfaces[
             -1
         ].geometry.cs.z - be.array(10)
         thickness = 42.21812063592369
         solve = QuickFocusSolve(optic)
         solve.apply()
 
-        pos2 = optic.surface_group.positions[-1][0]
-        pos1 = optic.surface_group.positions[-2][0]
+        pos2 = optic.surfaces.positions[-1][0]
+        pos1 = optic.surfaces.positions[-2][0]
 
         assert_allclose(pos2 - pos1, thickness, rtol=1e-3)
 

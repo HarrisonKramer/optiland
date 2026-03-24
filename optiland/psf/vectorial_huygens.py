@@ -142,7 +142,7 @@ class VectorialHuygensPSF(ScalarHuygensPSF):
         pupil_opd_ideal = be.zeros_like(data.opd)
         image_x = be.zeros((1, 1))
         image_y = be.zeros((1, 1))
-        ideal_z = self.optic.surface_group.positions[-1]
+        ideal_z = self.optic.surfaces.positions[-1]
         image_z = be.full((1, 1), ideal_z)
 
         is_valid = data.intensity > 0

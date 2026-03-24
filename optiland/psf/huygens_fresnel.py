@@ -267,7 +267,7 @@ class ScalarHuygensPSF(BasePSF):
         pupil_opd_ideal = be.zeros_like(data.opd)  # ideal case has no OPD
         image_x = be.zeros((1, 1))  # single point for normalization
         image_y = be.zeros((1, 1))
-        ideal_z = self.optic.surface_group.positions[-1]  # image plane position
+        ideal_z = self.optic.surfaces.positions[-1]  # image plane position
         image_z = be.full((1, 1), ideal_z)
 
         psf_max = self._summation_strategy.compute(

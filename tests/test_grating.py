@@ -197,18 +197,18 @@ def test_paraxial_flat_grating_transmission(
     Hy = 0.0
     Py = 0.0
     lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
-    u = lens.surface_group.u[-1].item()
-    y = lens.surface_group.y[-1].item()
+    u = lens.surfaces.u[-1].item()
+    y = lens.surfaces.y[-1].item()
     assert_allclose([u, y], [0.1174, 3.522])
     Hy = 0.0
     Py = 1.0
     lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
-    u = lens.surface_group.u[-1].item()
-    y = lens.surface_group.y[-1].item()
+    u = lens.surfaces.u[-1].item()
+    y = lens.surfaces.y[-1].item()
     assert_allclose([u, y], [0.1174, 11.022])
     Hy = 0.8
     Py = 0.8
     lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
-    u = lens.surface_group.u[-1].item()
-    y = lens.surface_group.y[-1].item()
+    u = lens.surfaces.u[-1].item()
+    y = lens.surfaces.y[-1].item()
     assert_allclose([u, y], [0.25794083, 13.73822504])

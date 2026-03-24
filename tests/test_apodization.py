@@ -130,8 +130,8 @@ def test_trace_apodization(set_test_backend):
     lens.set_apodization(GaussianApodization(sigma=0.1))
     rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=256, distribution="uniform")
 
-    x = lens.surface_group.x[4, :]
-    y = lens.surface_group.y[4, :]
+    x = lens.surfaces.x[4, :]
+    y = lens.surfaces.y[4, :]
     r = be.sqrt(x**2 + y**2)
     center_intensities = rays.i[r <= 0.5]
     edge_intensities = rays.i[r > 0.5]

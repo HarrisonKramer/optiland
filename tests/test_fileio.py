@@ -162,8 +162,8 @@ class TestEndToEnd:
         optic = load_zemax_file(filename)
         assert isinstance(optic, Optic)
         # Check surfaces
-        surf1 = optic.surface_group.surfaces[1]
-        surf2 = optic.surface_group.surfaces[2]
+        surf1 = optic.surfaces[1]
+        surf2 = optic.surfaces[2]
         # Check radii
         assert_allclose(surf1.geometry.R_yz, 1 / 0.4950495049504951)
         assert_allclose(surf1.geometry.R_rot, be.inf)
@@ -259,9 +259,9 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
 
     # Manually insert a tensor after creation to simulate a backend mismatch or torch active state
     if has_torch:
-        lens.surface_group.surfaces[1].thickness = tensor_val
-        lens.surface_group.surfaces[1].geometry.radius = tensor_val
-        lens.surface_group.surfaces[2].geometry.coefficients = [tensor_val, tensor_val]
+        lens.surfaces[1].thickness = tensor_val
+        lens.surfaces[1].geometry.radius = tensor_val
+        lens.surfaces[2].geometry.coefficients = [tensor_val, tensor_val]
     else:
         # We need a custom mock class to simulate a PyTorch Tensor
         class MockTensor:
@@ -274,9 +274,9 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
             def item(self):
                 return self.val
 
-        lens.surface_group.surfaces[1].thickness = MockTensor(1.23)
-        lens.surface_group.surfaces[1].geometry.radius = MockTensor(1.23)
-        lens.surface_group.surfaces[2].geometry.coefficients = [
+        lens.surfaces[1].thickness = MockTensor(1.23)
+        lens.surfaces[1].geometry.radius = MockTensor(1.23)
+        lens.surfaces[2].geometry.coefficients = [
             MockTensor(1.23),
             MockTensor(1.23),
         ]
@@ -293,9 +293,9 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
         lens2 = load_optiland_file(temp_file.name)
 
     # Assert values loaded properly
-    assert abs(lens2.surface_group.surfaces[1].thickness - 1.23) < 1e-6
-    assert abs(lens2.surface_group.surfaces[1].geometry.radius - 1.23) < 1e-6
-    assert abs(lens2.surface_group.surfaces[2].geometry.coefficients[0] - 1.23) < 1e-6
+    assert abs(lens2.surfaces[1].thickness - 1.23) < 1e-6
+    assert abs(lens2.surfaces[1].geometry.radius - 1.23) < 1e-6
+    assert abs(lens2.surfaces[2].geometry.coefficients[0] - 1.23) < 1e-6
 
     os.remove(temp_file.name)
 
@@ -341,7 +341,7 @@ def test_remove_surface_after_load(set_test_backend, tmp_path):
     loaded_lens = load_optiland_file(filepath)
 
     # 3. Remove the second surface (the air spacer)
-    loaded_lens.surface_group.remove_surface(1)
+    loaded_lens.surfaces.remove(1)
 
     # 4. Assert that the positions of the remaining surfaces are correct
     # Original surfaces: 0 (obj), 1 (air), 2 (n-bk7), 3 (air), 4 (img)
@@ -352,7 +352,7 @@ def test_remove_surface_after_load(set_test_backend, tmp_path):
     # New surf 1 (orig 2) z -> 0.0. Its thickness is 10.
     # New surf 2 (orig 3) z -> 0.0 + 10 = 10.0. Its thickness is 20.
     # New surf 3 (orig 4) z -> 10.0 + 20 = 30.0. Its thickness is 0.
-    positions = loaded_lens.surface_group.positions.flatten()
+    positions = loaded_lens.surfaces.positions.flatten()
 
     # The object surface's position (index 0) is be.inf and not relevant to the bug.
     # We check the positions of the subsequent surfaces.
@@ -465,7 +465,7 @@ class TestZemaxToOpticConverterExtended:
         converter = ZemaxToOpticConverter(zemax_data)
         optic = converter.convert()
 
-        surf = optic.surface_group.surfaces[0]
+        surf = optic.surfaces[0]
         assert surf.geometry.radius == 100.0
 
         cs = surf.geometry.cs
@@ -498,7 +498,7 @@ class TestZemaxToOpticConverterExtended:
         converter = ZemaxToOpticConverter(zemax_data)
         optic = converter.convert()
 
-        surf = optic.surface_group.surfaces[0]
+        surf = optic.surfaces[0]
         assert isinstance(surf.geometry, ToroidalGeometry)
         assert surf.geometry.R_yz == 50.0
         assert surf.geometry.R_rot == 60.0
@@ -521,5 +521,5 @@ class TestZemaxToOpticConverterExtended:
         converter = ZemaxToOpticConverter(zemax_data)
         optic = converter.convert()
 
-        surf = optic.surface_group.surfaces[0]
+        surf = optic.surfaces[0]
         assert be.isinf(surf.thickness)

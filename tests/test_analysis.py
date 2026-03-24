@@ -37,7 +37,7 @@ def telescope_objective():
 def triplet_four_fields():
     lens = Optic()
 
-    lens.surface_group.surfaces = []
+    lens.surfaces = []
 
     lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
     lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
@@ -817,8 +817,8 @@ def test_generate_field_data_local(set_test_backend, cooke_triplet):
     plot_x = data.x
     plot_y = data.y
     # intensity = data.intensity # if needed for future assertions
-    global_x = spot.optic.surface_group.x[-1, :]
-    global_y = spot.optic.surface_group.y[-1, :]
+    global_x = spot.optic.surfaces.x[-1, :]
+    global_y = spot.optic.surfaces.y[-1, :]
     assert_allclose(plot_x, global_x)
     assert_allclose(plot_y, global_y)
 
@@ -841,8 +841,8 @@ def test_generate_field_data_global(set_test_backend, cooke_triplet):
     plot_x = data.x
     plot_y = data.y
     # intensity = data.intensity # if needed for future assertions
-    global_x = spot.optic.surface_group.x[-1, :]
-    global_y = spot.optic.surface_group.y[-1, :]
+    global_x = spot.optic.surfaces.x[-1, :]
+    global_y = spot.optic.surfaces.y[-1, :]
     assert_allclose(plot_x, global_x)
     assert_allclose(plot_y, global_y)
 
@@ -859,7 +859,7 @@ def test_system_irradiance_v1():
             detector_size = RectangularAperture(
                 x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
             )
-            self.surface_group.surfaces[-1].aperture = detector_size
+            self.surfaces[-1].aperture = detector_size
             self.add_wavelength(0.55)
             self.set_field_type("angle")
             self.add_field(y=0)
@@ -887,7 +887,7 @@ def perfect_mirror_system():
             detector_size = RectangularAperture(
                 x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
             )
-            self.surface_group.surfaces[-1].aperture = detector_size
+            self.surfaces[-1].aperture = detector_size
             self.add_wavelength(0.55)
             self.set_field_type("angle")
             self.add_field(y=0)
@@ -1422,7 +1422,7 @@ class TestIncoherentIrradiance:
         detector_size = RectangularAperture(
             x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
         )
-        optic_sys.surface_group.surfaces[-1].aperture = detector_size
+        optic_sys.surfaces[-1].aperture = detector_size
         optic_sys.add_wavelength(0.55)
         optic_sys.set_field_type("angle")
         optic_sys.add_field(y=0)
@@ -1438,7 +1438,7 @@ class TestIncoherentIrradiance:
         loss = be.sum(irr_map**2)
         loss.backward()
 
-        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
+        grad = optic_sys.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
 
@@ -1959,7 +1959,7 @@ class TestRadiantIntensity:
         detector_size = RectangularAperture(
             x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
         )
-        optic_sys.surface_group.surfaces[-1].aperture = detector_size
+        optic_sys.surfaces[-1].aperture = detector_size
         optic_sys.add_wavelength(0.55)
         optic_sys.set_field_type("angle")
         optic_sys.add_field(y=0)
@@ -1984,7 +1984,7 @@ class TestRadiantIntensity:
         loss = be.sum(int_map**2)
         loss.backward()
 
-        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
+        grad = optic_sys.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
 

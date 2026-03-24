@@ -164,9 +164,9 @@ class RadiantIntensity(BaseAnalysis):
                 from optiland.rays import RealRays
 
                 rays_to_trace = RealRays(**self._initial_ray_data)
-                self.optic.surface_group.trace(rays_to_trace)
+                self.optic.surfaces.trace(rays_to_trace)
 
-        surf_group = self.optic.surface_group
+        surf_group = self.optic.surfaces
         try:
             ref_surf = surf_group.surfaces[self.reference_surface_index]
             L_all, M_all, N_all = ref_surf.L, ref_surf.M, ref_surf.N

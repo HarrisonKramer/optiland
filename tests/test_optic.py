@@ -533,7 +533,7 @@ class TestOptic:
         lens.remove_surface(index=2)
         assert len(lens.surface_group.surfaces) == num_surfaces_before - 1
 
-    @patch("optiland.optic.optic.SurfaceSagViewer")
+    @patch("optiland.visualization.SurfaceSagViewer")
     def test_plot_surface_sag(self, mock_viewer, set_test_backend):
         lens = singlet_infinite_object()
 

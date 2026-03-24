@@ -248,7 +248,7 @@ class TestOpticViewer3D:
 
     def test_view_asymmetric(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[1].geometry.is_symmetric = False
+        lens.surfaces[1].geometry.is_symmetric = False
         viewer = OpticViewer3D(lens)
         with (
             patch.object(viewer.iren, "Start") as mock_start,
@@ -296,7 +296,7 @@ class TestOpticViewer3D:
 
     def test_non_symmetric(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[1].geometry.is_symmetric = False
+        lens.surfaces[1].geometry.is_symmetric = False
         viewer = OpticViewer3D(lens)
         viewer.system._identify_components()
         c = viewer.system.components[0]
@@ -335,7 +335,7 @@ class TestOpticViewer3D:
 
     def test_view_non_symmetric(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[1].geometry.is_symmetric = False
+        lens.surfaces[1].geometry.is_symmetric = False
         viewer = OpticViewer3D(lens)
         viewer.system._identify_components()
         with (
@@ -438,7 +438,7 @@ class TestLensInfoViewer:
 
     def test_invalid_geometry(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[2].geometry = InvalidGeometry()
+        lens.surfaces[2].geometry = InvalidGeometry()
         viewer = LensInfoViewer(lens)
         with pytest.raises(ValueError):
             viewer.view()
@@ -460,7 +460,7 @@ class TestLensInfoViewer:
     def test_view_asphere(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
         asphere_geo = EvenAsphere(CoordinateSystem(), 100, coefficients=[0.1, 0.3, 1.2])
-        lens.surface_group.surfaces[2].geometry = asphere_geo
+        lens.surfaces[2].geometry = asphere_geo
         viewer = LensInfoViewer(lens)
         viewer.view()
         captured = capsys.readouterr()
@@ -484,7 +484,7 @@ class TestLensInfoViewer:
             ),
         )
         mat = MaterialFile(filename)
-        lens.surface_group.surfaces[2].material_post = mat
+        lens.surfaces[2].material_post = mat
         viewer = LensInfoViewer(lens)
         viewer.view()
         captured = capsys.readouterr()
@@ -499,7 +499,7 @@ class TestLensInfoViewer:
     def test_view_ideal_material(self, capsys, set_test_backend):
         lens = ReverseTelephoto()
         mat = IdealMaterial(1.5)
-        lens.surface_group.surfaces[2].material_post = mat
+        lens.surfaces[2].material_post = mat
         viewer = LensInfoViewer(lens)
         viewer.view()
         captured = capsys.readouterr()
@@ -513,14 +513,14 @@ class TestLensInfoViewer:
 
     def test_view_invalid_material(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[2].material_post = InvalidMaterial()
+        lens.surfaces[2].material_post = InvalidMaterial()
         viewer = LensInfoViewer(lens)
         with pytest.raises(ValueError):
             viewer.view()
 
     def test_view_abbe_material(self, set_test_backend):
         lens = ReverseTelephoto()
-        lens.surface_group.surfaces[2].material_post = AbbeMaterial(
+        lens.surfaces[2].material_post = AbbeMaterial(
             1.5, 60, model="polynomial"
         )
         viewer = LensInfoViewer(lens)
@@ -530,7 +530,7 @@ class TestLensInfoViewer:
         lens = ReverseTelephoto()
         from optiland.materials import AbbeMaterialE
 
-        lens.surface_group.surfaces[2].material_post = AbbeMaterialE(1.5, 60)
+        lens.surfaces[2].material_post = AbbeMaterialE(1.5, 60)
         viewer = LensInfoViewer(lens)
         viewer.view()
 
@@ -589,7 +589,7 @@ def test_mangin_mirror_visualization(projection, lens_class, set_test_backend):
     # Dummy rays object for OpticalSystem
     class DummyRays:
         def __init__(self, optic):
-            self.r_extent = [15] * optic.surface_group.num_surfaces
+            self.r_extent = [15] * optic.surfaces.num_surfaces
 
     optical_system = OpticalSystem(
         mangin_mirror, DummyRays(mangin_mirror), projection=projection

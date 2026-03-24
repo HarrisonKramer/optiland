@@ -79,11 +79,11 @@ class RealRayTracer:
         rays = self.ray_generator.generate_rays(
             Hx_full, Hy_full, Px_full, Py_full, wavelength
         )
-        self.optic.surface_group.trace(rays)
+        self.optic.surfaces.trace(rays)
 
         # Propagate to the image surface
         if self.optic.image_surface:
-            last_surface = self.optic.surface_group.surfaces[-1]
+            last_surface = self.optic.surfaces[-1]
             last_surface.material_post.propagation_model.propagate(
                 rays, last_surface.thickness
             )
@@ -92,7 +92,7 @@ class RealRayTracer:
             rays.update_intensity(self.optic.polarization_state)
 
         # update ray intensity
-        self.optic.surface_group.intensity[-1, :] = rays.i
+        self.optic.surfaces.intensity[-1, :] = rays.i
 
         return rays
 
@@ -119,16 +119,16 @@ class RealRayTracer:
         Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        self.optic.surface_group.trace(rays)
+        self.optic.surfaces.trace(rays)
 
         # Propagate to the image surface
-        last_surface = self.optic.surface_group.surfaces[-1]
+        last_surface = self.optic.surfaces[-1]
         last_surface.material_post.propagation_model.propagate(
             rays, last_surface.thickness
         )
 
         # update intensity
-        self.optic.surface_group.intensity[-1, :] = rays.i
+        self.optic.surfaces.intensity[-1, :] = rays.i
 
         return rays
 

@@ -76,7 +76,7 @@ class PolynomialCoeffVariable(VariableBehavior):
             new_value (float): The new value of the polynomial coefficient.
 
         """
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         i, j = self.coeff_index
         try:
             surf.geometry.coefficients[i][j] = new_value

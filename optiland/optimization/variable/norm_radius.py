@@ -23,9 +23,7 @@ class NormalizationRadiusVariable(VariableBehavior):
         if scaler is None:
             scaler = IdentityScaler()
         super().__init__(optic, surface_number, scaler=scaler, **kwargs)
-        self.optic.surface_group.surfaces[
-            self.surface_number
-        ].is_norm_radius_variable = True
+        self.optic.surfaces[self.surface_number].is_norm_radius_variable = True
 
     def get_value(self):
         """Returns the current value of the normalization radius."""

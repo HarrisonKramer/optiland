@@ -48,7 +48,7 @@ class OpticSerializer:
             "apodization": optic.apodization.to_dict() if optic.apodization else None,
             "pickups": optic.pickups.to_dict(),
             "solves": optic.solves.to_dict(),
-            "surface_group": optic.surface_group.to_dict(),
+            "surface_group": optic.surfaces.to_dict(),
         }
 
         data["wavelengths"]["polarization"] = optic.polarization
@@ -74,7 +74,7 @@ class OpticSerializer:
         optic = Optic()
         optic.name = data.get("name")
         optic.aperture = BaseSystemAperture.from_dict(data["aperture"])
-        optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
+        optic.surfaces = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
         optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
 

@@ -257,8 +257,8 @@ class Aberrations:
         self._inv: float = self.optic.paraxial.invariant()  # Lagrange invariant
         self._on_axis = be.isclose(self._inv, be.array(0.0))
         self._n: BEArray = self.optic.n()  # Refractive indices for all surfaces
-        self._N: int = self.optic.surface_group.num_surfaces
-        self._C = 1 / self.optic.surface_group.radii
+        self._N: int = self.optic.surfaces.num_surfaces
+        self._C = 1 / self.optic.surfaces.radii
         self._ya, self._ua = self.optic.paraxial.marginal_ray()
         self._yb, self._ub = self.optic.paraxial.chief_ray()
         self._hp = self._inv / (self._n[-1] * self._ua[-1])

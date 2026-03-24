@@ -41,12 +41,12 @@ class AngleField(BaseFieldDefinition):
             offset = self._get_starting_z_offset(optic)
             x = -be.tan(be.radians(field_x)) * (offset + EPL)
             y = -be.tan(be.radians(field_y)) * (offset + EPL)
-            z = optic.surface_group.positions[1] - offset
+            z = optic.surfaces.positions[1] - offset
             x0 = be.array(Px) * EPD / 2 * be.array(vx) + x
             y0 = be.array(Py) * EPD / 2 * be.array(vy) + y
             z0 = be.full_like(Px, z)
         else:
-            z0 = optic.surface_group.positions[0]
+            z0 = optic.surfaces.positions[0]
             x0 = -be.tan(be.radians(field_x)) * (EPL - z0)
             y0 = -be.tan(be.radians(field_y)) * (EPL - z0)
             if be.size(x0) == 1:
@@ -73,7 +73,7 @@ class AngleField(BaseFieldDefinition):
         max_field = be.array(optic.fields.max_field)
         field_y = max_field * be.array(Hy)
         y = -be.tan(be.radians(field_y)) * EPL
-        z = optic.surface_group.positions[1]
+        z = optic.surfaces.positions[1]
         y0 = y1 + y
         z0 = be.ones_like(y1) * z
         return y0, z0
@@ -113,6 +113,6 @@ class AngleField(BaseFieldDefinition):
             float: The z-coordinate offset relative to the first surface.
 
         """
-        z = optic.surface_group.positions[1:-1]
+        z = optic.surfaces.positions[1:-1]
         offset = optic.paraxial.EPD()
         return offset - be.min(z)

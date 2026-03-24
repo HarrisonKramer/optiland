@@ -65,7 +65,7 @@ class ForbesQNormalSlopeCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value for the coefficient.
         """
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         geom = surf.geometry
 
         geom.radial_terms[self.coeff_number] = new_value
@@ -150,7 +150,7 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value for the coefficient.
         """
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         geom = surf.geometry
 
         geom.freeform_coeffs[self.coeff_tuple] = new_value

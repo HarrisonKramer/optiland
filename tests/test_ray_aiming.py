@@ -26,15 +26,15 @@ def test_iterative_aimer_infinite(set_test_backend):
 
     x, y, z, L, M, N = aimer.aim_rays((Hx, Hy), wavelength, (Px, Py))
 
-    stop_idx = optic.surface_group.stop_index
+    stop_idx = optic.surfaces.stop_index
 
     from optiland.rays import RealRays
 
     rays = RealRays(x, y, z, L, M, N, intensity=1.0, wavelength=wavelength)
     for i in range(1, stop_idx + 1):
-        optic.surface_group.surfaces[i].trace(rays)
+        optic.surfaces[i].trace(rays)
 
-    stop_surf = optic.surface_group.surfaces[stop_idx]
+    stop_surf = optic.surfaces[stop_idx]
     assert not be.any(be.isnan(x))
 
 

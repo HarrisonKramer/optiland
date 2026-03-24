@@ -44,7 +44,7 @@ class AsphereCoeffVariable(VariableBehavior):
         self.coeff_number = coeff_number
 
         # Scaling changes with the order of the asphere per coefficient
-        surf = optic.surface_group.surfaces[surface_number]
+        surf = optic.surfaces[surface_number]
         self.order = surf.geometry.order
         if scaler is None:
             factor = 10 ** (4 + self.order * self.coeff_number)

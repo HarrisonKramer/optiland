@@ -511,7 +511,7 @@ def test_paraxial_init(set_test_backend):
     paraxial = Paraxial(optic)
 
     assert paraxial.optic == optic
-    assert paraxial.surfaces == optic.surface_group
+    assert paraxial.surfaces == optic.surfaces
 
 
 @pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)

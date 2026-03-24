@@ -75,7 +75,7 @@ class ZernikeCoeffVariable(PolynomialCoeffVariable):
             new_value (float): The new value of the Zernike coefficient.
 
         """
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         i = self.coeff_index
 
         if i < len(surf.geometry.coefficients):

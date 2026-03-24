@@ -53,7 +53,7 @@ class ParaxialRayTracer:
         u0 = (y1 - y0) / (EPL - z0)
         rays = ParaxialRays(y0, u0, z0, wavelength)
 
-        self.optic.surface_group.trace(rays)
+        self.optic.surfaces.trace(rays)
 
     def trace_generic(
         self,
@@ -85,10 +85,10 @@ class ParaxialRayTracer:
         u_ = self._process_input(u)
         z_ = self._process_input(z)
 
-        R = self.optic.surface_group.radii
+        R = self.optic.surfaces.radii
         n = self.optic.n(wavelength)
-        pos = be.ravel(self.optic.surface_group.positions)
-        surfs = self.optic.surface_group.surfaces
+        pos = be.ravel(self.optic.surfaces.positions)
+        surfs = self.optic.surfaces
 
         if reverse:
             R = -be.flip(R)

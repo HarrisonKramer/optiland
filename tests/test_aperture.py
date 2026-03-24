@@ -190,4 +190,4 @@ def test_confirm_stop_size_floating_stop(set_test_backend):
     lens.add_wavelength(value=0.65)
 
     lens.paraxial.trace(Hy=0, Py=1, wavelength=0.55)
-    assert_allclose(lens.surface_group.y[stop_idx], stop_diam / 2)
+    assert_allclose(lens.surfaces.y[stop_idx], stop_diam / 2)

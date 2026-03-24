@@ -55,9 +55,9 @@ class LensInfoViewer(BaseViewer):
 
         surf_type = self._get_surface_types()
         comments = self._get_comments()
-        radii = be.to_numpy(self.optic.surface_group.radii)
+        radii = be.to_numpy(self.optic.surfaces.radii)
         thicknesses = self._get_thicknesses()
-        conic = be.to_numpy(self.optic.surface_group.conic)
+        conic = be.to_numpy(self.optic.surfaces.conic)
         semi_aperture = self._get_semi_apertures()
         mat = self._get_materials()
 
@@ -84,7 +84,7 @@ class LensInfoViewer(BaseViewer):
     def _get_surface_types(self):
         """Extracts and formats the surface types."""
         surf_type = []
-        for surf in self.optic.surface_group.surfaces:
+        for surf in self.optic.surfaces:
             g = surf.geometry
 
             # Check if __str__ method exists
@@ -99,19 +99,19 @@ class LensInfoViewer(BaseViewer):
 
     def _get_comments(self):
         """Extracts comments for each surface."""
-        return [surf.comment for surf in self.optic.surface_group.surfaces]
+        return [surf.comment for surf in self.optic.surfaces]
 
     def _get_thicknesses(self):
         """Calculates thicknesses between surfaces."""
         thicknesses = be.diff(
-            be.ravel(self.optic.surface_group.positions), append=be.array([be.nan])
+            be.ravel(self.optic.surfaces.positions), append=be.array([be.nan])
         )
         return be.to_numpy(thicknesses)
 
     def _get_semi_apertures(self):
         """Extracts semi-aperture values for each surface."""
         semi_apertures = []
-        for surf in self.optic.surface_group.surfaces:
+        for surf in self.optic.surfaces:
             if isinstance(surf.aperture, RadialAperture):
                 semi_apertures.append(be.to_numpy(surf.aperture.r_max))
             else:
@@ -120,9 +120,7 @@ class LensInfoViewer(BaseViewer):
 
     def _get_materials(self):
         """Determines the material for each surface."""
-        return [
-            MaterialFormatter.format(surf) for surf in self.optic.surface_group.surfaces
-        ]
+        return [MaterialFormatter.format(surf) for surf in self.optic.surfaces]
 
     def _get_aspheric_coefficients(self):
         """Extracts the aspheric coefficients for each surface."""
@@ -135,7 +133,7 @@ class LensInfoViewer(BaseViewer):
         )
 
         surface_coeffs = []
-        for i, surface in enumerate(self.optic.surface_group.surfaces):
+        for i, surface in enumerate(self.optic.surfaces):
             if isinstance(surface.geometry, valid_geometry_types):
                 coefficients = list(surface.geometry.coefficients)
                 if coefficients:

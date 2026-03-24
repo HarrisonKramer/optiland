@@ -22,7 +22,7 @@ def test_scale_standard():
     lens.add_surface(index=1)  # Add a second surface so first one is not "last"
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, StandardGeometry)
     assert surface.geometry.radius == 20
     assert surface.thickness == 10
@@ -41,7 +41,7 @@ def test_scale_even_asphere():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, EvenAsphere)
     assert surface.geometry.radius == 20
 
@@ -63,7 +63,7 @@ def test_scale_odd_asphere():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     s = 2.0
     expected_c0 = coeffs[0] * s ** (1 - (0 + 1))
     expected_c1 = coeffs[1] * s ** (1 - (1 + 1))
@@ -80,7 +80,7 @@ def test_scale_polynomial():
     lens.add_surface(index=0, radius=10, surface_type="polynomial", coefficients=coeffs)
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     s = 2.0
     # coeffs[1][1] is x^1 y^1
     expected = 1e-3 * s ** (1 - (1 + 1))
@@ -100,7 +100,7 @@ def test_scale_chebyshev():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     s = 2.0
 
     assert surface.geometry.norm_x == 2.0
@@ -117,7 +117,7 @@ def test_scale_zernike():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     s = 2.0
 
     assert surface.geometry.norm_radius == 2.0
@@ -131,7 +131,7 @@ def test_scale_biconic():
     )  # using defaults
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, BiconicGeometry)
     assert surface.geometry.Rx == 20
     assert surface.geometry.Ry == 20
@@ -149,7 +149,7 @@ def test_scale_toroidal():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     s = 2.0
 
     assert surface.geometry.R_rot == 20
@@ -167,7 +167,7 @@ def test_scale_plane():
     lens.add_surface(index=1)
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, Plane)
     assert np.isinf(surface.geometry.radius)
     assert surface.thickness == 10
@@ -186,7 +186,7 @@ def test_scale_plane_grating():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, PlaneGrating)
     assert surface.geometry.grating_period == 2.0
 
@@ -203,7 +203,7 @@ def test_scale_standard_grating():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, StandardGratingGeometry)
     assert surface.geometry.radius == 20
     assert surface.geometry.grating_period == 2.0
@@ -225,7 +225,7 @@ def test_scale_forbes_qbfs():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, ForbesQNormalSlopeGeometry)
     assert surface.geometry.radius == 20
     assert surface.geometry.norm_radius == 2.0
@@ -252,7 +252,7 @@ def test_scale_forbes_q2d():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, ForbesQ2dGeometry)
     assert surface.geometry.radius == 20
     assert surface.geometry.norm_radius == 2.0
@@ -285,7 +285,7 @@ def test_scale_nurbs():
     )
     lens.scale_system(2.0)
 
-    surface = lens.surface_group.surfaces[0]
+    surface = lens.surfaces[0]
     assert isinstance(surface.geometry, NurbsGeometry)
 
     s = 2.0

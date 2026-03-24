@@ -38,7 +38,7 @@ def setup_problem(
 
     # Set the initial state before adding variables to ensure it's captured
     if add_variable:
-        lens.surface_group.surfaces[1].radius = initial_value
+        lens.surfaces[1].radius = initial_value
         problem.add_variable(
             lens,
             "radius",

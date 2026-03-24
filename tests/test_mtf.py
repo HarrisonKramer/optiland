@@ -97,7 +97,7 @@ class TestFFTMTF:
     def test_generate_data_finite_object(self, set_test_backend, optic):
         """With a finite object distance, MTF still gets generated."""
         # Push the first surface very far away to mimic a finite-object scenario
-        optic.surface_group.surfaces[0].geometry.cs.z = be.array(1e6)
+        optic.surfaces[0].geometry.cs.z = be.array(1e6)
         m = FFTMTF(optic)
         m._generate_mtf_data()
         assert hasattr(m, "mtf") and m.mtf is not None

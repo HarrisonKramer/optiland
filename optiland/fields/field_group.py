@@ -69,6 +69,15 @@ class FieldGroup:
         """int: number of fields in field group"""
         return len(self.fields)
 
+    def __getitem__(self, index):
+        return self.fields[index]
+
+    def __iter__(self):
+        return iter(self.fields)
+
+    def __len__(self):
+        return len(self.fields)
+
     @property
     def vx(self):
         """be.ndarray: Vignetting factors in x for each field."""
@@ -130,7 +139,7 @@ class FieldGroup:
             for x, y in zip(self.x_fields, self.y_fields, strict=False)
         ]
 
-    def add_field(self, field):
+    def add(self, field):
         """Add a field to the list of fields.
 
         Args:
@@ -189,6 +198,6 @@ class FieldGroup:
         """
         field_group = cls()
         for field_dict in data["fields"]:
-            field_group.add_field(Field.from_dict(field_dict))
+            field_group.add(Field.from_dict(field_dict))
         field_group.set_telecentric(data["telecentric"])
         return field_group

@@ -377,7 +377,7 @@ class TestExtendedSourceOptic:
         assert ext_optic.name == optic.name
 
     def test_delegates_surface_group(self, optic, ext_optic):
-        assert ext_optic.surface_group is optic.surface_group
+        assert ext_optic.surfaces is optic.surfaces
 
     def test_delegates_fields(self, optic, ext_optic):
         assert ext_optic.fields is optic.fields
@@ -435,13 +435,13 @@ class TestExtendedSourceOptic:
 
     def test_set_radius_through_wrapper(self, optic, ext_optic):
         ext_optic.set_radius(100.0, surface_number=1)
-        assert float(optic.surface_group.surfaces[1].geometry.radius) == pytest.approx(
+        assert float(optic.surfaces[1].geometry.radius) == pytest.approx(
             100.0
         )
 
     def test_set_thickness_through_wrapper(self, optic, ext_optic):
         ext_optic.set_thickness(99.0, surface_number=1)
-        assert optic.surface_group.get_thickness(1).item() == (pytest.approx(99.0))
+        assert optic.surfaces.get_thickness(1).item() == (pytest.approx(99.0))
 
     def test_paraxial_calculations_through_wrapper(self, ext_optic):
         """Paraxial data should be accessible through the wrapper."""
@@ -461,7 +461,7 @@ class TestExtendedSourceOptic:
 
     def test_trace_ray_path_shape(self, ext_optic):
         traced_rays, ray_path = ext_optic.trace(num_rays=32)
-        num_surfaces = ext_optic.optic.surface_group.num_surfaces
+        num_surfaces = ext_optic.optic.surfaces.num_surfaces
         actual_num_rays = be.size(traced_rays.x)
         x_path = ray_path["x"]
         assert be.shape(x_path) == (num_surfaces, actual_num_rays)

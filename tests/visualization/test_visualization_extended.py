@@ -18,14 +18,14 @@ def mock_fig_ax():
 @pytest.fixture
 def mock_optic():
     optic = MagicMock()
-    optic.surface_group = MagicMock()
-    optic.surface_group.surfaces = []
+    optic.surfaces = MagicMock()
+    optic.surfaces = []
     return optic
 
 
 class TestInfoProviders:
     def test_surface_info_provider(self, mock_optic):
-        provider = providers.SurfaceInfoProvider(mock_optic.surface_group)
+        provider = providers.SurfaceInfoProvider(mock_optic.surfaces)
 
         # Mock surface
         surf_2d = MagicMock(spec=surface.Surface2D)
@@ -39,7 +39,7 @@ class TestInfoProviders:
         surf_2d.surf = real_surf
 
         # Add to group so index can be found
-        mock_optic.surface_group.surfaces = [real_surf]
+        mock_optic.surfaces = [real_surf]
 
         info = provider.get_info(surf_2d)
         assert "Surface: 0 (STOP)" in info
@@ -48,7 +48,7 @@ class TestInfoProviders:
         assert "Material: Glass" in info
 
     def test_lens_info_provider(self, mock_optic):
-        provider = providers.LensInfoProvider(mock_optic.surface_group)
+        provider = providers.LensInfoProvider(mock_optic.surfaces)
 
         # Mock Lens2D
         lens_2d = MagicMock(spec=lens.Lens2D)
@@ -57,7 +57,7 @@ class TestInfoProviders:
         s2.surf = MagicMock()
         lens_2d.surfaces = [s1, s2]
 
-        mock_optic.surface_group.surfaces = [s1.surf, s2.surf]
+        mock_optic.surfaces = [s1.surf, s2.surf]
 
         # Mock material info
         s1.surf.material_post.n.return_value.item.return_value = 1.5

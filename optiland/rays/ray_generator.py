@@ -87,7 +87,7 @@ class RayGenerator:
         wavelength = be.ones_like(x0) * wavelength
 
         if self.optic.polarization == "ignore":
-            if self.optic.surface_group.uses_polarization:
+            if self.optic.surfaces.uses_polarization:
                 raise ValueError(
                     "Polarization must be set when surfaces have "
                     "polarization-dependent coatings.",

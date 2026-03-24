@@ -252,7 +252,7 @@ def test_view_oversampling(projection, make_mmdftpsf):
 
 def test_get_units_finite_obj(make_mmdftpsf):
     def tweak(optic):
-        optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e6)
+        optic.surfaces[0].geometry.cs.z = -be.array(1e6)
 
     mmdftpsf = make_mmdftpsf(field=(0, 1), tweak_optic=tweak)
     image = be.zeros((128, 128))
@@ -272,7 +272,7 @@ def test_psf_log_tick_formatter(make_mmdftpsf):
 
 def test_invalid_working_FNO(make_mmdftpsf):
     def tweak(optic):
-        optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e100)
+        optic.surfaces[0].geometry.cs.z = -be.array(1e100)
 
     with pytest.raises(ValueError):
         mmdftpsf = make_mmdftpsf(field=(0, 1), tweak_optic=tweak)

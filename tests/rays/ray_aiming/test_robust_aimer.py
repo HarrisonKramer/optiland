@@ -69,10 +69,10 @@ class TestRobustRayAimer(unittest.TestCase):
         rays = RealRays(
             x, y, z, L, M, N, intensity=be.ones_like(x), wavelength=wavelengths
         )
-        for i in range(self.optic.surface_group.stop_index + 1):
-            self.optic.surface_group.surfaces[i].trace(rays)
+        for i in range(self.optic.surfaces.stop_index + 1):
+            self.optic.surfaces[i].trace(rays)
 
-        stop_r = self.optic.surface_group.surfaces[2].aperture.r_max
+        stop_r = self.optic.surfaces[2].aperture.r_max
         target_y = stop_r
         error = np.abs(rays.y - target_y)
 

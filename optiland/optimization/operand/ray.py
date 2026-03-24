@@ -54,7 +54,7 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.x[surface_number, 0]
+        return optic.surfaces.x[surface_number, 0]
 
     @staticmethod
     def y_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -75,7 +75,7 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.y[surface_number, 0]
+        return optic.surfaces.y[surface_number, 0]
 
     @staticmethod
     def z_intercept(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -96,7 +96,7 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.z[surface_number, 0]
+        return optic.surfaces.z[surface_number, 0]
 
     @staticmethod
     def x_intercept_lcs(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -117,8 +117,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        intercept = optic.surface_group.x[surface_number, 0]
-        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.x
+        intercept = optic.surfaces.x[surface_number, 0]
+        decenter = optic.surfaces[surface_number].geometry.cs.x
         return intercept - decenter
 
     @staticmethod
@@ -140,8 +140,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        intercept = optic.surface_group.y[surface_number, 0]
-        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.y
+        intercept = optic.surfaces.y[surface_number, 0]
+        decenter = optic.surfaces[surface_number].geometry.cs.y
         return intercept - decenter
 
     @staticmethod
@@ -163,8 +163,8 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        intercept = optic.surface_group.z[surface_number, 0]
-        decenter = optic.surface_group.surfaces[surface_number].geometry.cs.z
+        intercept = optic.surfaces.z[surface_number, 0]
+        decenter = optic.surfaces[surface_number].geometry.cs.z
 
         # For some reason decenter can sometimes be a single-element array.
         # In that case, retreive the float inside.
@@ -192,7 +192,7 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.L[surface_number, 0]
+        return optic.surfaces.L[surface_number, 0]
 
     @staticmethod
     def M(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -212,7 +212,7 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.M[surface_number, 0]
+        return optic.surfaces.M[surface_number, 0]
 
     @staticmethod
     def N(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -232,7 +232,7 @@ class RayOperand:
 
         """
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
-        return optic.surface_group.N[surface_number, 0]
+        return optic.surfaces.N[surface_number, 0]
 
     @staticmethod
     def AOI(optic, surface_number, Hx, Hy, Px, Py, wavelength):
@@ -256,19 +256,19 @@ class RayOperand:
 
         optic.trace_generic(Hx, Hy, Px, Py, wavelength)
 
-        surface = optic.surface_group.surfaces[surface_number]
+        surface = optic.surfaces[surface_number]
         geometry = surface.geometry
 
-        L_inc = optic.surface_group.L[surface_number - 1, 0]
-        M_inc = optic.surface_group.M[surface_number - 1, 0]
-        N_inc = optic.surface_group.N[surface_number - 1, 0]
+        L_inc = optic.surfaces.L[surface_number - 1, 0]
+        M_inc = optic.surfaces.M[surface_number - 1, 0]
+        N_inc = optic.surfaces.N[surface_number - 1, 0]
 
         from optiland.rays import RealRays
 
         rays_at_surface = RealRays(
-            x=optic.surface_group.x[surface_number, 0],
-            y=optic.surface_group.y[surface_number, 0],
-            z=optic.surface_group.z[surface_number, 0],
+            x=optic.surfaces.x[surface_number, 0],
+            y=optic.surfaces.y[surface_number, 0],
+            z=optic.surfaces.z[surface_number, 0],
             L=L_inc,
             M=M_inc,
             N=N_inc,
@@ -326,16 +326,16 @@ class RayOperand:
             y = []
             for wave in optic.wavelengths.get_wavelengths():
                 optic.trace(Hx, Hy, wave, num_rays, distribution)
-                x.append(optic.surface_group.x[surface_number, :].flatten())
-                y.append(optic.surface_group.y[surface_number, :].flatten())
+                x.append(optic.surfaces.x[surface_number, :].flatten())
+                y.append(optic.surfaces.y[surface_number, :].flatten())
             wave_idx = optic.wavelengths.primary_index
             mean_x = be.mean(x[wave_idx])
             mean_y = be.mean(y[wave_idx])
             r2 = [(x[i] - mean_x) ** 2 + (y[i] - mean_y) ** 2 for i in range(len(x))]
             return be.sqrt(be.mean(be.concatenate(r2)))
         optic.trace(Hx, Hy, wavelength, num_rays, distribution)
-        x = optic.surface_group.x[surface_number, :].flatten()
-        y = optic.surface_group.y[surface_number, :].flatten()
+        x = optic.surfaces.x[surface_number, :].flatten()
+        y = optic.surfaces.y[surface_number, :].flatten()
         r2 = (x - be.mean(x)) ** 2 + (y - be.mean(y)) ** 2
         return be.sqrt(be.mean(r2))
 
@@ -439,16 +439,16 @@ class RayOperand:
         FA_Hx, FA_Hy = line_ray_field_coords
         FA_Px, FA_Py = line_ray_pupil_coords
         optic.trace_generic(FA_Hx, FA_Hy, FA_Px, FA_Py, wavelength)
-        yA = optic.surface_group.y[line_ray_surface_idx, 0]
-        zA = optic.surface_group.z[line_ray_surface_idx, 0]
-        mA = optic.surface_group.M[line_ray_surface_idx, 0]
-        nA = optic.surface_group.N[line_ray_surface_idx, 0]
+        yA = optic.surfaces.y[line_ray_surface_idx, 0]
+        zA = optic.surfaces.z[line_ray_surface_idx, 0]
+        mA = optic.surfaces.M[line_ray_surface_idx, 0]
+        nA = optic.surfaces.N[line_ray_surface_idx, 0]
 
         FB_Hx, FB_Hy = point_ray_field_coords
         FB_Px, FB_Py = point_ray_pupil_coords
         optic.trace_generic(FB_Hx, FB_Hy, FB_Px, FB_Py, wavelength)
-        yB = optic.surface_group.y[point_ray_surface_idx, 0]
-        zB = optic.surface_group.z[point_ray_surface_idx, 0]
+        yB = optic.surfaces.y[point_ray_surface_idx, 0]
+        zB = optic.surfaces.z[point_ray_surface_idx, 0]
 
         denominator = be.sqrt(mA**2 + nA**2)
         epsilon = 1e-9

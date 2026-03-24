@@ -32,12 +32,6 @@ from optiland.rays import PolarizationState
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
-from optiland.visualization import (
-    LensInfoViewer,
-    OpticViewer,
-    OpticViewer3D,
-    SurfaceSagViewer,
-)
 from optiland.wavelength import WavelengthGroup
 
 if TYPE_CHECKING:
@@ -124,7 +118,7 @@ class Optic:
         self.aperture: BaseSystemAperture | None = None
         self.field_definition: BaseFieldDefinition | None = None
 
-        self.surface_group: SurfaceGroup = SurfaceGroup()
+        self.surfaces: SurfaceGroup = SurfaceGroup()
         self.fields: FieldGroup = FieldGroup()
         self.wavelengths: WavelengthGroup = WavelengthGroup()
 
@@ -144,6 +138,24 @@ class Optic:
         self.solves: SolveManager = SolveManager(self)
         self.obj_space_telecentric: bool = False
         self.updater: OpticUpdater = OpticUpdater(self)
+
+    @property
+    def surface_group(self) -> SurfaceGroup:
+        warnings.warn(
+            "Optic.surface_group is deprecated; use Optic.surfaces instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.surfaces
+
+    @surface_group.setter
+    def surface_group(self, value):
+        warnings.warn(
+            "Optic.surface_group is deprecated; use Optic.surfaces instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.surfaces = value
 
     def __add__(self, other: Optic) -> Optic:
         """Add two Optic objects together.
@@ -169,7 +181,7 @@ class Optic:
     @property
     def object_surface(self) -> ObjectSurface | None:
         """The object surface instance (`ObjectSurface` or `None`)."""
-        for surface in self.surface_group.surfaces:
+        for surface in self.surfaces.surfaces:
             if isinstance(surface, ObjectSurface):
                 return surface
         return None
@@ -177,12 +189,12 @@ class Optic:
     @property
     def image_surface(self) -> Surface:
         """The image surface instance."""
-        return self.surface_group.surfaces[-1]
+        return self.surfaces.surfaces[-1]
 
     @property
     def total_track(self) -> float:
         """The total track length of the system."""
-        return self.surface_group.total_track
+        return self.surfaces.total_track
 
     @property
     def polarization_state(self) -> PolarizationState | None:
@@ -240,7 +252,13 @@ class Optic:
             IndexError: If the index is out of bounds for insertion, or negative.
 
         """
-        self.surface_group.add_surface(
+        warnings.warn(
+            "This method will be removed in version 0.7.0. Please use the fluent "
+            "API instead (e.g., optic.surfaces.add()).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.surfaces.add(
             new_surface=new_surface,
             surface_type=surface_type,
             comment=comment,
@@ -260,7 +278,13 @@ class Optic:
             index (int, optional): The index of the surface to remove.
 
         """
-        self.surface_group.remove_surface(
+        warnings.warn(
+            "This method will be removed in version 0.7.0. Please use the fluent "
+            "API instead (e.g., optic.surfaces.remove()).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.surfaces.remove(
             index=index,
         )
 
@@ -277,8 +301,14 @@ class Optic:
                 factor. Defaults to 0.0.
 
         """
+        warnings.warn(
+            "This method will be removed in version 0.7.0. Please use the fluent "
+            "API instead (e.g., optic.fields.add()).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         new_field = Field(x, y, vx, vy)
-        self.fields.add_field(new_field)
+        self.fields.add(new_field)
 
     def add_wavelength(
         self,
@@ -299,7 +329,13 @@ class Optic:
                 polychromatic analysis. Defaults to 1.0.
 
         """
-        self.wavelengths.add_wavelength(
+        warnings.warn(
+            "This method will be removed in version 0.7.0. Please use the fluent "
+            "API instead (e.g., optic.wavelengths.add()).",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.wavelengths.add(
             value=value, is_primary=is_primary, unit=unit, weight=weight
         )
 
@@ -609,6 +645,8 @@ class Optic:
             Axes objects of the plot.
 
         """
+        from optiland.visualization import OpticViewer
+
         viewer = OpticViewer(self)
         fig, ax, _ = viewer.view(
             fields,
@@ -660,6 +698,8 @@ class Optic:
                 surface are not shown. Defaults to False.
 
         """
+        from optiland.visualization import OpticViewer3D
+
         viewer = OpticViewer3D(self)
         viewer.view(
             fields,
@@ -674,6 +714,8 @@ class Optic:
 
     def info(self):
         """Display the optical system information."""
+        from optiland.visualization import LensInfoViewer
+
         viewer = LensInfoViewer(self)
         viewer.view()
 
@@ -696,7 +738,7 @@ class Optic:
         if wavelength == "primary":
             wavelength = self.primary_wavelength
 
-        return self.surface_group.n(wavelength)
+        return self.surfaces.n(wavelength)
 
     def trace(
         self,
@@ -767,6 +809,8 @@ class Optic:
             x_cross_section: The x-coordinate for the
                 y-sag plot. Defaults to 0.
         """
+        from optiland.visualization import SurfaceSagViewer
+
         viewer = SurfaceSagViewer(self)
         viewer.view(
             surface_index=surface_index,

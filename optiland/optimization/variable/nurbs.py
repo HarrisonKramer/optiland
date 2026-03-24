@@ -60,7 +60,7 @@ class NurbsPointsVariable(VariableBehavior):
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         i, j, k = self.coeff_index
         with contextlib.suppress(IndexError):
             if be.get_backend() == "torch":
@@ -147,7 +147,7 @@ class NurbsWeightsVariable(VariableBehavior):
         """
         if self.apply_scaling:
             new_value = self.inverse_scale(new_value)
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         j, k = self.coeff_index
         with contextlib.suppress(IndexError):
             if be.get_backend() == "torch":

@@ -21,8 +21,8 @@ class TestSurfaceFactory:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.lens = TessarLens()
-        self.surface_group = self.lens.surface_group
-        self.factory = SurfaceFactory(self.surface_group)
+        self.surfaces = self.lens.surfaces
+        self.factory = SurfaceFactory(self.surfaces)
 
     def test_create_surface_standard(self, set_test_backend):
         surface = self.factory.create_surface(

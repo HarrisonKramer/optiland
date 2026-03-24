@@ -38,7 +38,7 @@ def test_init_kwargs_behavior(set_test_backend):
     optic.add_field(0.0)
     optic.add_wavelength(0.55)
 
-    zernike_surface = optic.surface_group.surfaces[2]
+    zernike_surface = optic.surfaces[2]
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"
     assert zernike_surface.geometry.norm_radius == 111.0
 
@@ -50,7 +50,7 @@ def test_init_kwargs_behavior(set_test_backend):
 def test_default_behavior(zernike_optic, set_test_backend):
     # Without calling set_norm_radius, the norm_radius should be auto-updated
     zernike_optic.update_paraxial()
-    zernike_surface = zernike_optic.surface_group.surfaces[2]
+    zernike_surface = zernike_optic.surfaces[2]
 
     # Check if norm_radius has been set to 1.25 * semi_aperture
     semi_aperture = zernike_surface.semi_aperture
@@ -73,7 +73,7 @@ def test_fixed_behavior(zernike_optic, set_test_backend):
     custom_norm_radius = 42.0
     zernike_optic.set_norm_radius(custom_norm_radius, 2)  # surface index 2
 
-    zernike_surface = zernike_optic.surface_group.surfaces[2]
+    zernike_surface = zernike_optic.surfaces[2]
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"
     assert zernike_surface.geometry.norm_radius == custom_norm_radius
 
@@ -90,7 +90,7 @@ def test_reversibility(zernike_optic, set_test_backend):
     # Unfix it
     zernike_optic.set_norm_radius(custom_norm_radius, 2, is_fixed=False)
 
-    zernike_surface = zernike_optic.surface_group.surfaces[2]
+    zernike_surface = zernike_optic.surfaces[2]
     assert getattr(zernike_surface.geometry, "normalization_mode", "manual") == "auto"
 
     # Now it should auto-scale
@@ -115,7 +115,7 @@ def test_optimizer_precedence(zernike_optic, set_test_backend):
     custom_norm_radius = 42.0
     zernike_optic.set_norm_radius(custom_norm_radius, 2)
 
-    zernike_surface = zernike_optic.surface_group.surfaces[2]
+    zernike_surface = zernike_optic.surfaces[2]
 
     # Mock optimizer setting it as variable
     zernike_surface.is_norm_radius_variable = True

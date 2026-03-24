@@ -757,7 +757,7 @@ class TestRayGenerator:
 
     def test_invalid_polarization(self):
         lens = TessarLens()
-        lens.surface_group.set_fresnel_coatings()
+        lens.surfaces.set_fresnel_coatings()
         generator = RayGenerator(lens)
 
         Hx = 0.5

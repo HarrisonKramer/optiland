@@ -56,7 +56,7 @@ class Paraxial:
     @property
     def surfaces(self) -> SurfaceGroup:
         """SurfaceGroup: the surface group of the optical system."""
-        return self.optic.surface_group
+        return self.optic.surfaces
 
     def f1(self) -> ScalarOrArray:
         """Calculate the front focal length (f1).
@@ -356,8 +356,8 @@ class Paraxial:
                 - u_chief: Slopes of the chief ray after each surface.
 
         """
-        stop_index = self.optic.surface_group.stop_index
-        pos = self.optic.surface_group.positions
+        stop_index = self.optic.surfaces.stop_index
+        pos = self.optic.surfaces.positions
         wavelength = self.optic.primary_wavelength
         num_surf = self.surfaces.num_surfaces
         y0 = 0.0

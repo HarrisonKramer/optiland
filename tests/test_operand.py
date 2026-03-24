@@ -476,9 +476,9 @@ class TestLensOperand:
 
         self.optic.update_paraxial()
 
-        sa1 = self.optic.surface_group.surfaces[2].semi_aperture
-        sa2 = self.optic.surface_group.surfaces[3].semi_aperture
-        semi_aperture = self.optic.surface_group.surfaces[3].semi_aperture
+        sa1 = self.optic.surfaces[2].semi_aperture
+        sa2 = self.optic.surfaces[3].semi_aperture
+        semi_aperture = self.optic.surfaces[3].semi_aperture
 
         r1 = 50.0
         r2 = -50.0
@@ -518,8 +518,8 @@ class TestLensOperand:
         self.optic.add_surface(index=4)
 
         self.optic.update_paraxial()
-        self.optic.surface_group.surfaces[2].semi_aperture = 10.0
-        self.optic.surface_group.surfaces[3].semi_aperture = 8.0
+        self.optic.surfaces[2].semi_aperture = 10.0
+        self.optic.surfaces[3].semi_aperture = 8.0
 
         # expected value calculation
         r1 = 50.0
@@ -551,8 +551,8 @@ class TestLensOperand:
 
         self.optic.update_paraxial()
 
-        sa1 = self.optic.surface_group.surfaces[2].semi_aperture
-        sa2 = self.optic.surface_group.surfaces[3].semi_aperture
+        sa1 = self.optic.surfaces[2].semi_aperture
+        sa2 = self.optic.surfaces[3].semi_aperture
         semi_aperture = be.minimum(sa1, sa2)
 
         r1 = 50.0

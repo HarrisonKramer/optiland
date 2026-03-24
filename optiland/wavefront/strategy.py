@@ -154,7 +154,7 @@ class ChiefRayStrategy(ReferenceStrategy):
 
     def __init__(self, optic: Optic, distribution: BaseDistribution, **kwargs) -> None:
         super().__init__(optic, distribution, **kwargs)
-        self.pupil_z = optic.paraxial.XPL() + optic.surface_group.positions[-1]
+        self.pupil_z = optic.paraxial.XPL() + optic.surfaces.positions[-1]
         self._chief_ray = None  # Cache for single field calculation usage
 
     def compute_wavefront_data(
@@ -182,7 +182,7 @@ class ChiefRayStrategy(ReferenceStrategy):
 
         # 3. Trace the full grid of rays for the field
         rays = self.optic.trace(*field, wavelength, None, self.distribution)
-        intensity = self.optic.surface_group.intensity[-1, :]
+        intensity = self.optic.surfaces.intensity[-1, :]
 
         # 4. Compute OPD for all rays
         opd_img = geometry.path_length(rays, self.n_image)

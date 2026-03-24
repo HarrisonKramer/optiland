@@ -79,10 +79,10 @@ class RealImageHeightField(BaseFieldDefinition):
             rays = self._generate_chief_rays(optic, val_x, val_y)
 
             # 2. Trace rays
-            optic.surface_group.trace(rays)
+            optic.surfaces.trace(rays)
 
             # Propagate to image surface
-            last_surface = optic.surface_group.surfaces[-1]
+            last_surface = optic.surfaces[-1]
             last_surface.material_post.propagation_model.propagate(
                 rays, last_surface.thickness
             )
@@ -155,7 +155,7 @@ class RealImageHeightField(BaseFieldDefinition):
 
         EPL = optic.paraxial.EPL()
         # EPL is relative to the first surface (index 1)
-        z_pupil = optic.surface_group.positions[1] + EPL
+        z_pupil = optic.surfaces.positions[1] + EPL
 
         x1 = be.zeros_like(x0)
         y1 = be.zeros_like(y0)
@@ -180,7 +180,7 @@ class RealImageHeightField(BaseFieldDefinition):
 
             x = -val_x * (offset + EPL)
             y = -val_y * (offset + EPL)
-            z = optic.surface_group.positions[1] - offset
+            z = optic.surfaces.positions[1] - offset
 
             x0 = Px * EPD / 2 * vx + x
             y0 = Py * EPD / 2 * vy + y
@@ -236,6 +236,6 @@ class RealImageHeightField(BaseFieldDefinition):
         )
 
     def _get_starting_z_offset(self, optic):
-        z = optic.surface_group.positions[1:-1]
+        z = optic.surfaces.positions[1:-1]
         offset = optic.paraxial.EPD()
         return offset - be.min(z)

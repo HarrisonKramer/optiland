@@ -20,7 +20,7 @@ def create_object_surface():
 def test_afocal_chief_ray_strategy():
     """Test ChiefRayStrategy in afocal mode with a perfect collimator."""
     optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)  # Obj
+    optic.surfaces.add(new_surface=create_object_surface(), index=0)  # Obj
     optic.set_thickness(1e12, 0)
 
     cs_stop = CoordinateSystem()
@@ -36,11 +36,11 @@ def test_afocal_chief_ray_strategy():
             is_stop=is_stop,
         )
 
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         new_surface=create_plane_surface(is_stop=True), index=1, thickness=10
     )
 
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         new_surface=create_plane_surface(is_stop=False), index=2, thickness=20
     )
 
@@ -65,12 +65,12 @@ def test_afocal_chief_ray_strategy():
 def test_afocal_best_fit_strategy():
     """Test BestFitStrategy in afocal mode removes tilt from tilted plane wave."""
     optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)
+    optic.surfaces.add(new_surface=create_object_surface(), index=0)
     optic.set_thickness(1e9, 0)
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         radius=float("inf"), thickness=10, material="air", index=1, is_stop=True
     )
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         radius=float("inf"), thickness=20, index=2
     )  # Image plane
 
@@ -97,12 +97,12 @@ def test_afocal_best_fit_strategy():
 def test_focal_regression():
     """Ensure standard focal mode still works (regression test)."""
     optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)
+    optic.surfaces.add(new_surface=create_object_surface(), index=0)
     optic.set_thickness(100, 0)  # Finite object
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         radius=100, thickness=10, material="N-BK7", index=1, is_stop=True
     )
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         radius=-100, thickness=100, index=2
     )  # Image near focus
 

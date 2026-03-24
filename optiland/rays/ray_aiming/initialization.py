@@ -40,8 +40,8 @@ class FloatByStopStrategy(StopSizeStrategy):
     """
 
     def calculate_stop_radius(self) -> float:
-        stop_index = self.optic.surface_group.stop_index
-        surface = self.optic.surface_group.surfaces[stop_index]
+        stop_index = self.optic.surfaces.stop_index
+        surface = self.optic.surfaces[stop_index]
 
         # Check for explicit aperture object first
         if surface.aperture and hasattr(surface.aperture, "r_max"):
@@ -61,7 +61,7 @@ class ParaxialReferenceStrategy(StopSizeStrategy):
     """
 
     def calculate_stop_radius(self) -> float:
-        stop_index = self.optic.surface_group.stop_index
+        stop_index = self.optic.surfaces.stop_index
         para = self.optic.paraxial
 
         # Determine marginal ray height at the stop surface
@@ -93,14 +93,14 @@ class RealReferenceStrategy(StopSizeStrategy):
         EPL = float(self.optic.paraxial.EPL())
         EPD = float(self.optic.paraxial.EPD())
 
-        stop_index = self.optic.surface_group.stop_index
+        stop_index = self.optic.surfaces.stop_index
 
         # Determine launch ray parameters (x, y, z, L, M, N)
         obj_surf = self.optic.object_surface
         if obj_surf and obj_surf.is_infinite:
             # For infinite objects, we launch a ray parallel to the axis
             # starting slightly before surface 1 to ensure robust intersection.
-            z_surf1 = self.optic.surface_group.surfaces[1].geometry.cs.z
+            z_surf1 = self.optic.surfaces[1].geometry.cs.z
             z_start = z_surf1 - 100.0
 
             y_start = EPD / 2.0
@@ -147,13 +147,13 @@ class RealReferenceStrategy(StopSizeStrategy):
 
         # Trace from start surface up to the stop surface
         for i in range(start_surf_idx, stop_index + 1):
-            self.optic.surface_group.surfaces[i].trace(rays)
+            self.optic.surfaces[i].trace(rays)
             if be.any(be.isnan(rays.x)):
                 raise ValueError("Ray trace resulted in NaNs (TIR or missed surface).")
 
         # Localize rays to the stop surface's local frame so the radial
         # height is measured from the stop center, not the global origin.
-        stop_cs = self.optic.surface_group.surfaces[stop_index].geometry.cs
+        stop_cs = self.optic.surfaces[stop_index].geometry.cs
         local_rays = RealRays(
             be.copy(rays.x),
             be.copy(rays.y),

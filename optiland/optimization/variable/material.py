@@ -44,7 +44,7 @@ class MaterialVariable(VariableBehavior):
             scaler = IdentityScaler()
         super().__init__(optic, surface_number, scaler=scaler, **kwargs)
         self.glass_selection = glass_selection
-        self.surface = self.optic.surface_group.surfaces[self.surface_number]
+        self.surface = self.optic.surfaces[self.surface_number]
 
         if isinstance(self.surface.material_post, AbbeMaterial):
             nd_vd = (

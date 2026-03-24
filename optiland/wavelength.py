@@ -159,6 +159,15 @@ class WavelengthGroup:
         """The number of wavelengths"""
         return len(self.wavelengths)
 
+    def __getitem__(self, index):
+        return self.wavelengths[index]
+
+    def __iter__(self):
+        return iter(self.wavelengths)
+
+    def __len__(self):
+        return len(self.wavelengths)
+
     @property
     def primary_index(self) -> int:
         """The index of the primary wavelength
@@ -181,7 +190,7 @@ class WavelengthGroup:
         """The primary wavelength"""
         return self.wavelengths[self.primary_index]
 
-    def add_wavelength(
+    def add(
         self,
         value: float,
         is_primary: bool = True,
@@ -251,7 +260,7 @@ class WavelengthGroup:
 
         new_group = cls()
         for wave_data in data["wavelengths"]:
-            new_group.add_wavelength(**wave_data)
+            new_group.add(**wave_data)
 
         return new_group
 
