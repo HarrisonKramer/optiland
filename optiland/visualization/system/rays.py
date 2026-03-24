@@ -44,6 +44,7 @@ class Rays2D:
         self.y = None
         self.z = None
         self.i = None
+        self.traced_rays = None
 
         n = optic.surface_group.num_surfaces
         self.r_extent = be.zeros(n)
@@ -120,8 +121,9 @@ class Rays2D:
                     )
         return artists
 
-    def _process_traced_rays(self):
+    def _process_traced_rays(self, traced_rays=None):
         """Processes the traced rays and updates the surface extents."""
+        self.traced_rays = traced_rays
         self.x = self.optic.surface_group.x
         self.y = self.optic.surface_group.y
         self.z = self.optic.surface_group.z
@@ -143,8 +145,10 @@ class Rays2D:
             None
 
         """
-        self.optic.trace(*field, wavelength, num_rays, distribution)
-        self._process_traced_rays()
+        traced_rays = self.optic.trace(
+            *field, wavelength, num_rays, distribution, record_path=True
+        )
+        self._process_traced_rays(traced_rays)
 
     def _trace_reference(self, field, wavelength, reference):
         """Traces reference rays through the optical system.
@@ -159,13 +163,17 @@ class Rays2D:
 
         """
         if reference == "chief":
-            self.optic.trace_generic(*field, Px=0, Py=0, wavelength=wavelength)
+            traced_rays = self.optic.trace_generic(
+                *field, Px=0, Py=0, wavelength=wavelength, record_path=True
+            )
         elif reference == "marginal":
-            self.optic.trace_generic(*field, Px=0, Py=1, wavelength=wavelength)
+            traced_rays = self.optic.trace_generic(
+                *field, Px=0, Py=1, wavelength=wavelength, record_path=True
+            )
         else:
             raise ValueError(f"Invalid ray reference type: {reference}")
 
-        self._process_traced_rays()
+        self._process_traced_rays(traced_rays)
 
     def _update_surface_extents(self):
         """Updates the extents of the surfaces in the optic's surface group."""
@@ -215,6 +223,35 @@ class Rays2D:
         """
         artists = {}
         bundle_id = f"bundle_{color_idx}"
+
+        if self.traced_rays is not None and self.traced_rays.has_paths():
+            path_i_list = self.traced_rays.path_i
+            for k, (xk, yk, zk) in enumerate(self.traced_rays.get_paths()):
+                if path_i_list is not None and k < len(path_i_list):
+                    ik = np.asarray(path_i_list[k])
+                    if len(ik) > 0 and not np.all(ik > 0):
+                        xk = xk.copy()
+                        yk = yk.copy()
+                        zk = zk.copy()
+                        xk[ik == 0] = np.nan
+                        yk[ik == 0] = np.nan
+                        zk[ik == 0] = np.nan
+
+                artist, ray_bundle = self._plot_single_line(
+                    ax,
+                    xk,
+                    yk,
+                    zk,
+                    color_idx,
+                    field,
+                    linewidth,
+                    theme=theme,
+                    projection=projection,
+                )
+                ray_bundle.bundle_id = bundle_id
+                artists[artist] = ray_bundle
+            return artists
+
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])
@@ -376,6 +413,22 @@ class Rays3D(Rays2D):
     def _plot_lines(
         self, ax, color_idx, field, linewidth=1, theme=None, hide_vignetted=False
     ):
+        if self.traced_rays is not None and self.traced_rays.has_paths():
+            path_i = self.traced_rays.path_i
+            for k, (xk, yk, zk) in enumerate(self.traced_rays.get_paths()):
+                if path_i is not None and k < len(path_i) and len(path_i[k]) > 0:
+                    ik = np.asarray(path_i[k])
+                    xk = xk.copy()
+                    yk = yk.copy()
+                    zk = zk.copy()
+                    xk[ik == 0] = np.nan
+                    yk[ik == 0] = np.nan
+                    zk[ik == 0] = np.nan
+
+                self._plot_single_line(
+                    ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
+                )
+            return
         # loop through rays
         for k in range(self.z.shape[1]):
             xk = be.to_numpy(self.x[:, k])

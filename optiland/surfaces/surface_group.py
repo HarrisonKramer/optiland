@@ -229,18 +229,25 @@ class SurfaceGroup:
         t = self.positions
         return t[surface_number + 1] - t[surface_number]
 
-    def trace(self, rays, skip=0):
+    def trace(self, rays, skip=0, record_path: bool = False):
         """Trace the given rays through the surfaces.
 
         Args:
             rays (BaseRays): List of rays to be traced.
             skip (int, optional): Number of surfaces to skip before tracing.
                 Defaults to 0.
+            record_path: Whether to record tracing-time ray paths.
 
         """
         self.reset()
+        if record_path and hasattr(rays, "init_paths"):
+            rays.init_paths()
+            rays.append_current_positions()
+
         for surface in self.surfaces[skip:]:
             surface.trace(rays)
+            if record_path and getattr(rays, "path_recording_enabled", False):
+                rays.append_current_positions()
         return rays
 
     def add_surface(

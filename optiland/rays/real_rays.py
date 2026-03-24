@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
 import optiland.backend as be
 from optiland.rays.base import BaseRays
 
@@ -80,6 +82,15 @@ class RealRays(BaseRays):
         self.i = be.atleast_1d(intensity)
         self.w = be.atleast_1d(wavelength)
         self.opd = be.zeros_like(self.x)
+        self.path_recording_enabled = False
+        self.path_coordinate_system = None
+        # Pre-allocated path storage (num_rays × max_steps)
+        self._path_x: BEArray | None = None
+        self._path_y: BEArray | None = None
+        self._path_z: BEArray | None = None
+        self._path_i: BEArray | None = None
+        self._path_lengths: BEArray | None = None
+        self._max_path_steps: int = 0
 
         # variables to hold pre-surface direction cosines
         self.L0: BEArray | None = None
@@ -87,6 +98,208 @@ class RealRays(BaseRays):
         self.N0: BEArray | None = None
 
         self.is_normalized = True
+
+    def init_paths(self, max_steps: int = 10000):
+        """Initialize per-ray path storage with pre-allocated backend arrays.
+
+        Args:
+            max_steps: Maximum number of path points per ray. If exceeded,
+                the buffer will be dynamically expanded.
+        """
+        num_rays = len(self.x)
+        self.path_recording_enabled = True
+        self._max_path_steps = max_steps
+
+        # Pre-allocate 2D arrays: (num_rays, max_steps)
+        self._path_x = be.full((num_rays, max_steps), be.nan)
+        self._path_y = be.full((num_rays, max_steps), be.nan)
+        self._path_z = be.full((num_rays, max_steps), be.nan)
+        self._path_i = be.full((num_rays, max_steps), be.nan)
+        self._path_lengths = be.zeros(num_rays, dtype=int)
+
+    def append_current_positions(self, mask: BEArray | None = None):
+        """Append the current ray positions to the recorded paths."""
+        self.append_positions(self.x, self.y, self.z, mask=mask, intensity=self.i)
+
+    def append_current_positions_global(
+        self, coordinate_system, mask: BEArray | None = None
+    ):
+        """Append current positions after converting them to global coordinates."""
+        if coordinate_system is None:
+            self.append_current_positions(mask=mask)
+            return
+
+        x_global, y_global, z_global = coordinate_system.globalize_points(
+            self.x, self.y, self.z
+        )
+        self.append_positions(
+            x_global,
+            y_global,
+            z_global,
+            mask=mask,
+            intensity=self.i,
+        )
+
+    def append_positions(
+        self,
+        x: ArrayLike,
+        y: ArrayLike,
+        z: ArrayLike,
+        mask: BEArray | None = None,
+        intensity: ArrayLike | None = None,
+    ):
+        """Append positions for all or a subset of rays using vectorized batch write.
+
+        Args:
+            x: x-coordinates to append.
+            y: y-coordinates to append.
+            z: z-coordinates to append.
+            mask: Optional boolean mask or integer indices for rays to update.
+            intensity: Optional intensity values to append.
+        """
+        if not self.path_recording_enabled or self._path_x is None:
+            return
+
+        # Resolve ray indices from mask - keep as numpy for reliable integer indexing
+        num_rays = len(self._path_lengths)
+        if mask is None:
+            indices = np.arange(num_rays, dtype=int)
+        else:
+            mask_np = np.asarray(mask)
+            if mask_np.ndim == 0:
+                mask_np = mask_np.reshape(1)
+            if mask_np.dtype.kind == "b":
+                # Boolean mask: find True indices
+                indices = np.flatnonzero(mask_np).astype(int)
+            elif mask_np.dtype.kind in ("i", "u"):
+                # Integer indices: use directly
+                indices = mask_np.astype(int)
+            else:
+                # Float or other: try to interpret as boolean or indices
+                if np.all((mask_np == 0) | (mask_np == 1)):
+                    indices = np.flatnonzero(mask_np.astype(bool)).astype(int)
+                else:
+                    indices = mask_np.astype(int)
+
+        if len(indices) == 0:
+            return
+
+        # Ensure we don't exceed buffer capacity
+        current_max = int(np.max(be.to_numpy(self._path_lengths[indices])))
+        if current_max >= self._max_path_steps:
+            self._expand_path_buffer()
+
+        # Prepare position arrays
+        x_arr = be.atleast_1d(x)
+        y_arr = be.atleast_1d(y)
+        z_arr = be.atleast_1d(z)
+
+        # Get current path lengths for target rays (as numpy for indexing)
+        current_lengths_np = be.to_numpy(self._path_lengths[indices])
+
+        # Determine source indices for each target ray
+        # If len(x_arr) == len(indices), use matching; otherwise use ray indices
+        if len(x_arr) == len(indices):
+            source_indices = np.arange(len(indices))
+        else:
+            source_indices = indices
+
+        # Vectorized batch write - iterate over rays for reliable indexing
+        for i, ray_idx in enumerate(indices):
+            step = current_lengths_np[i]
+            self._path_x[ray_idx, step] = x_arr[source_indices[i]]
+            self._path_y[ray_idx, step] = y_arr[source_indices[i]]
+            self._path_z[ray_idx, step] = z_arr[source_indices[i]]
+
+        # Handle intensity if provided
+        if intensity is not None:
+            i_arr = be.atleast_1d(intensity)
+            if len(i_arr) == len(indices):
+                i_source = np.arange(len(indices))
+            else:
+                i_source = indices
+            for i, ray_idx in enumerate(indices):
+                step = current_lengths_np[i]
+                self._path_i[ray_idx, step] = i_arr[i_source[i]]
+
+        # Increment path lengths
+        for i, ray_idx in enumerate(indices):
+            self._path_lengths[ray_idx] = current_lengths_np[i] + 1
+
+    def _expand_path_buffer(self, factor: float = 2.0):
+        """Expand the path buffer when capacity is exceeded.
+
+        Args:
+            factor: Multiplier for new buffer size. Default is 2.0.
+        """
+        new_max_steps = int(self._max_path_steps * factor)
+        num_rays = len(self._path_lengths)
+
+        # Create new buffers
+        new_x = be.full((num_rays, new_max_steps), be.nan)
+        new_y = be.full((num_rays, new_max_steps), be.nan)
+        new_z = be.full((num_rays, new_max_steps), be.nan)
+        new_i = be.full((num_rays, new_max_steps), be.nan)
+
+        # Copy existing data
+        for i in range(num_rays):
+            length = int(self._path_lengths[i])
+            if length > 0:
+                new_x[i, :length] = self._path_x[i, :length]
+                new_y[i, :length] = self._path_y[i, :length]
+                new_z[i, :length] = self._path_z[i, :length]
+                new_i[i, :length] = self._path_i[i, :length]
+
+        self._path_x = new_x
+        self._path_y = new_y
+        self._path_z = new_z
+        self._path_i = new_i
+        self._max_path_steps = new_max_steps
+
+    def has_paths(self) -> bool:
+        """Return True when any path samples have been recorded."""
+        if self._path_lengths is None:
+            return False
+        return bool(be.any(self._path_lengths > 0))
+
+    def get_paths(self) -> list[tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        """Return recorded ray paths as NumPy arrays.
+
+        Converts backend arrays to numpy only at this final step,
+        optimizing performance during path recording.
+        """
+        if self._path_lengths is None:
+            return []
+
+        paths = []
+        for i in range(len(self._path_lengths)):
+            length = int(self._path_lengths[i])
+            if length > 0:
+                paths.append((
+                    be.to_numpy(self._path_x[i, :length]),
+                    be.to_numpy(self._path_y[i, :length]),
+                    be.to_numpy(self._path_z[i, :length]),
+                ))
+        return paths
+
+    @property
+    def path_i(self) -> list[np.ndarray] | None:
+        """Return intensity values for each ray's path.
+
+        Returns a list where each element is a numpy array of intensity
+        values for that ray's path, or None if path recording is disabled.
+        """
+        if self._path_lengths is None:
+            return None
+
+        intensities = []
+        for i in range(len(self._path_lengths)):
+            length = int(self._path_lengths[i])
+            if length > 0:
+                intensities.append(be.to_numpy(self._path_i[i, :length]))
+            else:
+                intensities.append(np.array([]))
+        return intensities
 
     def trace_on_surface(self, surface: Surface) -> RealRays:
         """Dispatch to the surface's real ray trace kernel.

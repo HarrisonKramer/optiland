@@ -240,7 +240,11 @@ class Surface:
 
         """
         t = self.geometry.distance(rays)
-        self.material_pre.propagation_model.propagate(rays, t)
+        rays.path_coordinate_system = self.geometry.cs
+        try:
+            self.material_pre.propagation_model.propagate(rays, t)
+        finally:
+            rays.path_coordinate_system = None
         rays.opd = rays.opd + be.abs(t * self.material_pre.n(rays.w))
         if self.aperture:
             self.aperture.clip(rays)

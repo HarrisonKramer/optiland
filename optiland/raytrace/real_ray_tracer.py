@@ -41,6 +41,7 @@ class RealRayTracer:
         wavelength,
         num_rays: int | None = 100,
         distribution: DistributionType | BaseDistribution | None = "hexapolar",
+        record_path: bool = False,
     ):
         """Trace a distribution of rays through the optical system.
 
@@ -52,6 +53,7 @@ class RealRayTracer:
                 to 100.
             distribution (str or Distribution, optional): The distribution of
                 the rays. Defaults to 'hexapolar'.
+            record_path: Whether to record tracing-time ray paths.
 
         Returns:
             RealRays: The RealRays object containing the traced rays."
@@ -79,7 +81,7 @@ class RealRayTracer:
         rays = self.ray_generator.generate_rays(
             Hx_full, Hy_full, Px_full, Py_full, wavelength
         )
-        self.optic.surface_group.trace(rays)
+        self.optic.surface_group.trace(rays, record_path=record_path)
 
         # Propagate to the image surface
         if self.optic.image_surface:
@@ -96,7 +98,7 @@ class RealRayTracer:
 
         return rays
 
-    def trace_generic(self, Hx, Hy, Px, Py, wavelength):
+    def trace_generic(self, Hx, Hy, Px, Py, wavelength, record_path: bool = False):
         """Trace generic rays through the optical system.
 
         Args:
@@ -105,6 +107,7 @@ class RealRayTracer:
             Px (float or numpy.ndarray): The normalized x pupil coordinate.
             Py (float or numpy.ndarray): The normalized y pupil coordinate
             wavelength (float): The wavelength of the rays.
+            record_path: Whether to record tracing-time ray paths.
 
         """
         self._validate_normalized_coordinates(Hx, Hy, "field")
@@ -119,7 +122,7 @@ class RealRayTracer:
         Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
 
         rays = self.ray_generator.generate_rays(Hx, Hy, Px, Py, wavelength)
-        self.optic.surface_group.trace(rays)
+        self.optic.surface_group.trace(rays, record_path=record_path)
 
         # Propagate to the image surface
         last_surface = self.optic.surface_group.surfaces[-1]

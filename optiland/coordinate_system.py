@@ -106,6 +106,21 @@ class CoordinateSystem:
         if self.reference_cs:
             self.reference_cs.globalize(rays)
 
+    def globalize_points(self, x, y, z):
+        """Convert point coordinates from this local system to global coordinates."""
+        points = RealRays(
+            x,
+            y,
+            z,
+            be.zeros_like(be.atleast_1d(x)),
+            be.zeros_like(be.atleast_1d(y)),
+            be.ones_like(be.atleast_1d(z)),
+            be.ones_like(be.atleast_1d(z)),
+            be.ones_like(be.atleast_1d(z)),
+        )
+        self.globalize(points)
+        return points.x, points.y, points.z
+
     @property
     def position_in_gcs(self) -> tuple[BEArray, BEArray, BEArray]:
         """Returns the position of the coordinate system in the global coordinate
