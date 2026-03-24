@@ -19,46 +19,46 @@ from tests.utils import assert_allclose
 
 def singlet_infinite_object():
     lens = Optic()
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(
         index=1,
         thickness=7,
         radius=43.7354,
         is_stop=True,
         material="N-SF11",
     )
-    lens.add_surface(index=2, radius=-46.2795, thickness=50)
-    lens.add_surface(index=3)
+    lens.surfaces.add(index=2, radius=-46.2795, thickness=50)
+    lens.surfaces.add(index=3)
 
     lens.set_aperture(aperture_type="EPD", value=25)
 
     lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
+    lens.fields.add(y=0)
 
-    lens.add_wavelength(value=0.5, is_primary=True)
+    lens.wavelengths.add(value=0.5, is_primary=True)
 
     return lens
 
 
 def singlet_finite_object():
     lens = Optic()
-    lens.add_surface(index=0, radius=be.inf, thickness=50)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=50)
+    lens.surfaces.add(
         index=1,
         thickness=7,
         radius=43.7354,
         is_stop=True,
         material="N-SF11",
     )
-    lens.add_surface(index=2, radius=-46.2795, thickness=50)
-    lens.add_surface(index=3)
+    lens.surfaces.add(index=2, radius=-46.2795, thickness=50)
+    lens.surfaces.add(index=3)
 
     lens.set_aperture(aperture_type="EPD", value=25)
 
     lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
+    lens.fields.add(y=0)
 
-    lens.add_wavelength(value=0.5, is_primary=True)
+    lens.wavelengths.add(value=0.5, is_primary=True)
 
     return lens
 
@@ -78,7 +78,7 @@ class TestOptic:
         assert not self.optic.obj_space_telecentric
 
     def test_add_surface(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="SF11",
@@ -87,13 +87,13 @@ class TestOptic:
         assert len(self.optic.surface_group.surfaces) == 1
 
     def test_add_field(self, set_test_backend):
-        self.optic.add_field(10.0, 5.0)
+        self.optic.fields.add(10.0, 5.0)
         assert len(self.optic.fields.fields) == 1
         assert self.optic.fields.fields[0].y == 10.0
         assert self.optic.fields.fields[0].x == 5.0
 
     def test_add_wavelength(self, set_test_backend):
-        self.optic.add_wavelength(0.55, is_primary=True)
+        self.optic.wavelengths.add(0.55, is_primary=True)
         assert len(self.optic.wavelengths.wavelengths) == 1
         assert self.optic.wavelengths.wavelengths[0].value == 0.55
         assert self.optic.wavelengths.wavelengths[0].is_primary
@@ -109,14 +109,14 @@ class TestOptic:
         assert isinstance(self.optic.field_definition, AngleField)
 
     def test_set_comment(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="SF11",
             thickness=5,
             comment="Object surface",
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=1,
             surface_type="standard",
             material="SF11",
@@ -128,7 +128,7 @@ class TestOptic:
         assert self.optic.surface_group.surfaces[1].comment == "First surface"
 
     def test_set_radius(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="SF11",
@@ -138,7 +138,7 @@ class TestOptic:
         assert self.optic.surface_group.surfaces[0].geometry.radius == 10.0
 
     def test_set_conic(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="SF11",
@@ -148,19 +148,19 @@ class TestOptic:
         assert self.optic.surface_group.surfaces[0].geometry.k == -1.0
 
     def test_set_thickness(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=1,
             surface_type="standard",
             material="SF11",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=2,
             surface_type="standard",
             material="air",
@@ -170,19 +170,19 @@ class TestOptic:
         assert self.optic.surface_group.get_thickness(1) == 10.0
 
     def test_set_index(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=1,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=2,
             surface_type="standard",
             material="air",
@@ -192,19 +192,19 @@ class TestOptic:
         assert self.optic.surface_group.surfaces[1].material_post.n(1) == 1.5
 
     def test_set_material(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=1,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=2,
             surface_type="standard",
             material="air",
@@ -217,7 +217,7 @@ class TestOptic:
         assert surface.material_post == material_post
 
     def test_set_asphere_coeff(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="even_asphere",
             material="air",
@@ -248,13 +248,13 @@ class TestOptic:
             self.optic.set_polarization("invalid")
 
     def test_set_pickup(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=1,
             surface_type="standard",
             material="air",
@@ -264,13 +264,13 @@ class TestOptic:
         assert len(self.optic.pickups) == 1
 
     def test_clear_pickups(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
             thickness=5,
         )
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=1,
             surface_type="standard",
             material="air",
@@ -292,7 +292,7 @@ class TestOptic:
         assert len(optic.solves) == 0
 
     def test_scale_system(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
@@ -305,7 +305,7 @@ class TestOptic:
         assert self.optic.aperture.value == 2 * 5.0
 
     def test_reset(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
@@ -322,14 +322,14 @@ class TestOptic:
         assert len(self.optic.solves) == 0
 
     def test_n(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
             radius=10,
             thickness=5,
         )
-        self.optic.add_wavelength(0.55, is_primary=True)
+        self.optic.wavelengths.add(0.55, is_primary=True)
         n_values = self.optic.n()
         assert len(n_values) == 1
 
@@ -384,7 +384,7 @@ class TestOptic:
         assert self.optic.object_surface is None
 
     def test_image_surface_property(self, set_test_backend):
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=0,
             surface_type="standard",
             material="air",
@@ -476,8 +476,8 @@ class TestOptic:
 
     def test_invalid_coordinate_system(self, set_test_backend):
         with pytest.raises(ValueError):
-            self.optic.add_surface(index=0, radius=be.inf, z=-100)
-            self.optic.add_surface(
+            self.optic.surfaces.add(index=0, radius=be.inf, z=-100)
+            self.optic.surfaces.add(
                 index=1, radius=be.inf, z=0, dx=15
             )  # cannot use dx or dy with abs. z
 
@@ -502,16 +502,16 @@ class TestOptic:
     def test_flip_solves_pickups(self, set_test_backend):
         lens = Optic()
 
-        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        lens.add_surface(
+        lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+        lens.surfaces.add(
             index=1, radius=100, thickness=4, material="SK16", is_stop=True
         )
-        lens.add_surface(index=2, radius=-1000, thickness=20)
-        lens.add_surface(index=3)
+        lens.surfaces.add(index=2, radius=-1000, thickness=20)
+        lens.surfaces.add(index=3)
         lens.set_aperture(aperture_type="EPD", value=10.0)
         lens.set_field_type(field_type="angle")
-        lens.add_field(y=0)
-        lens.add_wavelength(value=0.5876, is_primary=True)
+        lens.fields.add(y=0)
+        lens.wavelengths.add(value=0.5876, is_primary=True)
 
         lens.solves.add("quick_focus")
         lens.pickups.add(
@@ -561,11 +561,11 @@ def test_flip_updates_thickness_attribute(set_test_backend):
     From bug reported in issue #362
     """
     lens = Optic()
-    lens.add_surface(index=0, thickness=be.inf, material="Air")
-    lens.add_surface(index=1, material="N-BK7", thickness=7.0)
-    lens.add_surface(index=2, material="SF5", thickness=2.5)
-    lens.add_surface(index=3, material="Air", thickness=70.0)
-    lens.add_surface(index=4, material="Air")
+    lens.surfaces.add(index=0, thickness=be.inf, material="Air")
+    lens.surfaces.add(index=1, material="N-BK7", thickness=7.0)
+    lens.surfaces.add(index=2, material="SF5", thickness=2.5)
+    lens.surfaces.add(index=3, material="Air", thickness=70.0)
+    lens.surfaces.add(index=4, material="Air")
 
     lens.flip()
 

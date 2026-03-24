@@ -76,7 +76,7 @@ def test_optic_serialization_round_trip(
     """
     # 1. SETUP: Create a standard optic with the specified material.
     optic = Optic()
-    optic.add_surface(
+    optic.surfaces.add(
         Surface(
             previous_surface=None,
             geometry=StandardGeometry(coordinate_system=CoordinateSystem(), radius=100),
@@ -115,7 +115,7 @@ def test_material_file_serialization_round_trip(tmp_path, set_test_backend):
     material = MaterialFile(filename=dummy_file)
 
     optic = Optic()
-    optic.add_surface(
+    optic.surfaces.add(
         Surface(
             previous_surface=None,
             geometry=StandardGeometry(

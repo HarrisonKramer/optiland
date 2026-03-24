@@ -17,18 +17,18 @@ class TestRobustRayAimer(unittest.TestCase):
 
         # Wide angle or highly aberrated system to justify robust aiming
         # Simple setup for now: Aperture stop at surface 2
-        self.optic.add_surface(index=0, thickness=np.inf)
-        self.optic.add_surface(
+        self.optic.surfaces.add(index=0, thickness=np.inf)
+        self.optic.surfaces.add(
             index=1, radius=20, thickness=10, material=IdealMaterial(n=1.5)
         )
-        self.optic.add_surface(index=2, is_stop=True, aperture=10.0, thickness=10)
-        self.optic.add_surface(index=3)
+        self.optic.surfaces.add(index=2, is_stop=True, aperture=10.0, thickness=10)
+        self.optic.surfaces.add(index=3)
 
         self.optic.set_field_type("angle")
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=20)  # 20 degrees
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=20)  # 20 degrees
         self.optic.set_aperture("float_by_stop_size", 1.0)
-        self.optic.add_wavelength(0.55)
+        self.optic.wavelengths.add(0.55)
 
     def test_robust_aimer_initialization(self):
         aimer = RobustRayAimer(self.optic)

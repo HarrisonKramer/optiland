@@ -228,14 +228,14 @@ def build_model(material: BaseMaterial):
     lens = Optic()
 
     lens.set_field_type("angle")
-    lens.add_field(0, 0)
-    lens.add_wavelength(0.550)
+    lens.fields.add(0, 0)
+    lens.wavelengths.add(0.550)
     lens.set_aperture("EPD", 2)
 
-    lens.add_surface(index=0)
-    lens.add_surface(index=1, material=material, radius=10, thickness=10, is_stop=True)
-    lens.add_surface(index=2, radius=-10, thickness=10)
-    lens.add_surface(index=3, radius=np.inf)
+    lens.surfaces.add(index=0)
+    lens.surfaces.add(index=1, material=material, radius=10, thickness=10, is_stop=True)
+    lens.surfaces.add(index=2, radius=-10, thickness=10)
+    lens.surfaces.add(index=3, radius=np.inf)
 
     return lens
 

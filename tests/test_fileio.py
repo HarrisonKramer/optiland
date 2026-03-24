@@ -249,7 +249,7 @@ def test_save_load_optiland_file_with_tensor(set_test_backend):
         tensor_array = [1.23, 4.56]
 
     lens = HeliarLens()
-    lens.add_surface(
+    lens.surfaces.add(
         index=2,
         surface_type="even_asphere",
         radius=10.0,
@@ -308,15 +308,15 @@ def test_remove_surface_after_load(set_test_backend, tmp_path):
     """
     # 1. Create a lens and save it
     lens = Optic(name="TestLens")
-    lens.add_surface(index=0, thickness=be.inf, material="Air")
-    lens.add_surface(
+    lens.surfaces.add(index=0, thickness=be.inf, material="Air")
+    lens.surfaces.add(
         index=1,
         surface_type="standard",
         material="Air",
         thickness=10,
         radius=150,
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=2,
         surface_type="standard",
         material="N-BK7",
@@ -324,14 +324,14 @@ def test_remove_surface_after_load(set_test_backend, tmp_path):
         radius=150,
         is_stop=True,
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=3,
         surface_type="standard",
         material="Air",
         thickness=20,
         radius=be.inf,
     )
-    lens.add_surface(index=4)
+    lens.surfaces.add(index=4)
     lens.set_aperture("float_by_stop_size", 25)
 
     filepath = tmp_path / "lens.json"

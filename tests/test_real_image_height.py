@@ -7,22 +7,22 @@ from optiland.optic import Optic
 def create_simple_lens(infinite=True):
     optic = Optic()
     # Object Surface (0)
-    optic.add_surface(surface_type="standard", is_stop=False, index=0)
+    optic.surfaces.add(surface_type="standard", is_stop=False, index=0)
 
     # Lens Front (1)
-    optic.add_surface(surface_type="standard", radius=100.0, thickness=10.0, index=1)
+    optic.surfaces.add(surface_type="standard", radius=100.0, thickness=10.0, index=1)
     optic.set_index(1.5, 1)  # N=1.5
 
     # Lens Back (2) - Aperture Stop
-    optic.add_surface(
+    optic.surfaces.add(
         surface_type="standard", radius=-100.0, thickness=100.0, is_stop=True, index=2
     )
 
     # Image Surface (3)
-    optic.add_surface(surface_type="standard", index=3)
+    optic.surfaces.add(surface_type="standard", index=3)
 
     optic.set_aperture("EPD", 10.0)
-    optic.add_wavelength(0.55)
+    optic.wavelengths.add(0.55)
 
     if infinite:
         optic.object_surface.geometry.cs.z = -float("inf")
@@ -30,7 +30,7 @@ def create_simple_lens(infinite=True):
         optic.object_surface.geometry.cs.z = -200.0
 
     optic.set_field_type("real_image_height")
-    optic.add_field(y=5.0, x=0.0)  # Sets max_field to 5.0
+    optic.fields.add(y=5.0, x=0.0)  # Sets max_field to 5.0
 
     optic.image_solve()  # Solve for paraxial focus
     return optic

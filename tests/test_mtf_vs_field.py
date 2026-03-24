@@ -67,9 +67,9 @@ class TestMTFvsField:
     def test_init_limits_wavelengths(self, set_test_backend):
         """Test the frequency limit checks."""
         optic = CookeTriplet()
-        optic.add_wavelength(0.5, weight=1.0)
-        optic.add_wavelength(0.6, weight=1.0)
-        optic.add_wavelength(0.7, weight=1.0)
+        optic.wavelengths.add(0.5, weight=1.0)
+        optic.wavelengths.add(0.6, weight=1.0)
+        optic.wavelengths.add(0.7, weight=1.0)
         # Optic now has 4 wavelengths (>3 MAX)
 
         with pytest.raises(ValueError, match="Number of wavelengths"):

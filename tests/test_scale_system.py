@@ -18,8 +18,8 @@ from optiland.geometries import (
 
 def test_scale_standard():
     lens = optic.Optic()
-    lens.add_surface(index=0, radius=10, thickness=5, material="Air")
-    lens.add_surface(index=1)  # Add a second surface so first one is not "last"
+    lens.surfaces.add(index=0, radius=10, thickness=5, material="Air")
+    lens.surfaces.add(index=1)  # Add a second surface so first one is not "last"
     lens.scale_system(2.0)
 
     surface = lens.surfaces[0]
@@ -32,7 +32,7 @@ def test_scale_even_asphere():
     lens = optic.Optic()
     # C1 (r^4) -> index 0. C2 (r^6) -> index 1.
     coeffs = [1e-3, 1e-5]
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=10,
         thickness=2,
@@ -58,7 +58,7 @@ def test_scale_odd_asphere():
     # odd asphere: z = ... + sum(Ci * r^(i+1))
     # i=0 -> r^1.
     coeffs = [1e-2, 1e-4]
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius=10, surface_type="odd_asphere", coefficients=coeffs
     )
     lens.scale_system(2.0)
@@ -77,7 +77,7 @@ def test_scale_polynomial():
     # Cij * x^i * y^j
     # i=1, j=1 -> xy. s^(1-(1+1)) = s^-1.
     coeffs = [[0, 0], [0, 1e-3]]  # C11
-    lens.add_surface(index=0, radius=10, surface_type="polynomial", coefficients=coeffs)
+    lens.surfaces.add(index=0, radius=10, surface_type="polynomial", coefficients=coeffs)
     lens.scale_system(2.0)
 
     surface = lens.surfaces[0]
@@ -90,7 +90,7 @@ def test_scale_polynomial():
 def test_scale_chebyshev():
     lens = optic.Optic()
     coeffs = [[0, 0], [0, 1e-3]]
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=10,
         surface_type="chebyshev",
@@ -112,7 +112,7 @@ def test_scale_chebyshev():
 def test_scale_zernike():
     lens = optic.Optic()
     coeffs = [0, 1e-3, 1e-4]
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius=10, surface_type="zernike", coefficients=coeffs, norm_radius=1.0
     )
     lens.scale_system(2.0)
@@ -126,7 +126,7 @@ def test_scale_zernike():
 
 def test_scale_biconic():
     lens = optic.Optic()
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius_x=10, surface_type="biconic", radius_y=10, conic_x=0, conic_y=0
     )  # using defaults
     lens.scale_system(2.0)
@@ -140,7 +140,7 @@ def test_scale_biconic():
 def test_scale_toroidal():
     lens = optic.Optic()
     coeffs = [1e-3]
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius_x=10,
         surface_type="toroidal",
@@ -163,8 +163,8 @@ def test_scale_toroidal():
 
 def test_scale_plane():
     lens = optic.Optic()
-    lens.add_surface(index=0, radius=np.inf, thickness=5)
-    lens.add_surface(index=1)
+    lens.surfaces.add(index=0, radius=np.inf, thickness=5)
+    lens.surfaces.add(index=1)
     lens.scale_system(2.0)
 
     surface = lens.surfaces[0]
@@ -176,7 +176,7 @@ def test_scale_plane():
 def test_scale_plane_grating():
     lens = optic.Optic()
     # PlaneGrating
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=np.inf,
         surface_type="grating",
@@ -193,7 +193,7 @@ def test_scale_plane_grating():
 
 def test_scale_standard_grating():
     lens = optic.Optic()
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=10,
         surface_type="grating",
@@ -216,7 +216,7 @@ def test_scale_forbes_qbfs():
     terms = {0: 1e-3, 1: 1e-4}
     # Save original values before scaling (terms dict may be mutated)
     original_terms = {k: v for k, v in terms.items()}
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=10,
         surface_type="forbes_qbfs",
@@ -243,7 +243,7 @@ def test_scale_forbes_q2d():
     terms = {("a", 0, 0): 1e-3}
     # Save original values before scaling (terms dict may be mutated)
     original_terms = {k: v for k, v in terms.items()}
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=10,
         surface_type="forbes_q2d",
@@ -273,7 +273,7 @@ def test_scale_nurbs():
     P[1, :, :] = 2.0  # y=2
     P[2, :, :] = 3.0  # z=3
 
-    lens.add_surface(
+    lens.surfaces.add(
         index=0,
         radius=np.inf,
         surface_type="nurbs",

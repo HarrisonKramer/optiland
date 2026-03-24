@@ -46,8 +46,8 @@ def test_afocal_chief_ray_strategy():
 
     optic.set_aperture("EPD", 10)
     optic.set_field_type("angle")
-    optic.add_field(0, 0)
-    optic.add_wavelength(0.55)
+    optic.fields.add(0, 0)
+    optic.wavelengths.add(0.55)
 
     optic.update_paraxial()
     wf = Wavefront(
@@ -76,8 +76,8 @@ def test_afocal_best_fit_strategy():
 
     optic.set_aperture("EPD", 10)
     optic.set_field_type("angle")
-    optic.add_field(1.0, 0)  # 1 degree field
-    optic.add_wavelength(0.55)
+    optic.fields.add(1.0, 0)  # 1 degree field
+    optic.wavelengths.add(0.55)
 
     wf = Wavefront(
         optic, fields=[(1.0, 0)], wavelengths=[0.55], strategy="best_fit", afocal=True
@@ -108,8 +108,8 @@ def test_focal_regression():
 
     optic.set_aperture("EPD", 10)
     optic.set_field_type("angle")
-    optic.add_field(0, 0)
-    optic.add_wavelength(0.55)
+    optic.fields.add(0, 0)
+    optic.wavelengths.add(0.55)
 
     wf = Wavefront(optic, strategy="chief_ray", afocal=False)
     data = wf.get_data((0, 0), 0.55)

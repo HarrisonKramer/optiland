@@ -854,8 +854,8 @@ class TestOpticTrace:
     def sample_optic(self):
         """Provides a configured TessarLens instance for tracing tests."""
         optic = TessarLens()
-        optic.add_field(y=0.7)
-        optic.add_field(y=1.0)
+        optic.fields.add(y=0.7)
+        optic.fields.add(y=1.0)
         return optic
 
     def test_trace_single_field_scalar_input(self, sample_optic):

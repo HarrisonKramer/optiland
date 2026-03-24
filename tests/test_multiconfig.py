@@ -15,10 +15,10 @@ def base_optic():
     optic = Optic()
     # Create a simple triplet-like structure
     # Surfaces: 0 (Obj), 1 (Lens1), 2 (Air), 3 (Lens2), 4 (Img)
-    optic.add_surface(radius=100, thickness=10, material="air", index=0)
-    optic.add_surface(radius=-100, thickness=5, material="air", index=1)
-    optic.add_surface(radius=50, thickness=10, material="air", index=2)
-    optic.add_surface(radius=-50, thickness=0, material="air", index=3)  # Image
+    optic.surfaces.add(radius=100, thickness=10, material="air", index=0)
+    optic.surfaces.add(radius=-100, thickness=5, material="air", index=1)
+    optic.surfaces.add(radius=50, thickness=10, material="air", index=2)
+    optic.surfaces.add(radius=-50, thickness=0, material="air", index=3)  # Image
     return optic
 
 
@@ -147,8 +147,8 @@ def test_multiconfig_draw(base_optic):
     # Setup optic for drawing (needs aperture/fields)
     base_optic.set_aperture("EPD", 20)
     base_optic.set_field_type("angle")
-    base_optic.add_field(0)
-    base_optic.add_wavelength(0.55, is_primary=True)
+    base_optic.fields.add(0)
+    base_optic.wavelengths.add(0.55, is_primary=True)
     base_optic.surfaces[1].is_stop = True
 
     mc.add_configuration()

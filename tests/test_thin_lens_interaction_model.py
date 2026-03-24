@@ -76,26 +76,26 @@ class TestThinLensInteractionModel:
         lens = Optic()
 
         # add surfaces
-        lens.add_surface(index=0, thickness=be.inf)
-        lens.add_surface(
+        lens.surfaces.add(index=0, thickness=be.inf)
+        lens.surfaces.add(
             index=1,
             surface_type="paraxial",
             thickness=100,
             f=100,
             is_stop=True,
         )
-        lens.add_surface(index=2)
+        lens.surfaces.add(index=2)
 
         # add aperture
         lens.set_aperture(aperture_type="EPD", value=20)
 
         # add field
         lens.set_field_type(field_type="angle")
-        lens.add_field(y=0)
-        # lens.add_field(y=5)
+        lens.fields.add(y=0)
+        # lens.fields.add(y=5)
 
         # add wavelength
-        lens.add_wavelength(value=0.55, is_primary=True)
+        lens.wavelengths.add(value=0.55, is_primary=True)
 
         rays = lens.trace(
             Hx=0,
@@ -130,8 +130,8 @@ class TestThinLensInteractionModel:
         lens = Optic()
 
         # add surfaces
-        lens.add_surface(index=0, thickness=be.inf)
-        lens.add_surface(
+        lens.surfaces.add(index=0, thickness=be.inf)
+        lens.surfaces.add(
             index=1,
             surface_type="paraxial",
             thickness=75,
@@ -140,17 +140,17 @@ class TestThinLensInteractionModel:
             material=IdealMaterial(1.5, 0),
             is_reflective=False,
         )
-        lens.add_surface(index=2, material=IdealMaterial(1.5, 0))
+        lens.surfaces.add(index=2, material=IdealMaterial(1.5, 0))
 
         # add aperture
         lens.set_aperture(aperture_type="EPD", value=20)
 
         # add field
         lens.set_field_type(field_type="angle")
-        lens.add_field(y=0)
+        lens.fields.add(y=0)
 
         # add wavelength
-        lens.add_wavelength(value=0.55, is_primary=True)
+        lens.wavelengths.add(value=0.55, is_primary=True)
 
         rays = lens.trace(
             Hx=0,

@@ -378,13 +378,13 @@ class TestSurfaceGroupUpdatesRealObjects:
         mat2 = IdealMaterial(n=2.0)
         mat3 = IdealMaterial(n=2.5)
 
-        lens.add_surface(index=0, material="Air")
-        lens.add_surface(index=1, material=mat1, thickness=5)  # Surface 1
-        lens.add_surface(
+        lens.surfaces.add(index=0, material="Air")
+        lens.surfaces.add(index=1, material=mat1, thickness=5)  # Surface 1
+        lens.surfaces.add(
             index=2, material=mat2, thickness=5
         )  # Surface 2 (to be removed)
-        lens.add_surface(index=3, material=mat3, thickness=5)  # Surface 3
-        lens.add_surface(index=4, material="Air")
+        lens.surfaces.add(index=3, material=mat3, thickness=5)  # Surface 3
+        lens.surfaces.add(index=4, material="Air")
 
         surface_before_removal = lens.surface_group.surfaces[1]
         surface_to_remove = lens.surface_group.surfaces[2]
@@ -413,15 +413,15 @@ class TestSurfaceGroupUpdatesRealObjects:
         """
         # 1. Create the initial lens with two glass slabs
         lens1 = optic.Optic(name="Two Slabs")
-        lens1.add_surface(index=0, thickness=be.inf, material="Air")
-        lens1.add_surface(
+        lens1.surfaces.add(index=0, thickness=be.inf, material="Air")
+        lens1.surfaces.add(
             index=1,
             surface_type="standard",
             material=IdealMaterial(n=2.5),
             thickness=10,
             radius=be.inf,
         )
-        lens1.add_surface(
+        lens1.surfaces.add(
             index=2,
             surface_type="standard",
             material=IdealMaterial(n=1.0001),
@@ -429,17 +429,17 @@ class TestSurfaceGroupUpdatesRealObjects:
             radius=be.inf,
             is_stop=True,
         )
-        lens1.add_surface(
+        lens1.surfaces.add(
             index=3,
             surface_type="standard",
             material="Air",
             thickness=20,
             radius=be.inf,
         )
-        lens1.add_surface(index=4, material="Air")
+        lens1.surfaces.add(index=4, material="Air")
         lens1.set_field_type("angle")
-        lens1.add_field(y=10)
-        lens1.add_wavelength(500, unit="nm")
+        lens1.fields.add(y=10)
+        lens1.wavelengths.add(500, unit="nm")
         lens1.set_aperture("float_by_stop_size", 25)
 
         # 2. Remove the first slab (the one with n=2.5) from lens1
@@ -451,9 +451,9 @@ class TestSurfaceGroupUpdatesRealObjects:
 
         # 4. Create a second lens from scratch with the expected final configuration
         lens2 = optic.Optic(name="One Slab")
-        lens2.add_surface(index=0, thickness=be.inf, material="Air")
+        lens2.surfaces.add(index=0, thickness=be.inf, material="Air")
         # This surface corresponds to the one that remained in lens1
-        lens2.add_surface(
+        lens2.surfaces.add(
             index=1,
             surface_type="standard",
             material=IdealMaterial(n=1.0001),
@@ -461,17 +461,17 @@ class TestSurfaceGroupUpdatesRealObjects:
             radius=be.inf,
             is_stop=True,
         )
-        lens2.add_surface(
+        lens2.surfaces.add(
             index=2,
             surface_type="standard",
             material="Air",
             thickness=20,
             radius=be.inf,
         )
-        lens2.add_surface(index=3, material="Air")
+        lens2.surfaces.add(index=3, material="Air")
         lens2.set_field_type("angle")
-        lens2.add_field(y=10)
-        lens2.add_wavelength(500, unit="nm")
+        lens2.fields.add(y=10)
+        lens2.wavelengths.add(500, unit="nm")
         lens2.set_aperture("float_by_stop_size", 25)
 
         # 5. Trace rays through the new lens2 and get final y-coordinates
@@ -523,11 +523,11 @@ class TestSurfaceGroupUpdatesRealObjects:
         cooke = CookeTriplet()
 
         lens = optic.Optic()
-        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        lens.add_surface(index=1)
+        lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+        lens.surfaces.add(index=1)
 
         for surf in cooke.surface_group.surfaces[-2:0:-1]:
-            lens.add_surface(
+            lens.surfaces.add(
                 radius=surf.geometry.radius,
                 index=1,
                 material=surf.material_post,
@@ -560,10 +560,10 @@ class TestSurfaceGroupUpdatesRealObjects:
     def test_set_stop_index(self):
         lens = optic.Optic()
 
-        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        lens.add_surface(index=1, radius=be.inf, thickness=5, is_stop=True)
-        lens.add_surface(index=2, radius=be.inf, thickness=5)
-        lens.add_surface(index=3, radius=be.inf, thickness=5)
+        lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+        lens.surfaces.add(index=1, radius=be.inf, thickness=5, is_stop=True)
+        lens.surfaces.add(index=2, radius=be.inf, thickness=5)
+        lens.surfaces.add(index=3, radius=be.inf, thickness=5)
         lens.surface_group.stop_index = 2
         assert lens.surface_group.surfaces[2].is_stop == True
         with pytest.raises(ValueError, match="Index out of range"):
@@ -577,9 +577,9 @@ class TestSurfaceGroupUpdatesRealObjects:
     )
     def test_second_object_surface_raises(self):
         lens1 = optic.Optic()
-        lens1.add_surface(index=0, thickness=be.inf, material="Air")
+        lens1.surfaces.add(index=0, thickness=be.inf, material="Air")
         with pytest.raises(
             ValueError,
             match=("Surface index cannot be zero after first surface is created."),
         ):
-            lens1.add_surface(index=0, thickness=be.inf, material="Air")
+            lens1.surfaces.add(index=0, thickness=be.inf, material="Air")

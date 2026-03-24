@@ -194,7 +194,7 @@ class ParaxialToThickLensConverter:
         original_material_post = self.paraxial_surface.material_post
 
         # Surface 1: front surface of the thick lens
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=original_index,
             radius=r1,
             material=self._material_instance,
@@ -204,7 +204,7 @@ class ParaxialToThickLensConverter:
         )
 
         # Surface 2: back surface of the thick lens
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=original_index + 1,
             radius=r2,
             material=original_material_post,

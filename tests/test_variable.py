@@ -726,12 +726,12 @@ class TestVariablesExtended:
     @pytest.fixture
     def optic(self):
         optic = Optic()
-        optic.add_surface(index=0, surface_type="plane")
-        optic.add_surface(index=1, surface_type="standard", radius=100)
-        optic.add_surface(
+        optic.surfaces.add(index=0, surface_type="plane")
+        optic.surfaces.add(index=1, surface_type="standard", radius=100)
+        optic.surfaces.add(
             index=2, surface_type="even_asphere", radius=50, coefficients=[0.0, 0.1]
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=3, surface_type="zernike", radius=200, coefficients=[0.0] * 5
         )
         return optic

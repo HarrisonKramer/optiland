@@ -9,34 +9,34 @@ from optiland.optic import Optic
 @pytest.fixture
 def zernike_optic():
     optic = Optic()
-    optic.add_surface(surface_type="standard", thickness=be.inf, index=0)  # object
-    optic.add_surface(
+    optic.surfaces.add(surface_type="standard", thickness=be.inf, index=0)  # object
+    optic.surfaces.add(
         surface_type="standard", is_stop=True, radius=10, thickness=20, index=1
     )
     # Add a Zernike surface which has a norm_radius
-    optic.add_surface(surface_type="zernike", radius=-10, thickness=50, index=2)
-    optic.add_surface(surface_type="standard", index=3)  # image
+    optic.surfaces.add(surface_type="zernike", radius=-10, thickness=50, index=2)
+    optic.surfaces.add(surface_type="standard", index=3)  # image
     optic.set_aperture("EPD", 5.0)
     optic.set_field_type("angle")
-    optic.add_field(0.0)
-    optic.add_wavelength(0.55)
+    optic.fields.add(0.0)
+    optic.wavelengths.add(0.55)
     return optic
 
 
 def test_init_kwargs_behavior(set_test_backend):
     # Tests that adding a surface with `norm_radius` as a kwarg locks it
     optic = Optic()
-    optic.add_surface(surface_type="standard", thickness=10, index=0)
-    optic.add_surface(
+    optic.surfaces.add(surface_type="standard", thickness=10, index=0)
+    optic.surfaces.add(
         surface_type="standard", is_stop=True, radius=10, thickness=20, index=1
     )
-    optic.add_surface(
+    optic.surfaces.add(
         surface_type="zernike", radius=-10, thickness=50, index=2, norm_radius=111.0
     )
     optic.set_aperture("EPD", 5.0)
     optic.set_field_type("angle")
-    optic.add_field(0.0)
-    optic.add_wavelength(0.55)
+    optic.fields.add(0.0)
+    optic.wavelengths.add(0.55)
 
     zernike_surface = optic.surfaces[2]
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"

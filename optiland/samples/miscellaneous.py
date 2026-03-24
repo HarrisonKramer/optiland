@@ -27,8 +27,8 @@ class NavarroWideAngleEye(Optic):
             "vitreous_humor": IdealMaterial(1.3377),
         }
 
-        self.add_surface(index=0, comment="object", radius=be.inf, thickness=be.inf)
-        self.add_surface(
+        self.surfaces.add(index=0, comment="object", radius=be.inf, thickness=be.inf)
+        self.surfaces.add(
             index=1,
             comment="cornea front",
             radius=7.72,
@@ -36,7 +36,7 @@ class NavarroWideAngleEye(Optic):
             conic=-0.26,
             material=self.materials["cornea"],
         )
-        self.add_surface(
+        self.surfaces.add(
             index=2,
             comment="cornea back",
             radius=6.5,
@@ -44,7 +44,7 @@ class NavarroWideAngleEye(Optic):
             conic=0,
             material=self.materials["aqueous_humor"],
         )
-        self.add_surface(
+        self.surfaces.add(
             index=3,
             comment="pupil",
             radius=be.inf,
@@ -52,7 +52,7 @@ class NavarroWideAngleEye(Optic):
             is_stop=True,
             material=self.materials["aqueous_humor"],
         )
-        self.add_surface(
+        self.surfaces.add(
             index=4,
             comment="lens front",
             radius=10.2,
@@ -60,7 +60,7 @@ class NavarroWideAngleEye(Optic):
             conic=-3.1316,
             material=self.materials["lens"],
         )
-        self.add_surface(
+        self.surfaces.add(
             index=5,
             comment="lens back",
             radius=-6,
@@ -68,7 +68,7 @@ class NavarroWideAngleEye(Optic):
             conic=-1,
             material=self.materials["vitreous_humor"],
         )
-        self.add_surface(
+        self.surfaces.add(
             index=6,
             comment="retina",
             radius=-12,
@@ -78,10 +78,10 @@ class NavarroWideAngleEye(Optic):
         self.set_aperture(aperture_type="float_by_stop_size", value=3.0)
 
         self.set_field_type(field_type="angle")
-        self.add_field(0)
-        self.add_field(15)
-        self.add_field(30)
-        self.add_field(45)
-        self.add_field(60)
+        self.fields.add(0)
+        self.fields.add(15)
+        self.fields.add(30)
+        self.fields.add(45)
+        self.fields.add(60)
 
-        self.add_wavelength(0.543)
+        self.wavelengths.add(0.543)

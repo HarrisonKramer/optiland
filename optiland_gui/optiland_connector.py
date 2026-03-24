@@ -149,7 +149,7 @@ class OptilandConnector(QObject):
         """Creates a default 3-surface structure for a new optic."""
         optic.surface_group.clear()
         optic.wavelengths.wavelengths.clear()
-        optic.add_surface(
+        optic.surfaces.add(
             index=0,
             surface_type="standard",
             radius=float("inf"),
@@ -157,7 +157,7 @@ class OptilandConnector(QObject):
             comment="Object",
             material="Air",
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=1,
             surface_type="standard",
             radius=float("inf"),
@@ -166,7 +166,7 @@ class OptilandConnector(QObject):
             material="Air",
             is_stop=True,
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=2,
             surface_type="standard",
             radius=float("inf"),
@@ -174,9 +174,9 @@ class OptilandConnector(QObject):
             comment="Image",
             material="Air",
         )
-        optic.add_wavelength(self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um")
+        optic.wavelengths.add(self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um")
         optic.set_field_type("angle")
-        optic.add_field(y=0)
+        optic.fields.add(y=0)
         optic.set_aperture("EPD", 10.0)
 
     def _ensure_valid_optic_structure(self, optic: Optic):
@@ -184,14 +184,14 @@ class OptilandConnector(QObject):
         if optic.surface_group.num_surfaces < 2:
             # If the system is invalid, reset it to a minimal default
             optic.surface_group.clear()
-            optic.add_surface(
+            optic.surfaces.add(
                 surface_type="standard",
                 radius=float("inf"),
                 thickness=10.0,
                 comment="Object",
                 material="Air",
             )
-            optic.add_surface(
+            optic.surfaces.add(
                 surface_type="standard",
                 radius=float("inf"),
                 thickness=0.0,
@@ -200,7 +200,9 @@ class OptilandConnector(QObject):
             )
 
         if optic.wavelengths.num_wavelengths == 0:
-            optic.add_wavelength(self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um")
+            optic.wavelengths.add(
+                self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
+            )
         elif optic.wavelengths.primary_index is None:
             optic.wavelengths.wavelengths[0].is_primary = True
 
@@ -231,7 +233,7 @@ class OptilandConnector(QObject):
                 self._optic.wavelengths.wavelengths[0].is_primary = True
                 return self._optic.wavelengths.wavelengths[0].value
         if self._optic.wavelengths.num_wavelengths == 0:
-            self._optic.add_wavelength(
+            self._optic.wavelengths.add(
                 self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
             )
             self._optic.update()
@@ -242,7 +244,7 @@ class OptilandConnector(QObject):
 
     def _capture_optic_state(self):
         if self._optic.wavelengths.num_wavelengths == 0:
-            self._optic.add_wavelength(
+            self._optic.wavelengths.add(
                 self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um"
             )
         elif (
@@ -680,7 +682,7 @@ class OptilandConnector(QObject):
         if insert_idx <= 0:
             insert_idx = 1
 
-        self._optic.add_surface(
+        self._optic.surfaces.add(
             surface_type="standard",
             radius=float("inf"),
             thickness=0.0,

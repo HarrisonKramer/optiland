@@ -26,7 +26,7 @@ def grid_sag_optic():
         previous_surface=None,
         material_post=IdealMaterial(1.5),
     )
-    optic.add_surface(new_surface=surface, index=0)
+    optic.surfaces.add(new_surface=surface, index=0)
     return optic
 
 

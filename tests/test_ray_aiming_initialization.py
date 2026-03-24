@@ -13,9 +13,9 @@ from optiland.rays.ray_aiming.initialization import (
 
 def test_float_by_stop_strategy(set_test_backend):
     optic = Optic()
-    optic.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    optic.add_surface(index=1, radius=np.inf, thickness=10, is_stop=True)
-    optic.add_surface(index=2)
+    optic.surfaces.add(index=0, radius=np.inf, thickness=np.inf)
+    optic.surfaces.add(index=1, radius=np.inf, thickness=10, is_stop=True)
+    optic.surfaces.add(index=2)
 
     # Set explicit aperture on stop
     from optiland.physical_apertures.radial import RadialAperture
@@ -35,15 +35,15 @@ def test_float_by_stop_strategy(set_test_backend):
 def test_paraxial_reference_strategy(set_test_backend):
     # Create an aberrated lens where paraxial approximation differs
     optic = Optic()
-    optic.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    optic.add_surface(index=1, radius=-10.0, thickness=5.0, material="N-BK7")
-    optic.add_surface(index=2, radius=np.inf, thickness=20.0)
+    optic.surfaces.add(index=0, radius=np.inf, thickness=np.inf)
+    optic.surfaces.add(index=1, radius=-10.0, thickness=5.0, material="N-BK7")
+    optic.surfaces.add(index=2, radius=np.inf, thickness=20.0)
     # Stop
-    optic.add_surface(index=3, radius=np.inf, thickness=10.0, is_stop=True)
-    optic.add_surface(index=4)
+    optic.surfaces.add(index=3, radius=np.inf, thickness=10.0, is_stop=True)
+    optic.surfaces.add(index=4)
 
     optic.set_aperture("EPD", 10.0)
-    optic.add_wavelength(0.55)
+    optic.wavelengths.add(0.55)
 
     strategy = ParaxialReferenceStrategy(optic)
     r_par = strategy.calculate_stop_radius()
@@ -56,12 +56,12 @@ def test_real_reference_strategy_vs_paraxial_simple(set_test_backend):
     # causing Real != Paraxial
     optic = Optic()
     # Pfx lens: R=20, n=1.5
-    optic.add_surface(index=0, radius=np.inf, thickness=np.inf)
-    optic.add_surface(index=1, radius=20.0, thickness=20.0, material="N-BK7")
-    optic.add_surface(index=2, radius=np.inf, thickness=10.0, is_stop=True)
+    optic.surfaces.add(index=0, radius=np.inf, thickness=np.inf)
+    optic.surfaces.add(index=1, radius=20.0, thickness=20.0, material="N-BK7")
+    optic.surfaces.add(index=2, radius=np.inf, thickness=10.0, is_stop=True)
 
     optic.set_aperture("EPD", 36.0)  # High NA to ensure aberration
-    optic.add_wavelength(1.0)
+    optic.wavelengths.add(1.0)
 
     strat_real = RealReferenceStrategy(optic)
     r_real = strat_real.calculate_stop_radius()
@@ -81,13 +81,13 @@ def test_real_reference_strategy_vs_paraxial_simple(set_test_backend):
 def test_finite_object_real_strategy(set_test_backend):
     optic = Optic()
     # Finite Object distance 20
-    optic.add_surface(index=0, radius=np.inf, thickness=20.0)
-    optic.add_surface(index=1, radius=20.0, thickness=5.0, material="N-BK7")
-    optic.add_surface(index=2, radius=np.inf, thickness=10.0, is_stop=True)
-    optic.add_surface(index=3)
+    optic.surfaces.add(index=0, radius=np.inf, thickness=20.0)
+    optic.surfaces.add(index=1, radius=20.0, thickness=5.0, material="N-BK7")
+    optic.surfaces.add(index=2, radius=np.inf, thickness=10.0, is_stop=True)
+    optic.surfaces.add(index=3)
 
     optic.set_aperture("EPD", 5.0)
-    optic.add_wavelength(0.55)
+    optic.wavelengths.add(0.55)
 
     strat_real = RealReferenceStrategy(optic)
     r_real = strat_real.calculate_stop_radius()

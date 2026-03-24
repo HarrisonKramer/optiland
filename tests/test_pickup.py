@@ -40,14 +40,14 @@ class TestPickup:
     def test_apply_generic_coefficients(self, set_test_backend):
         lens = CookeTriplet()
         # Ensure it has aspheric coefficients
-        lens.add_surface(
+        lens.surfaces.add(
             index=1,
             radius=50,
             thickness=3,
             surface_type="even_asphere",
             coefficients=[-2e-4, -4e-6],
         )
-        lens.add_surface(
+        lens.surfaces.add(
             index=2,
             radius=-50,
             thickness=30,

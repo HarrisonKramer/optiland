@@ -164,7 +164,7 @@ class PythonHighlighter(QSyntaxHighlighter):
 # --- Code Snippets ---
 ADD_SURFACE_SNIPPET = (
     "optic = connector.get_optic()\n"
-    "optic.add_surface(\n"
+    "optic.surfaces.add(\n"
     "    radius=100.0,\n"
     "    thickness=5.0,\n"
     "    material='N-BK7',\n"

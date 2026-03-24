@@ -20,23 +20,23 @@ class TestIterativeRayAimer(unittest.TestCase):
         self.optic = Optic()
 
         # Create a fast system where paraxial aiming might fail to be exact at the stop
-        self.optic.add_surface(index=0, thickness=100)
-        self.optic.add_surface(
+        self.optic.surfaces.add(index=0, thickness=100)
+        self.optic.surfaces.add(
             index=1, radius=50, thickness=10, material=IdealMaterial(n=1.5)
         )
-        self.optic.add_surface(index=2, radius=-50, thickness=20)  # Surface 2
-        self.optic.add_surface(
+        self.optic.surfaces.add(index=2, radius=-50, thickness=20)  # Surface 2
+        self.optic.surfaces.add(
             index=3, is_stop=True, thickness=20, aperture=20.0
         )  # Surface 3 (Stop)
-        self.optic.add_surface(index=4)  # Image
+        self.optic.surfaces.add(index=4)  # Image
 
-        self.optic.add_surface(index=4)  # Image
+        self.optic.surfaces.add(index=4)  # Image
 
         self.optic.set_aperture("float_by_stop_size", 1.0)
         self.optic.set_field_type("angle")
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=10)  # 10 degrees
-        self.optic.add_wavelength(0.55)
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=10)  # 10 degrees
+        self.optic.wavelengths.add(0.55)
 
     def test_creation(self):
         aimer = create_ray_aimer("iterative", self.optic)
@@ -48,8 +48,8 @@ class TestIterativeRayAimer(unittest.TestCase):
         # S0 thickness=100 -> Object at Z=0, S1 at Z=100.
         self.optic.set_field_type("object_height")
         self.optic.fields.fields.clear()
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=5)  # 5mm height
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=5)  # 5mm height
 
         # Determine explicit target stop_r
         stop_index = self.optic.surfaces.stop_index
@@ -88,8 +88,8 @@ class TestIterativeRayAimer(unittest.TestCase):
 
         self.optic.set_field_type("angle")
         self.optic.fields.fields.clear()
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=5)  # 5 degrees
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=5)  # 5 degrees
 
         self.optic.surfaces[1].geometry.radius = 200  # Weak curve
 

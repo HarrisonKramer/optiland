@@ -148,18 +148,18 @@ def test_robust_aimer_infinite_object_90_degree_field(set_test_backend):
     # We'll use a simplified version of the user's lens to avoid clutter,
     # but ensure it has infinite object and large field.
 
-    optic.add_surface(index=0, radius=float("inf"), thickness=float("inf"))
+    optic.surfaces.add(index=0, radius=float("inf"), thickness=float("inf"))
     # A dummy surface to aim at
-    optic.add_surface(
+    optic.surfaces.add(
         index=1, radius=100.0, thickness=10.0, material="air", is_stop=True
     )
-    optic.add_surface(index=2)
+    optic.surfaces.add(index=2)
 
     optic.set_aperture("EPD", 1.0)
     optic.set_field_type("angle")
-    optic.add_field(y=0)
-    optic.add_field(y=90)
-    optic.add_wavelength(0.55, is_primary=True)
+    optic.fields.add(y=0)
+    optic.fields.add(y=90)
+    optic.wavelengths.add(0.55, is_primary=True)
 
     optic.set_ray_aiming("robust")
 

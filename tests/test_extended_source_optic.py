@@ -13,10 +13,10 @@ class TestExtendedSourceOptic:
     def optic(self):
         """Creates a simple optic for testing."""
         optic = Optic()
-        optic.add_surface(index=0, thickness=10)
-        optic.add_surface(index=1, thickness=10, is_stop=True)
-        optic.add_surface(index=2)
-        optic.add_wavelength(1.55, is_primary=True)
+        optic.surfaces.add(index=0, thickness=10)
+        optic.surfaces.add(index=1, thickness=10, is_stop=True)
+        optic.surfaces.add(index=2)
+        optic.wavelengths.add(1.55, is_primary=True)
         return optic
 
     @pytest.fixture

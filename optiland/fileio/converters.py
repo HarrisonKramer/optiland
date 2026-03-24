@@ -144,7 +144,7 @@ class ZemaxToOpticConverter:
                     }
                 )
 
-            self.optic.add_surface(**surface_params)
+            self.optic.surfaces.add(**surface_params)
             surf_idx = surf_idx + 1
 
             # we need to advance the cs by the surface thickness
@@ -158,7 +158,7 @@ class ZemaxToOpticConverter:
         # image surface specific
         translation, _ = self.current_cs.get_effective_transform()
         rx_, ry_, rz_ = self.current_cs.get_effective_rotation_euler()
-        self.optic.add_surface(
+        self.optic.surfaces.add(
             index=surf_idx,
             x=translation[0],
             y=translation[1],
@@ -219,7 +219,7 @@ class ZemaxToOpticConverter:
             # For all other surfaces, use the standard radius.
             surface_params["radius"] = data["radius"]
 
-        self.optic.add_surface(**surface_params)
+        self.optic.surfaces.add(**surface_params)
 
     def _configure_surface_coefficients(self, data: dict):
         """Configures the aspheric coefficients for a surface.
@@ -303,10 +303,10 @@ class ZemaxToOpticConverter:
             pass
 
         for k in range(len(field_x)):
-            self.optic.add_field(x=field_x[k], y=field_y[k], vx=vig_x[k], vy=vig_y[k])
+            self.optic.fields.add(x=field_x[k], y=field_y[k], vx=vig_x[k], vy=vig_y[k])
 
     def _configure_wavelengths(self):
         """Configure the wavelengths for the optic."""
         primary_idx = self.data["wavelengths"]["primary_index"]
         for idx, value in enumerate(self.data["wavelengths"]["data"]):
-            self.optic.add_wavelength(value=value, is_primary=(idx == primary_idx))
+            self.optic.wavelengths.add(value=value, is_primary=(idx == primary_idx))

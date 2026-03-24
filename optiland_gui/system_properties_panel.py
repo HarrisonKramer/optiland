@@ -253,7 +253,7 @@ class FieldsEditor(PropertyEditorBase):
         self._create_control_buttons(main_layout)
 
         self.cmbFieldType.currentTextChanged.connect(self.apply_field_type_change)
-        self.btnAddField.clicked.connect(self.add_field)
+        self.btnAddField.clicked.connect(self.fields.add)
         self.btnRemoveField.clicked.connect(self.remove_field)
         self.btnApplyFields.clicked.connect(self.apply_table_field_changes)
 
@@ -343,7 +343,7 @@ class FieldsEditor(PropertyEditorBase):
                 else 0.0
             )
 
-            optic.add_field(y=y_val)
+            optic.fields.add(y=y_val)
             self.load_data()
             self.connector.opticChanged.emit()
             print("Field added.")
@@ -420,7 +420,7 @@ class WavelengthsEditor(PropertyEditorBase):
         self._create_wavelengths_table(main_layout)
         self._create_control_buttons(main_layout)
 
-        self.btnAddWavelength.clicked.connect(self.add_wavelength)
+        self.btnAddWavelength.clicked.connect(self.wavelengths.add)
         self.btnRemoveWavelength.clicked.connect(self.remove_wavelength)
         self.btnSetPrimary.clicked.connect(self.set_primary_wavelength)
         self.btnApplyWavelengths.clicked.connect(self.apply_table_wavelength_changes)
@@ -488,7 +488,7 @@ class WavelengthsEditor(PropertyEditorBase):
         optic = self.connector.get_optic()
         if optic:
             is_new_primary = optic.wavelengths.num_wavelengths == 0
-            optic.add_wavelength(0.6328, is_primary=is_new_primary, unit="um")
+            optic.wavelengths.add(0.6328, is_primary=is_new_primary, unit="um")
             self.load_data()
             self.connector.opticChanged.emit()
             print("Wavelength added.")
