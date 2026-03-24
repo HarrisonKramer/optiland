@@ -143,10 +143,14 @@ class BaseAperture(ABC):
         y_max = y_max * buffer
         if ax is None:
             fig, ax = plt.subplots()
+        else:
+            fig = ax.get_figure()
+
         x = be.linspace(x_min, x_max, nx)
         y = be.linspace(y_min, y_max, ny)
         X, Y = be.meshgrid(x, y)
         Z = self.contains(X, Y)
+
         ax.contourf(be.to_numpy(X), be.to_numpy(Y), be.to_numpy(Z), **kwargs)
         ax.set_xlabel("X [mm]")
         ax.set_ylabel("Y [mm]")
