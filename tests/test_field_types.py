@@ -119,7 +119,7 @@ def test_paraxial_get_ray_origins(set_test_backend):
     optic.fields.add(y=20.0)
 
     # get the ray origins
-    origins = optic.field_definition.get_ray_origins(
+    origins = optic.fields.field_definition.get_ray_origins(
         optic,
         Hx=0,
         Hy=1,
@@ -139,7 +139,7 @@ def test_paraxial_get_ray_origins(set_test_backend):
     optic.object_surface.geometry.cs.z = be.array([-555.0])
 
     # get the ray origins
-    origins = optic.field_definition.get_ray_origins(
+    origins = optic.fields.field_definition.get_ray_origins(
         optic,
         Hx=0,
         Hy=1,
@@ -169,7 +169,7 @@ def test_get_paraxial_object_position(set_test_backend):
     optic.fields.add(y=20.0)
 
     # get the paraxial object position
-    obj_pos = optic.field_definition.get_paraxial_object_position(
+    obj_pos = optic.fields.field_definition.get_paraxial_object_position(
         optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL()
     )
 
@@ -182,7 +182,7 @@ def test_get_paraxial_object_position(set_test_backend):
     optic.object_surface.geometry.cs.z = be.array([-555.0])
 
     # get the paraxial object position
-    obj_pos = optic.field_definition.get_paraxial_object_position(
+    obj_pos = optic.fields.field_definition.get_paraxial_object_position(
         optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL()
     )
 
@@ -206,7 +206,7 @@ def test_get_starting_z_offset(set_test_backend):
     optic.fields.add(y=20.0)
 
     # get the starting z offset
-    z_offset = optic.field_definition._get_starting_z_offset(optic)
+    z_offset = optic.fields.field_definition._get_starting_z_offset(optic)
 
     # check that the z offset is correct
     assert_allclose(z_offset, optic.paraxial.EPD())

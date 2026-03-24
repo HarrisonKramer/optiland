@@ -228,7 +228,7 @@ def test_load_legacy_optiland_file_with_field_type():
     loaded_lens = load_optiland_file(filepath)
 
     # 5. Assert that the loaded lens is correct
-    assert isinstance(loaded_lens.field_definition, AngleField)
+    assert isinstance(loaded_lens.fields.field_definition, AngleField)
     assert modern_dict == loaded_lens.to_dict()
 
     os.remove(filepath)
