@@ -51,7 +51,7 @@ class DecenterVariable(VariableBehavior):
             float: The current decenter value.
 
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         if self.axis == "x":
             value = surf.geometry.cs.x
         elif self.axis == "y":
@@ -69,7 +69,7 @@ class DecenterVariable(VariableBehavior):
             new_value (float): The new decenter value.
 
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         unscaled_value = self.scaler.inverse_scale(new_value)
         if self.axis == "x":
             surf.geometry.cs.x = unscaled_value

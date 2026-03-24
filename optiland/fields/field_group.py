@@ -139,14 +139,21 @@ class FieldGroup:
             for x, y in zip(self.x_fields, self.y_fields, strict=False)
         ]
 
-    def add(self, field):
+    def add(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
         """Add a field to the list of fields.
 
         Args:
-            field: The field to be added.
+            y: The y-coordinate of the field.
+            x: The x-coordinate of the field.
+                Defaults to 0.0.
+            vx: The x-component of the field's vignetting
+                factor. Defaults to 0.0.
+            vy: The y-component of the field's vignetting
+                factor. Defaults to 0.0.
 
         """
-        self.fields.append(field)
+        new_field = Field(x, y, vx, vy)
+        self.fields.append(new_field)
 
     def get_field(self, field_number):
         """Retrieve the field at the specified field_number.

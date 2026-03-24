@@ -44,7 +44,7 @@ class NurbsPointsVariable(VariableBehavior):
         Returns:
             The current value of the control point.
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         i, j, k = self.coeff_index
         with contextlib.suppress(IndexError):
             value = surf.geometry.P[i, j, k]
@@ -131,7 +131,7 @@ class NurbsWeightsVariable(VariableBehavior):
         Returns:
             The current value of the weight.
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         j, k = self.coeff_index
         with contextlib.suppress(IndexError):
             value = surf.geometry.W[j, k]

@@ -52,7 +52,7 @@ class PolynomialCoeffVariable(VariableBehavior):
             float: The current value of the polynomial coefficient.
 
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         i, j = self.coeff_index
         try:
             value = surf.geometry.coefficients[i][j]

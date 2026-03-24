@@ -96,6 +96,10 @@ class SurfaceGroup:
     def __len__(self):
         return len(self._surfaces)
 
+    def index(self, value):
+        """Return the first index of the specified surface."""
+        return self._surfaces.index(value)
+
     def clear(self):
         """Clears the list of surfaces."""
         self._surfaces = []

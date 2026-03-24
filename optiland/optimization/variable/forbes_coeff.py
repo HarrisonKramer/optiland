@@ -52,7 +52,7 @@ class ForbesQNormalSlopeCoeffVariable(VariableBehavior):
         Raises:
             TypeError: If the geometry is not a ForbesQNormalSlopeGeometry.
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         geom = surf.geometry
         if not isinstance(geom, ForbesQNormalSlopeGeometry):
             raise TypeError("This variable is only for ForbesQNormalSlopeGeometry.")
@@ -137,7 +137,7 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         Raises:
             TypeError: If the geometry is not a ForbesQ2dGeometry.
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         geom = surf.geometry
         if not isinstance(geom, ForbesQ2dGeometry):
             raise TypeError("This variable is only for ForbesQ2dGeometry.")

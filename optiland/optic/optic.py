@@ -21,7 +21,6 @@ from optiland.aberrations import Aberrations
 from optiland.aperture import BaseSystemAperture, make_system_aperture
 from optiland.fields import (
     BaseFieldDefinition,
-    Field,
     FieldGroup,
 )
 from optiland.optic.optic_serializer import OpticSerializer
@@ -307,8 +306,7 @@ class Optic:
             DeprecationWarning,
             stacklevel=2,
         )
-        new_field = Field(x, y, vx, vy)
-        self.fields.add(new_field)
+        self.fields.add(x, y, vx, vy)
 
     def add_wavelength(
         self,

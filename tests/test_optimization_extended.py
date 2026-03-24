@@ -28,9 +28,6 @@ def test_nurbs_points_variable(set_test_backend):
         mock_surf.geometry.P = np.zeros(shape, dtype=float)
 
     mock_optic.surfaces = [mock_surf]
-    mock_optic.surfaces = [mock_surf]  # Usually accessible via wrapper or property
-    # VariableBehavior accesses self._surfaces.surfaces[self.surface_number]
-    # self._surfaces is usually self.optic.surfaces
 
     var = NurbsPointsVariable(mock_optic, 0, (0, 1, 1))
 

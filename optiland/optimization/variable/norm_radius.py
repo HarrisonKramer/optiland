@@ -27,7 +27,7 @@ class NormalizationRadiusVariable(VariableBehavior):
 
     def get_value(self):
         """Returns the current value of the normalization radius."""
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         if hasattr(surf.geometry, "norm_radius"):
             return surf.geometry.norm_radius
         else:

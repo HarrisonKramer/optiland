@@ -59,7 +59,7 @@ class AsphereCoeffVariable(VariableBehavior):
             float: The current value of the aspheric coefficient.
 
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         try:
             value = surf.geometry.coefficients[self.coeff_number]
         except IndexError:
