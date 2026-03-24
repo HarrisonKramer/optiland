@@ -71,22 +71,22 @@ Basic Workflow: Defining an Optical System
 
         .. code-block:: python
 
-            my_lens.add_surface(index=0, radius=np.inf, thickness=np.inf) # Object at infinity
+            my_lens.surfaces.add(index=0, radius=np.inf, thickness=np.inf) # Object at infinity
 
     * Add optical surfaces with their properties:
 
         .. code-block:: python
 
-            my_lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
-            my_lens.add_surface(index=2, radius=-435.76044, thickness=6.00755) # Air gap by default
-            my_lens.add_surface(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"), is_stop=True) # Stop surface
+            my_lens.surfaces.add(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+            my_lens.surfaces.add(index=2, radius=-435.76044, thickness=6.00755) # Air gap by default
+            my_lens.surfaces.add(index=3, radius=-22.21328, thickness=0.99997, material=("F2", "schott"), is_stop=True) # Stop surface
             # ... more surfaces ...
 
     * The **last surface** is the image plane.
 
         .. code-block:: python
 
-            my_lens.add_surface(index=N) # N is the index after the last optical surface
+            my_lens.surfaces.add(index=N) # N is the index after the last optical surface
 
 4.  **Set System Aperture** (``set_aperture``):
 
@@ -101,20 +101,20 @@ Basic Workflow: Defining an Optical System
     .. code-block:: python
 
         my_lens.set_field_type(field_type="angle") # Field specified by angle
-        my_lens.add_field(y=0.0)  # On-axis field
-        my_lens.add_field(y=14.0) # Off-axis field at 14 degrees
-        my_lens.add_field(y=20.0)
+        my_lens.fields.add(y=0.0)  # On-axis field
+        my_lens.fields.add(y=14.0) # Off-axis field at 14 degrees
+        my_lens.fields.add(y=20.0)
         # Or for object height:
         # my_lens.set_field_type(field_type="object_height")
-        # my_lens.add_field(y=10.0) # Object height of 10 mm
+        # my_lens.fields.add(y=10.0) # Object height of 10 mm
 
 6.  **Define Wavelengths** (``add_wavelength``):
 
     .. code-block:: python
 
-        my_lens.add_wavelength(value=0.4861) # F-line (blue) in µm
-        my_lens.add_wavelength(value=0.5876, is_primary=True) # d-line (yellow), primary
-        my_lens.add_wavelength(value=0.6563) # C-line (red)
+        my_lens.wavelengths.add(value=0.4861) # F-line (blue) in µm
+        my_lens.wavelengths.add(value=0.5876, is_primary=True) # d-line (yellow), primary
+        my_lens.wavelengths.add(value=0.6563) # C-line (red)
 
 7.  **(Optional) Image Plane Solve** (``image_solve``): Moves the image surface to the paraxial focus.
 
@@ -178,7 +178,7 @@ Optiland can trace both paraxial and real rays.
 
             optic.trace_generic(Hx, Hy, Px, Py, wavelength)
 
-* **Advanced Ray Tracing** (``RealRays``, ``surface_group.trace``): For more control, create a ``RealRays`` object and trace using ``optic.surface_group.trace(rays)``.
+* **Advanced Ray Tracing** (``RealRays``, ``surface_group.trace``): For more control, create a ``RealRays`` object and trace using ``optic.surfaces.trace(rays)``.
 
     * Example:
 
@@ -205,10 +205,10 @@ Optiland can trace both paraxial and real rays.
                                L=L_in, M=M_in, N=N_in,
                                wavelength=primary_wl, intensity=intensity)
             # Trace the manually created rays
-            rays_out = my_lens.surface_group.trace(rays_in)
+            rays_out = my_lens.surfaces.trace(rays_in)
             # Get x, y coordinates at the image plane (last surface)
-            x_image = my_lens.surface_group.x[-1,:]
-            y_image = my_lens.surface_group.y[-1,:]
+            x_image = my_lens.surfaces.x[-1,:]
+            y_image = my_lens.surfaces.y[-1,:]
 
 * **Ray Distributions** (``distribution.py``): Specify pupil distribution (e.g., ``'hexapolar'``, ``'uniform'``, ``'random'``).
 
