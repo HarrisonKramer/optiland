@@ -37,8 +37,6 @@ def telescope_objective():
 def triplet_four_fields():
     lens = Optic()
 
-    lens.surfaces = []
-
     lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
     lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
     lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)

@@ -24,7 +24,7 @@ def test_field_group_inputs(set_test_backend):
     f = fields.FieldGroup()
     for field_data in input_data:
         new_field = fields.Field(*field_data)
-        f.add_field(new_field)
+        f.add(new_field)
 
     assert_allclose(f.x_fields, be.array([0, 5, 0, 7]))
     assert_allclose(f.y_fields, be.array([0, 0, 6, 9.2]))
@@ -39,7 +39,7 @@ def test_field_group_getters(set_test_backend):
     f = fields.FieldGroup()
     for field_data in input_data:
         new_field = fields.Field(*field_data)
-        f.add_field(new_field)
+        f.add(new_field)
 
     assert f.get_field_coords() == [(0, 0), (0.5, 0), (0, 0.4), (0.8, 0.6)]
 
@@ -51,7 +51,7 @@ def test_field_group_getters(set_test_backend):
     # test case when max field is zero
     f = fields.FieldGroup()
     new_field = fields.Field(0, 0)
-    f.add_field(new_field)
+    f.add(new_field)
     assert f.get_field_coords() == [(0, 0)]
 
 
@@ -60,7 +60,7 @@ def test_field_group_get_vig_factor(set_test_backend):
     f = fields.FieldGroup()
     for field_data in input_data:
         new_field = fields.Field(*field_data)
-        f.add_field(new_field)
+        f.add(new_field)
 
     vx, vy = f.get_vig_factor(1, 1)
     assert vx == 0.0
@@ -74,7 +74,7 @@ def test_field_group_get_vig_factor(set_test_backend):
             vignette_factor_x=0.2,
             vignette_factor_y=0.2,
         )
-        f.add_field(new_field)
+        f.add(new_field)
 
     vx, vy = f.get_vig_factor(0.5, 0.7)
     assert vx == 0.2
@@ -103,7 +103,7 @@ def test_field_group_to_dict(set_test_backend):
     f = fields.FieldGroup()
     for field_data in input_data:
         new_field = fields.Field(*field_data)
-        f.add_field(new_field)
+        f.add(new_field)
 
     assert f.to_dict() == {
         "fields": [
