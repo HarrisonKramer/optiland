@@ -52,6 +52,27 @@ def test_field_group_getters(set_test_backend):
     assert f.get_field_coords() == [(0, 0)]
 
 
+def test_field_group_remove(set_test_backend):
+    input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
+    f = fields.FieldGroup()
+    for field_data in input_data:
+        f.add(x=field_data[0], y=field_data[1])
+
+    assert f.num_fields == 4
+    f.remove(1)
+    assert f.num_fields == 3
+    assert f.get_field(1).x == 0
+    assert f.get_field(1).y == 2
+
+    f.remove(0)
+    assert f.num_fields == 2
+    assert f.get_field(0).x == 0
+    assert f.get_field(0).y == 2
+
+    with pytest.raises(IndexError):
+        f.remove(10)
+
+
 def test_field_group_get_vig_factor(set_test_backend):
     input_data = [(0, 0)]
     f = fields.FieldGroup()
