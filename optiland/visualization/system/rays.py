@@ -222,13 +222,13 @@ class Rays2D:
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
 
-            if hide_vignetted and np.any(ik == 0):
-                continue
-
-            # remove rays outside aperture
-            xk[ik == 0] = np.nan
-            zk[ik == 0] = np.nan
-            yk[ik == 0] = np.nan
+            if np.any(ik == 0):
+                if hide_vignetted:
+                    continue
+                first_zero_idx = np.where(ik == 0)[0][0]
+                xk[first_zero_idx + 1 :] = np.nan
+                yk[first_zero_idx + 1 :] = np.nan
+                zk[first_zero_idx + 1 :] = np.nan
 
             artist, ray_bundle = self._plot_single_line(
                 ax,
@@ -383,13 +383,13 @@ class Rays3D(Rays2D):
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
 
-            if hide_vignetted and np.any(ik == 0):
-                continue
-
-            # remove rays outside aperture
-            xk[ik == 0] = np.nan
-            zk[ik == 0] = np.nan
-            yk[ik == 0] = np.nan
+            if np.any(ik == 0):
+                if hide_vignetted:
+                    continue
+                first_zero_idx = np.where(ik == 0)[0][0]
+                xk[first_zero_idx + 1 :] = np.nan
+                yk[first_zero_idx + 1 :] = np.nan
+                zk[first_zero_idx + 1 :] = np.nan
 
             self._plot_single_line(
                 ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
@@ -422,6 +422,9 @@ class Rays3D(Rays2D):
             color = self._rgb_colors[color_idx % 10]
 
         for k in range(1, len(x)):
+            if np.isnan(x[k - 1]) or np.isnan(x[k]):
+                continue
+
             p0 = [x[k - 1], y[k - 1], z[k - 1]]
             p1 = [x[k], y[k], z[k]]
 
