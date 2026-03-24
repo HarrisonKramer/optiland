@@ -241,4 +241,9 @@ class FieldGroup:
                 vy=field_dict.get("vy", 0.0),
             )
         field_group.set_telecentric(data["telecentric"])
+
+        if data.get("field_definition"):
+            field_group.field_definition = BaseFieldDefinition.from_dict(
+                data["field_definition"]
+            )
         return field_group

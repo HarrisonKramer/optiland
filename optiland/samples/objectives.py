@@ -33,7 +33,7 @@ class TripletTelescopeObjective(optic.Optic):
 
         self.set_aperture(aperture_type="imageFNO", value=2.8)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0.0)
         self.fields.add(y=0.7)
         self.fields.add(y=1.0)
@@ -62,7 +62,7 @@ class CookeTriplet(optic.Optic):
 
         self.set_aperture(aperture_type="EPD", value=10)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=14)
         self.fields.add(y=20)
@@ -103,7 +103,7 @@ class DoubleGauss(optic.Optic):
         self.surfaces.add(index=12)
 
         self.set_aperture(aperture_type="imageFNO", value=5)
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
 
         self.fields.add(y=0)
         self.fields.add(y=10)
@@ -163,7 +163,7 @@ class ReverseTelephoto(optic.Optic):
 
         self.set_aperture(aperture_type="EPD", value=0.3)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=21)
         self.fields.add(y=30)
@@ -263,7 +263,7 @@ class ObjectiveUS008879901(optic.Optic):
 
         self.set_aperture(aperture_type="imageFNO", value=2.0)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(0.0)
         self.fields.add(7.574)
         self.fields.add(10.82)
@@ -304,7 +304,7 @@ class TelescopeObjective48Inch(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=6)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=7)
         self.fields.add(y=10)
@@ -341,7 +341,7 @@ class HeliarLens(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=5)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=7)
         self.fields.add(y=10)
@@ -382,7 +382,7 @@ class TessarLens(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=4.5)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=10)
         self.fields.add(y=20.5)
@@ -426,7 +426,7 @@ class LensWithFieldCorrector(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=3.5)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=5)
         self.fields.add(y=9.65)
@@ -476,7 +476,7 @@ class PetzvalLens(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=1.4)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=3.5)
         self.fields.add(y=7)
@@ -521,7 +521,7 @@ class Telephoto(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=5.6)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=7)
         self.fields.add(y=10)
@@ -568,7 +568,7 @@ class WideAngle100FOV(optic.Optic):
 
         self.set_aperture("imageFNO", 4.0)
 
-        self.set_field_type("angle")
+        self.fields.set_type("angle")
         self.fields.add(y=0)
         self.fields.add(y=35.0)
         self.fields.add(y=50.0)
@@ -618,7 +618,7 @@ class ProjectionLens120FOV(optic.Optic):
 
         self.set_aperture("imageFNO", 2.8)
 
-        self.set_field_type("angle")
+        self.fields.set_type("angle")
         self.fields.add(y=0)
         self.fields.add(y=42.0)
         self.fields.add(y=60.0)
@@ -663,7 +663,7 @@ class ProjectionLens160FOV(optic.Optic):
 
         self.set_aperture("imageFNO", 2.0)
 
-        self.set_field_type("angle")
+        self.fields.set_type("angle")
         self.fields.add(y=0)
         self.fields.add(y=56.0)
         self.fields.add(y=80.0)
@@ -706,7 +706,7 @@ class WideAngle170FOV(optic.Optic):
 
         self.set_aperture("imageFNO", 1.8)
 
-        self.set_field_type("angle")
+        self.fields.set_type("angle")
         self.fields.add(y=0)
         self.fields.add(y=60.0)
         self.fields.add(y=85.0)

@@ -158,7 +158,7 @@ class Optic:
             Optic: A new Optic object containing the combined surfaces.
         """
         new_optic = deepcopy(self)
-        new_optic.surface_group += other.surface_group
+        new_optic.surfaces += other.surfaces
         return new_optic
 
     @property
