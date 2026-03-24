@@ -155,7 +155,7 @@ class FieldGroup:
         new_field = Field(x, y, vx, vy)
         self.fields.append(new_field)
 
-    def get_field(self, field_number):
+    def get_field(self, field_number: int) -> Field:
         """Retrieve the field at the specified field_number.
 
         Args:
@@ -169,6 +169,18 @@ class FieldGroup:
 
         """
         return self.fields[field_number]
+
+    def remove(self, field_number: int) -> None:
+        """Remove the field at the specified field_number.
+
+        Args:
+            field_number (int): The index of the field to remove.
+
+        Raises:
+            IndexError: If the field_number is out of range.
+
+        """
+        self.fields.pop(field_number)
 
     def set_telecentric(self, is_telecentric):
         """Specify whether the system is telecentric in object space.
