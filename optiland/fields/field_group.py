@@ -205,6 +205,11 @@ class FieldGroup:
         """
         field_group = cls()
         for field_dict in data["fields"]:
-            field_group.add(Field.from_dict(field_dict))
+            field_group.add(
+                y=field_dict.get("y", 0.0),
+                x=field_dict.get("x", 0.0),
+                vx=field_dict.get("vx", 0.0),
+                vy=field_dict.get("vy", 0.0),
+            )
         field_group.set_telecentric(data["telecentric"])
         return field_group

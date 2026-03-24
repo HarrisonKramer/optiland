@@ -125,7 +125,7 @@ class TestWavelengthGroups:
     def test_to_dict(self, set_test_backend):
         wg = WavelengthGroup()
         wg.add(500, unit="nm", weight=0.5)
-        wg.add(600, unit="nm", weight=1.5)
+        wg.add(600, unit="nm", weight=1.5, is_primary=True)
         assert wg.to_dict() == {
             "wavelengths": [
                 {"value": 500, "unit": "nm", "is_primary": False, "weight": 0.5},

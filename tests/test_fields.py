@@ -23,8 +23,7 @@ def test_field_group_inputs(set_test_backend):
     input_data = [(0, 0), (5, 0), (0, 6), (7, 9.2)]
     f = fields.FieldGroup()
     for field_data in input_data:
-        new_field = fields.Field(*field_data)
-        f.add(new_field)
+        f.add(x=field_data[0], y=field_data[1])
 
     assert_allclose(f.x_fields, be.array([0, 5, 0, 7]))
     assert_allclose(f.y_fields, be.array([0, 0, 6, 9.2]))
@@ -38,8 +37,7 @@ def test_field_group_getters(set_test_backend):
     input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
     f = fields.FieldGroup()
     for field_data in input_data:
-        new_field = fields.Field(*field_data)
-        f.add(new_field)
+        f.add(x=field_data[0], y=field_data[1])
 
     assert f.get_field_coords() == [(0, 0), (0.5, 0), (0, 0.4), (0.8, 0.6)]
 
@@ -50,8 +48,7 @@ def test_field_group_getters(set_test_backend):
 
     # test case when max field is zero
     f = fields.FieldGroup()
-    new_field = fields.Field(0, 0)
-    f.add(new_field)
+    f.add(x=0, y=0)
     assert f.get_field_coords() == [(0, 0)]
 
 
@@ -59,8 +56,7 @@ def test_field_group_get_vig_factor(set_test_backend):
     input_data = [(0, 0)]
     f = fields.FieldGroup()
     for field_data in input_data:
-        new_field = fields.Field(*field_data)
-        f.add(new_field)
+        f.add(x=field_data[0], y=field_data[1])
 
     vx, vy = f.get_vig_factor(1, 1)
     assert vx == 0.0
@@ -69,12 +65,7 @@ def test_field_group_get_vig_factor(set_test_backend):
     input_data = [(0, 0), (0, 7), (0, 10)]
     f = fields.FieldGroup()
     for field_data in input_data:
-        new_field = fields.Field(
-            *field_data,
-            vignette_factor_x=0.2,
-            vignette_factor_y=0.2,
-        )
-        f.add(new_field)
+        f.add(x=field_data[0], y=field_data[1], vx=0.2, vy=0.2)
 
     vx, vy = f.get_vig_factor(0.5, 0.7)
     assert vx == 0.2
@@ -102,8 +93,7 @@ def test_field_group_to_dict(set_test_backend):
     input_data = [(0, 0), (2.5, 0), (0, 2), (4, 3)]
     f = fields.FieldGroup()
     for field_data in input_data:
-        new_field = fields.Field(*field_data)
-        f.add(new_field)
+        f.add(x=field_data[0], y=field_data[1])
 
     assert f.to_dict() == {
         "fields": [
