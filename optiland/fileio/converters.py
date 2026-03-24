@@ -109,6 +109,9 @@ class ZemaxToOpticConverter:
                 "coefficients": coeffs,
             }
 
+            if surf.get("aperture") is not None:
+                surface_params["aperture"] = surf["aperture"]
+
             if surf["type"] == "toroidal":
                 # Zemax CURV (data["radius"]) is the Y-Radius
                 surface_params["radius_y"] = surf["radius"]
@@ -155,19 +158,6 @@ class ZemaxToOpticConverter:
                     x=0.0, y=0.0, z=dt, reference_cs=self.current_cs
                 )
 
-        # image surface specific
-        translation, _ = self.current_cs.get_effective_transform()
-        rx_, ry_, rz_ = self.current_cs.get_effective_rotation_euler()
-        self.optic.surfaces.add(
-            index=surf_idx,
-            x=translation[0],
-            y=translation[1],
-            z=translation[2],
-            rx=rx_,
-            ry=ry_,
-            rz=rz_,
-        )
-
     def _configure_surface(self, index: int, data: dict):
         """Configures a single surface for the optic.
 
@@ -189,9 +179,8 @@ class ZemaxToOpticConverter:
             "material": data.get("material"),
         }
 
-        diameter = data.get("diameter")
-        if diameter:
-            surface_params["aperture"] = diameter * 2
+        if data.get("aperture") is not None:
+            surface_params["aperture"] = data["aperture"]
 
         # only the coefficient key differs for toroidal surfaces
         if data["type"] == "toroidal":
