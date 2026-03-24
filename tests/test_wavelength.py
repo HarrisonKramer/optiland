@@ -4,6 +4,7 @@ import pytest
 
 import optiland.backend as be
 from optiland.wavelength import Wavelength, WavelengthGroup, add_wavelengths
+from tests.utils import assert_allclose
 
 
 class TestWavelengths:

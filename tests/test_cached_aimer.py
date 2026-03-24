@@ -18,10 +18,20 @@ def mock_dependencies():
     surface_group_mock.stop_index = 1
     optic.surfaces = surface_group_mock
     optic.fields = MagicMock()
+    optic.fields.to_dict.return_value = {}
     optic.wavelengths = MagicMock()
+    optic.wavelengths.to_dict.return_value = {}
     optic.aperture = MagicMock()
+    optic.aperture.to_dict.return_value = {}
     optic.object_surface = MagicMock()
-    optic.ray_aiming_config = MagicMock()
+
+    ray_tracer_mock = MagicMock()
+    ray_tracer_mock.ray_aiming_config = {
+        "mode": "paraxial",
+        "max_iter": 10,
+        "tol": 1e-6,
+    }
+    optic.ray_tracer = ray_tracer_mock
 
     wrapped_aimer = MagicMock(spec=BaseRayAimer)
     return optic, wrapped_aimer
@@ -107,10 +117,20 @@ def test_robust_aimer_integration_with_cache(set_test_backend):
     surface_group_mock.stop_index = 1
     optic.surfaces = surface_group_mock
     optic.fields = MagicMock()
+    optic.fields.to_dict.return_value = {}
     optic.wavelengths = MagicMock()
+    optic.wavelengths.to_dict.return_value = {}
     optic.aperture = MagicMock()
+    optic.aperture.to_dict.return_value = {}
     optic.object_surface = MagicMock()
-    optic.ray_aiming_config = MagicMock()
+
+    ray_tracer_mock = MagicMock()
+    ray_tracer_mock.ray_aiming_config = {
+        "mode": "paraxial",
+        "max_iter": 10,
+        "tol": 1e-6,
+    }
+    optic.ray_tracer = ray_tracer_mock
 
     # Mock Paraxial Aimer (needed by Robust)
     paraxial_mock = MagicMock(spec=BaseRayAimer)

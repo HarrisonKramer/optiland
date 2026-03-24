@@ -36,8 +36,8 @@ class TestRobustRayAimer(unittest.TestCase):
 
     def test_integration_via_optic(self):
         # Set robust mode via optic
-        self.optic.set_ray_aiming("robust", scale_fields=True)
-        self.assertEqual(self.optic.ray_aiming_config["mode"], "robust")
+        self.optic.ray_tracer.set_aiming("robust", scale_fields=True)
+        self.assertEqual(self.optic.ray_tracer.ray_aiming_config["mode"], "robust")
 
         # Generate rays using RayGenerator (implicitly created/updated)
         # We need to access the generator or manually create one

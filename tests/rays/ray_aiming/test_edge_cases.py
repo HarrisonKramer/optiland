@@ -43,7 +43,7 @@ class TestRayAimingEdgeCases(unittest.TestCase):
         self.optic.fields.add(y=85.0)  # 85 degrees!!
 
         # Paraxial might fail or produce weird results, but robust/iterative should try
-        self.optic.set_ray_aiming("robust", fractions=[0.1, 0.5, 1.0])
+        self.optic.ray_tracer.set_aiming("robust", fractions=[0.1, 0.5, 1.0])
 
         from optiland.rays import RayGenerator
 
@@ -67,15 +67,15 @@ class TestRayAimingEdgeCases(unittest.TestCase):
 
     def test_config_reset(self):
         """Test resetting ray aiming to defaults."""
-        self.optic.set_ray_aiming("robust", max_iter=50)
-        self.assertEqual(self.optic.ray_aiming_config["mode"], "robust")
+        self.optic.ray_tracer.set_aiming("robust", max_iter=50)
+        self.assertEqual(self.optic.ray_tracer.ray_aiming_config["mode"], "robust")
 
         # Manually reset or use set_ray_aiming with default values?
         # Requirement said verify empty config resets?
         # But set_ray_aiming doesn't have default mode=None.
         # Let's verify we can switch back to paraxial.
-        self.optic.set_ray_aiming("paraxial")
-        self.assertEqual(self.optic.ray_aiming_config["mode"], "paraxial")
+        self.optic.ray_tracer.set_aiming("paraxial")
+        self.assertEqual(self.optic.ray_tracer.ray_aiming_config["mode"], "paraxial")
 
 
 if __name__ == "__main__":
