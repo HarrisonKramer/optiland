@@ -43,7 +43,7 @@ def _simple_singlet():
     lens.surfaces.add(index=2, radius=-46.2795, thickness=50)
     lens.surfaces.add(index=3)
     lens.set_aperture(aperture_type="EPD", value=25)
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.wavelengths.add(value=0.55, is_primary=True)
     return lens
@@ -66,7 +66,7 @@ def _simple_singlet_with_detector():
         aperture=RectangularAperture(x_min=-15, x_max=15, y_min=-15, y_max=15),
     )
     lens.set_aperture(aperture_type="EPD", value=25)
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.wavelengths.add(value=0.55, is_primary=True)
     return lens

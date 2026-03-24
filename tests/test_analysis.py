@@ -53,7 +53,7 @@ def triplet_four_fields():
 
     lens.set_aperture(aperture_type="EPD", value=10)
 
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=10)
     lens.fields.add(y=15)
@@ -859,7 +859,7 @@ def test_system_irradiance_v1():
             )
             self.surfaces[-1].aperture = detector_size
             self.wavelengths.add(0.55)
-            self.set_field_type("angle")
+            self.fields.set_type("angle")
             self.fields.add(y=0)
             self.set_aperture("EPD", 5.0)
 
@@ -887,7 +887,7 @@ def perfect_mirror_system():
             )
             self.surfaces[-1].aperture = detector_size
             self.wavelengths.add(0.55)
-            self.set_field_type("angle")
+            self.fields.set_type("angle")
             self.fields.add(y=0)
             self.set_aperture("EPD", 5.0)
 
@@ -1188,7 +1188,7 @@ class TestIncoherentIrradiance:
                 self.surfaces.add(index=2, thickness=10)
                 self.surfaces.add(index=3)  # Image plane, no aperture
                 self.wavelengths.add(0.55)
-                self.set_field_type("angle")
+                self.fields.set_type("angle")
                 self.fields.add(y=0)
                 self.set_aperture("EPD", 5.0)
 
@@ -1422,7 +1422,7 @@ class TestIncoherentIrradiance:
         )
         optic_sys.surfaces[-1].aperture = detector_size
         optic_sys.wavelengths.add(0.55)
-        optic_sys.set_field_type("angle")
+        optic_sys.fields.set_type("angle")
         optic_sys.fields.add(y=0)
         optic_sys.set_aperture("EPD", 5.0)
 
@@ -1804,7 +1804,7 @@ def system_1():
 
             self.set_aperture(aperture_type="objectNA", value=0.095)
 
-            self.set_field_type(field_type="angle")
+            self.fields.set_type(field_type="angle")
             self.fields.add(y=0)
 
             self.wavelengths.add(value=1.55, is_primary=True)
@@ -1959,7 +1959,7 @@ class TestRadiantIntensity:
         )
         optic_sys.surfaces[-1].aperture = detector_size
         optic_sys.wavelengths.add(0.55)
-        optic_sys.set_field_type("angle")
+        optic_sys.fields.set_type("angle")
         optic_sys.fields.add(y=0)
         optic_sys.set_aperture("EPD", 5.0)
 

@@ -751,7 +751,7 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-        lens.set_field_type("angle")
+        lens.fields.set_type("angle")
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
@@ -821,7 +821,7 @@ class TestRayGenerator:
 
     def test_get_ray_origins_invalid_field_type(self):
         lens = TessarLens()
-        lens.set_field_type("object_height")
+        lens.fields.set_type("object_height")
         generator = RayGenerator(lens)
 
         Hx = 0.5

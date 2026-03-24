@@ -19,7 +19,7 @@ class TestRayAimingEdgeCases(unittest.TestCase):
         )
         self.optic.surfaces.add(index=2, is_stop=True, aperture=10.0, thickness=10)
         self.optic.surfaces.add(index=3)
-        self.optic.set_field_type("angle")
+        self.optic.fields.set_type("angle")
         self.optic.fields.add(y=0)
         self.optic.set_aperture("EPD", 10.0)
         self.optic.wavelengths.add(0.55)

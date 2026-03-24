@@ -209,7 +209,7 @@ def test_load_legacy_optiland_file_with_field_type():
 
     # 1. Create a modern optic and get its dictionary representation
     lens = HeliarLens()
-    lens.set_field_type("angle")
+    lens.fields.set_type("angle")
     modern_dict = lens.to_dict()
 
     # 2. Create a legacy dictionary from the modern one

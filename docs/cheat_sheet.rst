@@ -100,12 +100,12 @@ Basic Workflow: Defining an Optical System
 
     .. code-block:: python
 
-        my_lens.set_field_type(field_type="angle") # Field specified by angle
+        my_lens.fields.set_type(field_type="angle") # Field specified by angle
         my_lens.fields.add(y=0.0)  # On-axis field
         my_lens.fields.add(y=14.0) # Off-axis field at 14 degrees
         my_lens.fields.add(y=20.0)
         # Or for object height:
-        # my_lens.set_field_type(field_type="object_height")
+        # my_lens.fields.set_type(field_type="object_height")
         # my_lens.fields.add(y=10.0) # Object height of 10 mm
 
 6.  **Define Wavelengths** (``add_wavelength``):

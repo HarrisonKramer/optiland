@@ -32,7 +32,7 @@ def flat_transmission_grating():
     lens.set_aperture(aperture_type="EPD", value=15)
 
     # add field
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=10)
     lens.fields.add(y=0, x=10)
@@ -70,7 +70,7 @@ def curved_transmission_grating():
     lens.set_aperture(aperture_type="EPD", value=15)
 
     # add field
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=10)
     lens.fields.add(y=0, x=10)
@@ -106,7 +106,7 @@ def curved_reflective_grating():
     lens.set_aperture(aperture_type="EPD", value=15)
 
     # add field
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=10)
     lens.fields.add(y=0, x=10)

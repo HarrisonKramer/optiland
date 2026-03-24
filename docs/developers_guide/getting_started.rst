@@ -45,7 +45,7 @@ visualizes the system, and traces some rays.
     system.set_aperture(aperture_type='EPD', value=20)
 
     # add field
-    system.set_field_type(field_type='angle')
+    system.fields.set_type(field_type='angle')
     system.fields.add(y=0)
 
     # add wavelength

@@ -68,7 +68,7 @@ class UVProjectionLens(optic.Optic):
         self.set_aperture(aperture_type="objectNA", value=0.133)
 
         # Define the field
-        self.set_field_type(field_type="object_height")
+        self.fields.set_type(field_type="object_height")
         self.fields.add(y=0)
         self.fields.add(y=32)
         self.fields.add(y=48)

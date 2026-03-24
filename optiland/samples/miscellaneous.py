@@ -77,7 +77,7 @@ class NavarroWideAngleEye(Optic):
 
         self.set_aperture(aperture_type="float_by_stop_size", value=3.0)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(0)
         self.fields.add(15)
         self.fields.add(30)

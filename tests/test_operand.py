@@ -329,7 +329,7 @@ class TestRayOperand:
     def create_test_optic(self):
         lens = Optic(name="TMA")
         lens.set_aperture(aperture_type="EPD", value=10)
-        lens.set_field_type(field_type="angle")
+        lens.fields.set_type(field_type="angle")
         lens.fields.add(y=0)
         lens.fields.add(y=+1.5)
         lens.fields.add(y=-1.5)
@@ -461,7 +461,7 @@ class TestLensOperand:
             index=1, thickness=10.0, is_stop=True
         )  # dummy, stop surface
         self.optic.wavelengths.add(value=0.550, is_primary=True)
-        self.optic.set_field_type(field_type="angle")
+        self.optic.fields.set_type(field_type="angle")
         self.optic.fields.add(y=0.0)
 
     def test_edge_thickness_simple_biconvex(self, set_test_backend):

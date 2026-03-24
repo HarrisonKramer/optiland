@@ -319,7 +319,7 @@ class FieldsEditor(PropertyEditorBase):
         if optic:
             new_type = self.cmbFieldType.currentText()
             try:
-                optic.set_field_type(new_type)
+                optic.fields.set_type(new_type)
                 self.connector.opticChanged.emit()
                 print(f"Field type changed to: {new_type}")
             except ValueError as e:

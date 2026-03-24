@@ -1504,7 +1504,7 @@ class TestToroidalGeometry:
 
         lens.set_aperture(aperture_type="EPD", value=10.0)
         lens.wavelengths.add(value=0.550, is_primary=True)
-        lens.set_field_type("angle")
+        lens.fields.set_type("angle")
         lens.fields.add(y=0)
 
         num_rays = 5  # Number of rays per fan
@@ -1657,7 +1657,7 @@ class TestToroidalGeometry:
 
         lens.set_aperture(aperture_type="EPD", value=20.0)
         lens.wavelengths.add(value=0.550, is_primary=True)
-        lens.set_field_type("angle")
+        lens.fields.set_type("angle")
         lens.fields.add(y=0)
 
         # --- SAG testing ---
@@ -2112,7 +2112,7 @@ class TestBiconicGeometry:
 def forbes_system():
     lens = Optic()
     lens.set_aperture(aperture_type="EPD", value=4.0)
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.wavelengths.add(value=1.55, is_primary=True)
     H_K3 = Material("H-K3", reference="cdgm")
@@ -2419,7 +2419,7 @@ class TestForbesQbfsGeometry:
         optic = Optic(name="Test Forbes Autodiff")
         optic.set_aperture(aperture_type="EPD", value=10.0)
         optic.wavelengths.add(value=0.55, is_primary=True)
-        optic.set_field_type(field_type="angle")
+        optic.fields.set_type(field_type="angle")
         optic.fields.add(y=0.0)
         optic.surfaces.add(index=0, thickness=be.inf)
         optic.surfaces.add(
@@ -2925,7 +2925,7 @@ class TestForbesValidation:
         optic = Optic()
         optic.set_aperture(aperture_type="EPD", value=4.0)
 
-        optic.set_field_type(field_type="angle")
+        optic.fields.set_type(field_type="angle")
         optic.fields.add(y=0)
 
         optic.wavelengths.add(value=1.550, is_primary=True)

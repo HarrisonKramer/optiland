@@ -175,7 +175,7 @@ class OptilandConnector(QObject):
             material="Air",
         )
         optic.wavelengths.add(self.DEFAULT_WAVELENGTH_UM, is_primary=True, unit="um")
-        optic.set_field_type("angle")
+        optic.fields.set_type("angle")
         optic.fields.add(y=0)
         optic.set_aperture("EPD", 10.0)
 

@@ -33,7 +33,7 @@ class TestIterativeRayAimer(unittest.TestCase):
         self.optic.surfaces.add(index=4)  # Image
 
         self.optic.set_aperture("float_by_stop_size", 1.0)
-        self.optic.set_field_type("angle")
+        self.optic.fields.set_type("angle")
         self.optic.fields.add(y=0)
         self.optic.fields.add(y=10)  # 10 degrees
         self.optic.wavelengths.add(0.55)
@@ -46,7 +46,7 @@ class TestIterativeRayAimer(unittest.TestCase):
     def test_aiming_convergence_finite_object(self):
         # Configure for Finite Object: ensure thickness is finite (set in setUp as 100)
         # S0 thickness=100 -> Object at Z=0, S1 at Z=100.
-        self.optic.set_field_type("object_height")
+        self.optic.fields.set_type("object_height")
         self.optic.fields.fields.clear()
         self.optic.fields.add(y=0)
         self.optic.fields.add(y=5)  # 5mm height
@@ -86,7 +86,7 @@ class TestIterativeRayAimer(unittest.TestCase):
         # Ensure Infinite Object -> Set thickness to inf
         self.optic.surfaces[0].thickness = np.inf
 
-        self.optic.set_field_type("angle")
+        self.optic.fields.set_type("angle")
         self.optic.fields.fields.clear()
         self.optic.fields.add(y=0)
         self.optic.fields.add(y=5)  # 5 degrees

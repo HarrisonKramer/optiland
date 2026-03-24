@@ -146,7 +146,7 @@ def test_multiconfig_draw(base_optic):
 
     # Setup optic for drawing (needs aperture/fields)
     base_optic.set_aperture("EPD", 20)
-    base_optic.set_field_type("angle")
+    base_optic.fields.set_type("angle")
     base_optic.fields.add(0)
     base_optic.wavelengths.add(0.55, is_primary=True)
     base_optic.surfaces[1].is_stop = True

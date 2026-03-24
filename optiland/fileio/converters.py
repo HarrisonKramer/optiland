@@ -269,7 +269,7 @@ class ZemaxToOpticConverter:
 
     def _configure_fields(self):
         """Configure the fields for the optic."""
-        self.optic.set_field_type(field_type=self.data["fields"]["type"])
+        self.optic.fields.set_type(field_type=self.data["fields"]["type"])
 
         field_x = self.data["fields"]["x"]
         field_y = self.data["fields"]["y"]

@@ -629,7 +629,7 @@ def test_EPD_float_by_stop_size_finite(set_test_backend):
 
     lens.set_aperture(aperture_type="float_by_stop_size", value=7.6)
 
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=14)
     lens.fields.add(y=20)
@@ -660,7 +660,7 @@ def test_EPD_float_by_stop_size_infinite(set_test_backend):
 
     lens.set_aperture(aperture_type="float_by_stop_size", value=7.6)
 
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=14)
     lens.fields.add(y=20)
@@ -815,7 +815,7 @@ def test_thick_lens(n1, n2, n3, r1, r2, d, set_test_backend):
     lens.surfaces.add(index=3, material=IdealMaterial(n3))
     lens.wavelengths.add(value=0.55, is_primary=True)
     lens.fields.add(y=0)
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
     px = lens.paraxial
     tl = ThickLens(n1, n2, n3, r1, r2, d)
@@ -856,7 +856,7 @@ def test_compound_lens(n1, n2, n3, f1, f2, d, set_test_backend):
     lens.surfaces.add(index=3, material=IdealMaterial(n3))
     lens.wavelengths.add(value=0.55, is_primary=True)
     lens.fields.add(y=0)
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
     px = lens.paraxial
     assert_allclose(

@@ -189,7 +189,7 @@ class TestSurfaceFactory:
 
         # Configure optic for tracing
         optic.wavelengths.add(wavelength)
-        optic.set_field_type("angle")
+        optic.fields.set_type("angle")
         optic.fields.add(0)  # On-axis field
         optic.set_aperture("EPD", 10.0)
 

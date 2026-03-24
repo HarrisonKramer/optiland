@@ -30,7 +30,7 @@ class Edmund_49_847(optic.Optic):
         self.set_aperture(aperture_type="EPD", value=25.4)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=10)
         self.fields.add(y=14)
@@ -62,7 +62,7 @@ class SingletStopSurf2(optic.Optic):
         self.set_aperture(aperture_type="EPD", value=25.0)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=3.5)
         self.fields.add(y=5)
@@ -102,7 +102,7 @@ class TelescopeDoublet(optic.Optic):
 
         self.set_aperture(aperture_type="imageFNO", value=8.0)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0.0)
         self.fields.add(y=0.7)
         self.fields.add(y=1.0)
@@ -145,7 +145,7 @@ class CementedAchromat(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=6)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=3.5)
         self.fields.add(y=5)
@@ -183,7 +183,7 @@ class AsphericSinglet(optic.Optic):
         self.set_aperture(aperture_type="EPD", value=20.0)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
 
         # add wavelength

@@ -14,7 +14,7 @@ def test_paraxial_image_height_infinite_object(set_test_backend):
     optic.surfaces.add(material="N-BK7", radius=50, thickness=5, index=1, is_stop=True)
     optic.surfaces.add(thickness=100, index=2)
     optic.surfaces.add(index=3)
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
     optic.fields.add(y=10)
     optic.set_aperture("EPD", 10)
     optic.wavelengths.add(0.58756, is_primary=True)
@@ -34,7 +34,7 @@ def test_paraxial_image_height_finite_object(set_test_backend):
     optic.surfaces.add(material="N-BK7", radius=50, thickness=5, index=1, is_stop=True)
     optic.surfaces.add(thickness=100, index=2)
     optic.surfaces.add(index=3)
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
     optic.fields.add(y=10)
     optic.set_aperture("EPD", 10)
     optic.wavelengths.add(0.58756, is_primary=True)
@@ -91,7 +91,7 @@ def test_paraxial_image_height_cooke_triplet(set_test_backend):
 
     # change the field type to paraxial image height and set the equivalent
     # field value
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
     optic.fields.fields = []
     optic.fields.add(y=0)
     optic.fields.add(y=paraxial_image_height[0])
@@ -111,7 +111,7 @@ def test_paraxial_get_ray_origins(set_test_backend):
     optic = objectives.CookeTriplet()
 
     # change the field type to paraxial image height
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
 
     # set the field value
     optic.fields.fields = []
@@ -161,7 +161,7 @@ def test_get_paraxial_object_position(set_test_backend):
     optic = objectives.CookeTriplet()
 
     # change the field type to paraxial image height
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
 
     # set the field value
     optic.fields.fields = []
@@ -198,7 +198,7 @@ def test_get_starting_z_offset(set_test_backend):
     optic = objectives.CookeTriplet()
 
     # change the field type to paraxial image height
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
 
     # set the field value
     optic.fields.fields = []

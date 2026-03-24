@@ -347,7 +347,7 @@ class TestTorchOptimizerScaledSpace:
         lens.surfaces.add(index=2, thickness=30, radius=-1000)
         lens.surfaces.add(index=3)
         lens.set_aperture(aperture_type="EPD", value=15)
-        lens.set_field_type(field_type="angle")
+        lens.fields.set_type(field_type="angle")
         lens.fields.add(y=0)
         lens.wavelengths.add(value=0.55, is_primary=True)
 

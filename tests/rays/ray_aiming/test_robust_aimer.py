@@ -24,7 +24,7 @@ class TestRobustRayAimer(unittest.TestCase):
         self.optic.surfaces.add(index=2, is_stop=True, aperture=10.0, thickness=10)
         self.optic.surfaces.add(index=3)
 
-        self.optic.set_field_type("angle")
+        self.optic.fields.set_type("angle")
         self.optic.fields.add(y=0)
         self.optic.fields.add(y=20)  # 20 degrees
         self.optic.set_aperture("float_by_stop_size", 1.0)

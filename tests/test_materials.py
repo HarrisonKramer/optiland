@@ -227,7 +227,7 @@ class TestBaseMaterialTorchCaching:
 def build_model(material: BaseMaterial):
     lens = Optic()
 
-    lens.set_field_type("angle")
+    lens.fields.set_type("angle")
     lens.fields.add(0, 0)
     lens.wavelengths.add(0.550)
     lens.set_aperture("EPD", 2)

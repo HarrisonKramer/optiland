@@ -17,7 +17,7 @@ def zernike_optic():
     optic.surfaces.add(surface_type="zernike", radius=-10, thickness=50, index=2)
     optic.surfaces.add(surface_type="standard", index=3)  # image
     optic.set_aperture("EPD", 5.0)
-    optic.set_field_type("angle")
+    optic.fields.set_type("angle")
     optic.fields.add(0.0)
     optic.wavelengths.add(0.55)
     return optic
@@ -34,7 +34,7 @@ def test_init_kwargs_behavior(set_test_backend):
         surface_type="zernike", radius=-10, thickness=50, index=2, norm_radius=111.0
     )
     optic.set_aperture("EPD", 5.0)
-    optic.set_field_type("angle")
+    optic.fields.set_type("angle")
     optic.fields.add(0.0)
     optic.wavelengths.add(0.55)
 

@@ -45,7 +45,7 @@ def test_afocal_chief_ray_strategy():
     )
 
     optic.set_aperture("EPD", 10)
-    optic.set_field_type("angle")
+    optic.fields.set_type("angle")
     optic.fields.add(0, 0)
     optic.wavelengths.add(0.55)
 
@@ -75,7 +75,7 @@ def test_afocal_best_fit_strategy():
     )  # Image plane
 
     optic.set_aperture("EPD", 10)
-    optic.set_field_type("angle")
+    optic.fields.set_type("angle")
     optic.fields.add(1.0, 0)  # 1 degree field
     optic.wavelengths.add(0.55)
 
@@ -107,7 +107,7 @@ def test_focal_regression():
     )  # Image near focus
 
     optic.set_aperture("EPD", 10)
-    optic.set_field_type("angle")
+    optic.fields.set_type("angle")
     optic.fields.add(0, 0)
     optic.wavelengths.add(0.55)
 

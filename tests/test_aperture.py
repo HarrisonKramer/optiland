@@ -180,7 +180,7 @@ def test_confirm_stop_size_floating_stop(set_test_backend):
     stop_idx = 2
     lens.set_aperture(aperture_type="float_by_stop_size", value=stop_diam)
 
-    lens.set_field_type(field_type="angle")
+    lens.fields.set_type(field_type="angle")
     lens.fields.add(y=0)
     lens.fields.add(y=14)
     lens.fields.add(y=20)

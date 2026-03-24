@@ -190,7 +190,7 @@ system.surfaces.add(index=1, thickness=7, radius=20.0, is_stop=True, material='N
 system.surfaces.add(index=2, thickness=23.0)
 system.surfaces.add(index=3)
 system.set_aperture(aperture_type='EPD', value=20)
-system.set_field_type(field_type='angle')
+system.fields.set_type(field_type='angle')
 system.fields.add(y=0)
 system.wavelengths.add(value=0.587, is_primary=True)
 

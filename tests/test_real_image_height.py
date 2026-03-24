@@ -29,7 +29,7 @@ def create_simple_lens(infinite=True):
     else:
         optic.object_surface.geometry.cs.z = -200.0
 
-    optic.set_field_type("real_image_height")
+    optic.fields.set_type("real_image_height")
     optic.fields.add(y=5.0, x=0.0)  # Sets max_field to 5.0
 
     optic.image_solve()  # Solve for paraxial focus

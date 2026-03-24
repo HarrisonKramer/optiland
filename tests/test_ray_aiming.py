@@ -156,7 +156,7 @@ def test_robust_aimer_infinite_object_90_degree_field(set_test_backend):
     optic.surfaces.add(index=2)
 
     optic.set_aperture("EPD", 1.0)
-    optic.set_field_type("angle")
+    optic.fields.set_type("angle")
     optic.fields.add(y=0)
     optic.fields.add(y=90)
     optic.wavelengths.add(0.55, is_primary=True)

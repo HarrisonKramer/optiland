@@ -28,7 +28,7 @@ class EyepieceErfle(optic.Optic):
 
         self.set_aperture(aperture_type="EPD", value=4.0)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=14)
         self.fields.add(y=20)

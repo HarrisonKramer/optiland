@@ -50,7 +50,7 @@ class Objective60x(optic.Optic):
         self.set_aperture(aperture_type="imageFNO", value=0.9)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=0.7)
         self.fields.add(y=1)
@@ -98,7 +98,7 @@ class Microscope20x(optic.Optic):
         self.set_aperture(aperture_type="EPD", value=0.317961)
 
         # add field
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=0.7)
         self.fields.add(y=1)
@@ -157,7 +157,7 @@ class UVReflectingMicroscope(optic.Optic):
 
         self.set_aperture(aperture_type="imageFNO", value=0.7)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=2.8)
         self.fields.add(y=4)

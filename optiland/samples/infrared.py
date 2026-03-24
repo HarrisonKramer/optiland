@@ -36,7 +36,7 @@ class InfraredTriplet(optic.Optic):
 
         self.set_aperture(aperture_type="imageFNO", value=2)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=2.8)
         self.fields.add(y=4)
@@ -69,7 +69,7 @@ class InfraredTripletF4(optic.Optic):
 
         self.set_aperture(aperture_type="imageFNO", value=4)
 
-        self.set_field_type(field_type="angle")
+        self.fields.set_type(field_type="angle")
         self.fields.add(y=0)
         self.fields.add(y=2.45)
         self.fields.add(y=3.5)

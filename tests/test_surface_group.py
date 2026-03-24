@@ -437,7 +437,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             radius=be.inf,
         )
         lens1.surfaces.add(index=4, material="Air")
-        lens1.set_field_type("angle")
+        lens1.fields.set_type("angle")
         lens1.fields.add(y=10)
         lens1.wavelengths.add(500, unit="nm")
         lens1.set_aperture("float_by_stop_size", 25)
@@ -469,7 +469,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             radius=be.inf,
         )
         lens2.surfaces.add(index=3, material="Air")
-        lens2.set_field_type("angle")
+        lens2.fields.set_type("angle")
         lens2.fields.add(y=10)
         lens2.wavelengths.add(500, unit="nm")
         lens2.set_aperture("float_by_stop_size", 25)
@@ -536,7 +536,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             )
 
         lens.set_aperture(aperture_type="EPD", value=10)
-        lens.set_field_type(field_type="angle")
+        lens.fields.set_type(field_type="angle")
         lens.fields.fields = cooke.fields.fields
         lens.wavelengths.wavelengths = cooke.wavelengths.wavelengths
 

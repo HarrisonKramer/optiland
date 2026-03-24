@@ -122,7 +122,7 @@ class TestOpticViewer:
     def test_view_single_field(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.fields = fields.FieldGroup()
-        lens.set_field_type(field_type="angle")
+        lens.fields.set_type(field_type="angle")
         lens.fields.add(y=0)
         fig, ax = lens.draw()
         assert fig is not None
@@ -283,7 +283,7 @@ class TestOpticViewer3D:
     def test_view_single_field(self, set_test_backend):
         lens = ReverseTelephoto()
         lens.fields = fields.FieldGroup()
-        lens.set_field_type(field_type="angle")
+        lens.fields.set_type(field_type="angle")
         lens.fields.add(y=0)
         viewer = OpticViewer3D(lens)
         with (
@@ -319,7 +319,7 @@ class TestOpticViewer3D:
         cylindrical_lens.surfaces.add(index=2, thickness=65)
         cylindrical_lens.surfaces.add(index=3)
         cylindrical_lens.set_aperture(aperture_type="EPD", value=20.0)
-        cylindrical_lens.set_field_type(field_type="angle")
+        cylindrical_lens.fields.set_type(field_type="angle")
         cylindrical_lens.fields.add(y=0)
         cylindrical_lens.wavelengths.add(value=0.587, is_primary=True)
 
@@ -581,7 +581,7 @@ def test_mangin_mirror_visualization(projection, lens_class, set_test_backend):
         index=3, radius=-100, thickness=-50, material="N-BK7"
     )  # Front surface
     mangin_mirror.surfaces.add(index=4, radius=be.inf)  # Image
-    mangin_mirror.set_field_type("angle")
+    mangin_mirror.fields.set_type("angle")
     mangin_mirror.fields.add(y=0)
     mangin_mirror.set_aperture(aperture_type="EPD", value=25)
     mangin_mirror.wavelengths.add(value=0.65, is_primary=True)
