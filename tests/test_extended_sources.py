@@ -770,10 +770,10 @@ class TestStandardAnalysesThroughWrapper:
     def test_scale_system_through_wrapper(self, ext_optic):
         """scale_system works through the wrapper."""
         f_before = float(ext_optic.paraxial.f2())
-        ext_optic.scale_system(2.0)
+        ext_optic.updater.scale_system(2.0)
         f_after = float(ext_optic.paraxial.f2())
         assert f_after == pytest.approx(2.0 * f_before, rel=1e-6)
 
     def test_update_through_wrapper(self, ext_optic):
         """update() does not raise through the wrapper."""
-        ext_optic.update()
+        ext_optic.updater.update()

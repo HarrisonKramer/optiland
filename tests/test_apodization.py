@@ -102,32 +102,32 @@ def test_apodization_from_dict_unknown(set_test_backend):
 def test_set_apodization_uniform(set_test_backend):
     apod = UniformApodization()
     lens = CookeTriplet()
-    lens.set_apodization(apod)
+    lens.updater.set_apodization(apod)
     assert lens.apodization == apod, "Aperture should be set to UniformApodization"
 
 
 def test_set_apodization_gaussian(set_test_backend):
     apod = GaussianApodization()
     lens = CookeTriplet()
-    lens.set_apodization(apod)
+    lens.updater.set_apodization(apod)
     assert lens.apodization == apod, "Aperture should be set to GaussianApodization"
 
 
 def test_set_apodization_invalid_type(set_test_backend):
     lens = CookeTriplet()
     with pytest.raises(TypeError):
-        lens.set_apodization(123)
+        lens.updater.set_apodization(123)
 
 
 def test_set_apodization_none(set_test_backend):
     lens = CookeTriplet()
-    lens.set_apodization(None)
+    lens.updater.set_apodization(None)
     assert lens.apodization is None, "Aperture should be set to None"
 
 
 def test_trace_apodization(set_test_backend):
     lens = CookeTriplet()
-    lens.set_apodization(GaussianApodization(sigma=0.1))
+    lens.updater.set_apodization(GaussianApodization(sigma=0.1))
     rays = lens.trace(Hx=0, Hy=0, wavelength=0.55, num_rays=256, distribution="uniform")
 
     x = lens.surfaces.x[4, :]

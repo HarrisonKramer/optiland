@@ -437,7 +437,7 @@ class LensWithFieldCorrector(optic.Optic):
         self.wavelengths.add(value=0.65627250)
 
         # scale from inches to mm
-        self.scale_system(25.4)
+        self.updater.scale_system(25.4)
 
 
 class PetzvalLens(optic.Optic):
@@ -487,7 +487,7 @@ class PetzvalLens(optic.Optic):
         self.wavelengths.add(value=0.65627250)
 
         # scale from inches to mm
-        self.scale_system(25.4)
+        self.updater.scale_system(25.4)
 
 
 class Telephoto(optic.Optic):
@@ -532,7 +532,7 @@ class Telephoto(optic.Optic):
         self.wavelengths.add(value=0.65627250)
 
         # scale from inches to mm
-        self.scale_system(25.4)
+        self.updater.scale_system(25.4)
 
 
 class WideAngle100FOV(optic.Optic):

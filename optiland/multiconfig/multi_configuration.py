@@ -262,7 +262,7 @@ class MultiConfiguration:
         optic = self.configurations[config_idx]
         if surface_index is not None:
             # Relative to surface
-            full_path = f"surface_group.surfaces[{surface_index}].{path}"
+            full_path = f"surfaces.surfaces[{surface_index}].{path}"
         else:
             # Relative to optic
             full_path = path
@@ -311,7 +311,7 @@ class MultiConfiguration:
         source_optic = self.configurations[source_idx]
 
         if surface_index is not None:
-            full_path = f"surface_group.surfaces[{surface_index}].{path}"
+            full_path = f"surfaces.surfaces[{surface_index}].{path}"
         else:
             full_path = path
 
@@ -331,7 +331,7 @@ class MultiConfiguration:
     def _remove_generic_pickup(self, config_idx, surface_index, path):
         optic = self.configurations[config_idx]
         if surface_index is not None:
-            full_path = f"surface_group.surfaces[{surface_index}].{path}"
+            full_path = f"surfaces.surfaces[{surface_index}].{path}"
         else:
             full_path = path
 

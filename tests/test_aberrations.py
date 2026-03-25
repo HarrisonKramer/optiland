@@ -53,8 +53,8 @@ def simple_singlet():
     # add wavelength
     lens.wavelengths.add(value=0.55, is_primary=True)
 
-    lens.update_paraxial()
-    lens.image_solve()
+    lens.updater.update_paraxial()
+    lens.updater.image_solve()
     return lens
 
 

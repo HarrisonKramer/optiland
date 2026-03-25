@@ -54,7 +54,7 @@ class TestReferenceStrategy:
         """Test the constructor of ReferenceStrategy."""
         assert strategy.optic is optic
         assert strategy.distribution is distribution
-        assert strategy.n_image == optic.n()[-1]
+        assert strategy.n_image == optic.surfaces.n(optic.primary_wavelength)[-1]
 
     def test_opd_image_to_xp(self, strategy, set_test_backend):
         """Test the OPD calculation from image to the exit pupil sphere."""

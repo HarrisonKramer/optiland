@@ -76,7 +76,7 @@ class OpticalSystem:
         list of components.
         """
         self.components = []
-        n = self.optic.n()  # refractive indices
+        n = self.optic.surfaces.n(self.optic.primary_wavelength)  # refractive indices
         num_surf = self.optic.surfaces.num_surfaces
 
         lens_surfaces = []
@@ -149,7 +149,7 @@ class OpticalSystem:
         aperture_color = "grey"  # arrow color for other apertures
 
         artists = {}
-        n = self.optic.n()
+        n = self.optic.surfaces.n(self.optic.primary_wavelength)
         for idx, surface in enumerate(self.optic.surfaces):
             if idx > 0:
                 is_lens_surface = n[idx] > 1 or (n[idx] == 1 and n[idx - 1] > 1)

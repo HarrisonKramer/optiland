@@ -474,7 +474,7 @@ class TestLensOperand:
         self.optic.surfaces.add(index=3, radius=-50.0, thickness=100.0, material="air")
         self.optic.surfaces.add(index=4)
 
-        self.optic.update_paraxial()
+        self.optic.updater.update_paraxial()
 
         sa1 = self.optic.surfaces[2].semi_aperture
         sa2 = self.optic.surfaces[3].semi_aperture
@@ -497,7 +497,7 @@ class TestLensOperand:
         self.optic.surfaces.add(index=3, radius=50.0, thickness=100.0, material="air")
         self.optic.surfaces.add(index=4)
 
-        self.optic.update_paraxial()
+        self.optic.updater.update_paraxial()
 
         r2 = 50.0
         t = 2.0
@@ -517,7 +517,7 @@ class TestLensOperand:
         self.optic.surfaces.add(index=3, radius=-50.0, thickness=100.0, material="air")
         self.optic.surfaces.add(index=4)
 
-        self.optic.update_paraxial()
+        self.optic.updater.update_paraxial()
         self.optic.surfaces[2].semi_aperture = 10.0
         self.optic.surfaces[3].semi_aperture = 8.0
 
@@ -549,7 +549,7 @@ class TestLensOperand:
         self.optic.surfaces.add(index=3, radius=-50.0, thickness=100.0, material="air")
         self.optic.surfaces.add(index=4)
 
-        self.optic.update_paraxial()
+        self.optic.updater.update_paraxial()
 
         sa1 = self.optic.surfaces[2].semi_aperture
         sa2 = self.optic.surfaces[3].semi_aperture

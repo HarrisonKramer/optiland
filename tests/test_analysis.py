@@ -63,7 +63,7 @@ def triplet_four_fields():
     lens.wavelengths.add(value=0.55, is_primary=True)
     lens.wavelengths.add(value=0.65)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
     return lens
 
 

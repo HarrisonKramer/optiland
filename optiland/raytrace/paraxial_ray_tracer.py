@@ -86,7 +86,7 @@ class ParaxialRayTracer:
         z_ = self._process_input(z)
 
         R = self.optic.surfaces.radii
-        n = self.optic.n(wavelength)
+        n = self.optic.surfaces.n(wavelength)
         pos = be.ravel(self.optic.surfaces.positions)
         surfs = self.optic.surfaces
 

@@ -49,7 +49,7 @@ def test_afocal_chief_ray_strategy():
     optic.fields.add(0, 0)
     optic.wavelengths.add(0.55)
 
-    optic.update_paraxial()
+    optic.updater.update_paraxial()
     wf = Wavefront(
         optic, fields=[(0, 0)], wavelengths=[0.55], strategy="chief_ray", afocal=True
     )

@@ -40,7 +40,7 @@ def flat_transmission_grating():
     # add wavelength
     lens.wavelengths.add(value=0.587, is_primary=True)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
 
     return lens
 
@@ -78,7 +78,7 @@ def curved_transmission_grating():
     # add wavelength
     lens.wavelengths.add(value=0.587, is_primary=True)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
 
     return lens
 
@@ -114,7 +114,7 @@ def curved_reflective_grating():
     # add wavelength
     lens.wavelengths.add(value=0.587, is_primary=True)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
 
     return lens
 

@@ -238,12 +238,12 @@ class TestOptic:
 
     def test_optic_set_apodization(self, set_test_backend):
         gaussian_apod = GaussianApodization(sigma=0.5)
-        self.optic.set_apodization(gaussian_apod)
+        self.optic.updater.set_apodization(gaussian_apod)
         assert self.optic.apodization == gaussian_apod, "Apodization not set correctly"
 
         # Test setting with a non-Apodization type
         with pytest.raises(ValueError):
-            self.optic.set_apodization("not_an_apodization_object")
+            self.optic.updater.set_apodization("not_an_apodization_object")
 
     def test_set_invalid_polarization(self, set_test_backend):
         with pytest.raises(ValueError):
@@ -302,7 +302,7 @@ class TestOptic:
             thickness=5,
         )
         self.optic.set_aperture("EPD", 5.0)
-        self.optic.scale_system(2)
+        self.optic.updater.scale_system(2)
         assert self.optic.surfaces[0].geometry.radius == 2 * 10.0
         assert self.optic.aperture.value == 2 * 5.0
 
@@ -332,17 +332,17 @@ class TestOptic:
             thickness=5,
         )
         self.optic.wavelengths.add(0.55, is_primary=True)
-        n_values = self.optic.n()
+        n_values = self.optic.surfaces.n(self.optic.primary_wavelength)
         assert len(n_values) == 1
 
     def test_update_paraxial(self, set_test_backend):
         lens = HeliarLens()
-        lens.update_paraxial()
+        lens.updater.update_paraxial()
         # This test is just to ensure the method runs without error
 
     def test_update(self, set_test_backend):
         lens = HeliarLens()
-        lens.update()
+        lens.updater.update()
         # This test is just to ensure the method runs without error
 
     def test_image_solve(self, set_test_backend):
@@ -423,7 +423,7 @@ class TestOptic:
 
     def test_to_dict(self, set_test_backend):
         lens = HeliarLens()
-        lens.set_apodization(GaussianApodization(sigma=0.5))
+        lens.updater.set_apodization(GaussianApodization(sigma=0.5))
         lens_dict = lens.to_dict()
         assert isinstance(lens_dict, dict)
         assert "apodization" in lens_dict
@@ -432,7 +432,7 @@ class TestOptic:
 
     def test_from_dict(self, set_test_backend):
         lens = HeliarLens()
-        lens.set_apodization(GaussianApodization(sigma=0.5))
+        lens.updater.set_apodization(GaussianApodization(sigma=0.5))
         basic_dict = lens.to_dict()
 
         new_optic = Optic.from_dict(basic_dict)
@@ -489,18 +489,18 @@ class TestOptic:
         lens.surfaces.set_fresnel_coatings()
         radii_orig = be.copy(lens.surfaces.radii)
         radii_orig = radii_orig[~be.isinf(radii_orig)]  # ignore inf
-        n_orig = be.copy(lens.n(0.55))
-        lens.flip()
+        n_orig = be.copy(lens.surfaces.n(0.55))
+        lens.updater.flip()
         radii_flipped = be.copy(lens.surfaces.radii)
         radii_flipped = radii_flipped[~be.isinf(radii_flipped)]  # ignore inf
-        n_flipped = be.copy(lens.n(0.55))
+        n_flipped = be.copy(lens.surfaces.n(0.55))
         assert_allclose(radii_orig, -be.flip(radii_flipped))
         assert_allclose(n_orig[:-1], be.flip(n_flipped[:-1]))
 
     def test_invalid_flip(self, set_test_backend):
         lens = Optic()
         with pytest.raises(ValueError):
-            lens.flip()
+            lens.updater.flip()
 
     def test_flip_solves_pickups(self, set_test_backend):
         lens = Optic()
@@ -524,8 +524,8 @@ class TestOptic:
             scale=-1,
             offset=0,
         )
-        lens.update()
-        lens.flip()
+        lens.updater.update()
+        lens.updater.flip()
         assert lens.pickups.pickups[0].source_surface_idx == 2
         assert lens.pickups.pickups[0].target_surface_idx == 1
 
@@ -570,7 +570,7 @@ def test_flip_updates_thickness_attribute(set_test_backend):
     lens.surfaces.add(index=3, material="Air", thickness=70.0)
     lens.surfaces.add(index=4, material="Air")
 
-    lens.flip()
+    lens.updater.flip()
 
     flipped_surfaces = lens.surfaces
 

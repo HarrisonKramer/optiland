@@ -53,7 +53,7 @@ class ReferenceStrategy(ABC):
         self.optic = optic
         self.distribution = distribution
         self.reference_type = reference_type
-        self.n_image = optic.n()[-1]
+        self.n_image = optic.surfaces.n(optic.primary_wavelength)[-1]
 
     @abstractmethod
     def compute_wavefront_data(

@@ -80,4 +80,4 @@ class UVProjectionLens(optic.Optic):
         self.obj_space_telecentric = True
 
         # Move last surface to the paraxial image plane
-        self.image_solve()
+        self.updater.image_solve()

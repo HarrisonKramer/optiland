@@ -58,7 +58,7 @@ class PickupManager:
             attr_type (str): The type of attribute to be picked up ('radius',
                 'conic', or 'thickness'). Can also be a generic path, where `[i]`
                 should be used to indicate the surface index (e.g.
-                `surface_group.surfaces[i].geometry.coefficients`).
+                `surfaces.surfaces[i].geometry.coefficients`).
             target_surface_idx (int): The index of the target surface in the
                 optic's surface group.
             scale (float, optional): The scaling factor applied to the picked
@@ -141,7 +141,7 @@ class Pickup:
         attr_type (str): The type of attribute to be picked up ('radius',
             'conic', or 'thickness'). Can also be a generic path, where `[i]`
             should be used to indicate the surface index (e.g.
-            `surface_group.surfaces[i].geometry.coefficients`).
+            `surfaces.surfaces[i].geometry.coefficients`).
         target_surface_idx (int): The index of the target surface in the
             optic's surface group.
         scale (float, optional): The scaling factor applied to the picked up

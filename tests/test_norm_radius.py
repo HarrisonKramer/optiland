@@ -42,14 +42,14 @@ def test_init_kwargs_behavior(set_test_backend):
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"
     assert zernike_surface.geometry.norm_radius == 111.0
 
-    optic.update_paraxial()
+    optic.updater.update_paraxial()
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"
     assert zernike_surface.geometry.norm_radius == 111.0
 
 
 def test_default_behavior(zernike_optic, set_test_backend):
     # Without calling set_norm_radius, the norm_radius should be auto-updated
-    zernike_optic.update_paraxial()
+    zernike_optic.updater.update_paraxial()
     zernike_surface = zernike_optic.surfaces[2]
 
     # Check if norm_radius has been set to 1.25 * semi_aperture
@@ -78,7 +78,7 @@ def test_fixed_behavior(zernike_optic, set_test_backend):
     assert zernike_surface.geometry.norm_radius == custom_norm_radius
 
     # update paraxial should not change it
-    zernike_optic.update_paraxial()
+    zernike_optic.updater.update_paraxial()
     assert zernike_surface.geometry.norm_radius == custom_norm_radius
 
 
@@ -94,7 +94,7 @@ def test_reversibility(zernike_optic, set_test_backend):
     assert getattr(zernike_surface.geometry, "normalization_mode", "manual") == "auto"
 
     # Now it should auto-scale
-    zernike_optic.update_paraxial()
+    zernike_optic.updater.update_paraxial()
     semi_aperture = zernike_surface.semi_aperture
     # Auto-scaling kicks in overriding custom
     semi_aperture_val = (
@@ -125,7 +125,7 @@ def test_optimizer_precedence(zernike_optic, set_test_backend):
     zernike_surface.geometry.norm_radius = optimizer_driven_radius
 
     # update shouldn't override the optimizer's new value, despite is_fixed=True
-    zernike_optic.update_paraxial()
+    zernike_optic.updater.update_paraxial()
 
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"
     assert zernike_surface.geometry.norm_radius == optimizer_driven_radius

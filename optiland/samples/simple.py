@@ -111,7 +111,7 @@ class TelescopeDoublet(optic.Optic):
         self.wavelengths.add(value=0.5876, is_primary=True)
         self.wavelengths.add(value=0.6563)
 
-        self.image_solve()
+        self.updater.image_solve()
 
 
 class CementedAchromat(optic.Optic):
@@ -155,7 +155,7 @@ class CementedAchromat(optic.Optic):
         self.wavelengths.add(value=0.58756180, is_primary=True)
         self.wavelengths.add(value=0.65627250)
 
-        self.image_solve()
+        self.updater.image_solve()
 
 
 class AsphericSinglet(optic.Optic):
