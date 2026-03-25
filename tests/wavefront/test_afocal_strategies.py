@@ -20,8 +20,8 @@ def create_object_surface():
 def test_afocal_chief_ray_strategy():
     """Test ChiefRayStrategy in afocal mode with a perfect collimator."""
     optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)  # Obj
-    optic.set_thickness(1e12, 0)
+    optic.surfaces.add(new_surface=create_object_surface(), index=0)  # Obj
+    optic.updater.set_thickness(1e12, 0)
 
     cs_stop = CoordinateSystem()
     stop_surf = ObjectSurface(Plane(cs_stop), IdealMaterial(1.0, 0))
@@ -36,20 +36,20 @@ def test_afocal_chief_ray_strategy():
             is_stop=is_stop,
         )
 
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         new_surface=create_plane_surface(is_stop=True), index=1, thickness=10
     )
 
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         new_surface=create_plane_surface(is_stop=False), index=2, thickness=20
     )
 
     optic.set_aperture("EPD", 10)
-    optic.set_field_type("angle")
-    optic.add_field(0, 0)
-    optic.add_wavelength(0.55)
+    optic.fields.set_type("angle")
+    optic.fields.add(0, 0)
+    optic.wavelengths.add(0.55)
 
-    optic.update_paraxial()
+    optic.updater.update_paraxial()
     wf = Wavefront(
         optic, fields=[(0, 0)], wavelengths=[0.55], strategy="chief_ray", afocal=True
     )
@@ -65,19 +65,19 @@ def test_afocal_chief_ray_strategy():
 def test_afocal_best_fit_strategy():
     """Test BestFitStrategy in afocal mode removes tilt from tilted plane wave."""
     optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)
-    optic.set_thickness(1e9, 0)
-    optic.surface_group.add_surface(
+    optic.surfaces.add(new_surface=create_object_surface(), index=0)
+    optic.updater.set_thickness(1e9, 0)
+    optic.surfaces.add(
         radius=float("inf"), thickness=10, material="air", index=1, is_stop=True
     )
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         radius=float("inf"), thickness=20, index=2
     )  # Image plane
 
     optic.set_aperture("EPD", 10)
-    optic.set_field_type("angle")
-    optic.add_field(1.0, 0)  # 1 degree field
-    optic.add_wavelength(0.55)
+    optic.fields.set_type("angle")
+    optic.fields.add(1.0, 0)  # 1 degree field
+    optic.wavelengths.add(0.55)
 
     wf = Wavefront(
         optic, fields=[(1.0, 0)], wavelengths=[0.55], strategy="best_fit", afocal=True
@@ -97,19 +97,19 @@ def test_afocal_best_fit_strategy():
 def test_focal_regression():
     """Ensure standard focal mode still works (regression test)."""
     optic = Optic()
-    optic.surface_group.add_surface(new_surface=create_object_surface(), index=0)
-    optic.set_thickness(100, 0)  # Finite object
-    optic.surface_group.add_surface(
+    optic.surfaces.add(new_surface=create_object_surface(), index=0)
+    optic.updater.set_thickness(100, 0)  # Finite object
+    optic.surfaces.add(
         radius=100, thickness=10, material="N-BK7", index=1, is_stop=True
     )
-    optic.surface_group.add_surface(
+    optic.surfaces.add(
         radius=-100, thickness=100, index=2
     )  # Image near focus
 
     optic.set_aperture("EPD", 10)
-    optic.set_field_type("angle")
-    optic.add_field(0, 0)
-    optic.add_wavelength(0.55)
+    optic.fields.set_type("angle")
+    optic.fields.add(0, 0)
+    optic.wavelengths.add(0.55)
 
     wf = Wavefront(optic, strategy="chief_ray", afocal=False)
     data = wf.get_data((0, 0), 0.55)

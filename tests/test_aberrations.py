@@ -32,29 +32,29 @@ def simple_singlet():
     lens = Optic()
 
     # add surfaces
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(
         index=1,
         thickness=7,
         radius=19.93,
         is_stop=True,
         material="N-SF11",
     )
-    lens.add_surface(index=2, thickness=21.48)
-    lens.add_surface(index=3)
+    lens.surfaces.add(index=2, thickness=21.48)
+    lens.surfaces.add(index=3)
 
     # add aperture
     lens.set_aperture(aperture_type="EPD", value=20.0)
 
     # add field
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
 
     # add wavelength
-    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.wavelengths.add(value=0.55, is_primary=True)
 
-    lens.update_paraxial()
-    lens.image_solve()
+    lens.updater.update_paraxial()
+    lens.updater.image_solve()
     return lens
 
 

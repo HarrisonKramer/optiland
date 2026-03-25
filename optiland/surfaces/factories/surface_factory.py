@@ -141,7 +141,7 @@ class SurfaceFactory:
 
         # Standard surface - `surface_type` indicates geometrical shape of surface
         surface_obj = Surface(
-            previous_surface=None,  #  To be fixed by surface_group.add_surface()
+            previous_surface=None,  #  To be fixed by surface_group.surfaces.add()
             geometry=geometry,
             material_post=material_post,
             is_stop=is_stop,

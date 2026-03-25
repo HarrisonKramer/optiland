@@ -32,43 +32,43 @@ from optiland.sources import BaseSource, SMFSource
 def _simple_singlet():
     """Create a minimal singlet for testing."""
     lens = Optic()
-    lens.add_surface(index=0, thickness=be.inf)
-    lens.add_surface(
+    lens.surfaces.add(index=0, thickness=be.inf)
+    lens.surfaces.add(
         index=1,
         thickness=7,
         radius=43.7354,
         is_stop=True,
         material="N-SF11",
     )
-    lens.add_surface(index=2, radius=-46.2795, thickness=50)
-    lens.add_surface(index=3)
+    lens.surfaces.add(index=2, radius=-46.2795, thickness=50)
+    lens.surfaces.add(index=3)
     lens.set_aperture(aperture_type="EPD", value=25)
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.wavelengths.add(value=0.55, is_primary=True)
     return lens
 
 
 def _simple_singlet_with_detector():
     """Create a singlet that has a rectangular aperture on the image surface."""
     lens = Optic()
-    lens.add_surface(index=0, thickness=be.inf)
-    lens.add_surface(
+    lens.surfaces.add(index=0, thickness=be.inf)
+    lens.surfaces.add(
         index=1,
         thickness=7,
         radius=43.7354,
         is_stop=True,
         material="N-SF11",
     )
-    lens.add_surface(index=2, radius=-46.2795, thickness=50)
-    lens.add_surface(
+    lens.surfaces.add(index=2, radius=-46.2795, thickness=50)
+    lens.surfaces.add(
         index=3,
         aperture=RectangularAperture(x_min=-15, x_max=15, y_min=-15, y_max=15),
     )
     lens.set_aperture(aperture_type="EPD", value=25)
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.wavelengths.add(value=0.55, is_primary=True)
     return lens
 
 
@@ -377,7 +377,7 @@ class TestExtendedSourceOptic:
         assert ext_optic.name == optic.name
 
     def test_delegates_surface_group(self, optic, ext_optic):
-        assert ext_optic.surface_group is optic.surface_group
+        assert ext_optic.surfaces is optic.surfaces
 
     def test_delegates_fields(self, optic, ext_optic):
         assert ext_optic.fields is optic.fields
@@ -425,23 +425,23 @@ class TestExtendedSourceOptic:
 
     def test_add_field_through_wrapper(self, optic, ext_optic):
         initial_count = len(optic.fields.fields)
-        ext_optic.add_field(y=5.0)
+        ext_optic.fields.add(y=5.0)
         assert len(optic.fields.fields) == initial_count + 1
 
     def test_add_wavelength_through_wrapper(self, optic, ext_optic):
         initial_count = len(optic.wavelengths.wavelengths)
-        ext_optic.add_wavelength(0.65)
+        ext_optic.wavelengths.add(0.65)
         assert len(optic.wavelengths.wavelengths) == initial_count + 1
 
     def test_set_radius_through_wrapper(self, optic, ext_optic):
-        ext_optic.set_radius(100.0, surface_number=1)
-        assert float(optic.surface_group.surfaces[1].geometry.radius) == pytest.approx(
+        ext_optic.updater.set_radius(100.0, surface_number=1)
+        assert float(optic.surfaces[1].geometry.radius) == pytest.approx(
             100.0
         )
 
     def test_set_thickness_through_wrapper(self, optic, ext_optic):
-        ext_optic.set_thickness(99.0, surface_number=1)
-        assert optic.surface_group.get_thickness(1).item() == (pytest.approx(99.0))
+        ext_optic.updater.set_thickness(99.0, surface_number=1)
+        assert optic.surfaces.get_thickness(1).item() == (pytest.approx(99.0))
 
     def test_paraxial_calculations_through_wrapper(self, ext_optic):
         """Paraxial data should be accessible through the wrapper."""
@@ -461,7 +461,7 @@ class TestExtendedSourceOptic:
 
     def test_trace_ray_path_shape(self, ext_optic):
         traced_rays, ray_path = ext_optic.trace(num_rays=32)
-        num_surfaces = ext_optic.optic.surface_group.num_surfaces
+        num_surfaces = ext_optic.optic.surfaces.num_surfaces
         actual_num_rays = be.size(traced_rays.x)
         x_path = ray_path["x"]
         assert be.shape(x_path) == (num_surfaces, actual_num_rays)
@@ -543,19 +543,19 @@ class TestExtendedSourceOptic:
 
     def test_repr_with_named_optic(self, source):
         optic = Optic(name="My Lens")
-        optic.add_surface(index=0, thickness=10)
-        optic.add_surface(index=1, thickness=10, is_stop=True)
-        optic.add_surface(index=2)
-        optic.add_wavelength(0.55, is_primary=True)
+        optic.surfaces.add(index=0, thickness=10)
+        optic.surfaces.add(index=1, thickness=10, is_stop=True)
+        optic.surfaces.add(index=2)
+        optic.wavelengths.add(0.55, is_primary=True)
         ext = ExtendedSourceOptic(optic, source)
         assert "My Lens" in repr(ext)
 
     def test_repr_unnamed_optic(self, source):
         optic = Optic()
-        optic.add_surface(index=0, thickness=10)
-        optic.add_surface(index=1, thickness=10, is_stop=True)
-        optic.add_surface(index=2)
-        optic.add_wavelength(0.55, is_primary=True)
+        optic.surfaces.add(index=0, thickness=10)
+        optic.surfaces.add(index=1, thickness=10, is_stop=True)
+        optic.surfaces.add(index=2)
+        optic.wavelengths.add(0.55, is_primary=True)
         ext = ExtendedSourceOptic(optic, source)
         assert "Unnamed" in repr(ext)
 
@@ -721,8 +721,8 @@ class TestStandardAnalysesThroughWrapper:
     def test_distortion_on_inner_optic(self, ext_optic):
         from optiland.analysis import Distortion
 
-        ext_optic.add_field(y=5.0)
-        ext_optic.add_field(y=10.0)
+        ext_optic.fields.add(y=5.0)
+        ext_optic.fields.add(y=10.0)
         d = Distortion(ext_optic.optic)
         assert d.data is not None
         plt.close("all")
@@ -730,8 +730,8 @@ class TestStandardAnalysesThroughWrapper:
     def test_field_curvature_on_inner_optic(self, ext_optic):
         from optiland.analysis import FieldCurvature
 
-        ext_optic.add_field(y=5.0)
-        ext_optic.add_field(y=10.0)
+        ext_optic.fields.add(y=5.0)
+        ext_optic.fields.add(y=10.0)
         fc = FieldCurvature(ext_optic.optic)
         assert fc.data is not None
         plt.close("all")
@@ -770,10 +770,10 @@ class TestStandardAnalysesThroughWrapper:
     def test_scale_system_through_wrapper(self, ext_optic):
         """scale_system works through the wrapper."""
         f_before = float(ext_optic.paraxial.f2())
-        ext_optic.scale_system(2.0)
+        ext_optic.updater.scale_system(2.0)
         f_after = float(ext_optic.paraxial.f2())
         assert f_after == pytest.approx(2.0 * f_before, rel=1e-6)
 
     def test_update_through_wrapper(self, ext_optic):
         """update() does not raise through the wrapper."""
-        ext_optic.update()
+        ext_optic.updater.update()

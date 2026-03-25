@@ -180,11 +180,11 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         )
 
         if self.axis == 1:  # Y-direction measurement
-            incident_dir_cosines = self.optic.surface_group.M[self.surface_idx, :]
-            height = self.optic.surface_group.y[self.surface_idx, :]
+            incident_dir_cosines = self.optic.surfaces.M[self.surface_idx, :]
+            height = self.optic.surfaces.y[self.surface_idx, :]
         else:  # X-direction measurement
-            incident_dir_cosines = self.optic.surface_group.L[self.surface_idx, :]
-            height = self.optic.surface_group.x[self.surface_idx, :]
+            incident_dir_cosines = self.optic.surfaces.L[self.surface_idx, :]
+            height = self.optic.surfaces.x[self.surface_idx, :]
 
         angle_rad = be.arcsin(incident_dir_cosines)
 

@@ -256,13 +256,14 @@ class Aberrations:
         """
         self._inv: float = self.optic.paraxial.invariant()  # Lagrange invariant
         self._on_axis = be.isclose(self._inv, be.array(0.0))
-        self._n: BEArray = self.optic.n()  # Refractive indices for all surfaces
-        self._N: int = self.optic.surface_group.num_surfaces
-        self._C = 1 / self.optic.surface_group.radii
+        # Refractive indices for all surfaces
+        self._n: BEArray = self.optic.surfaces.n(self.optic.primary_wavelength)
+        self._N: int = self.optic.surfaces.num_surfaces
+        self._C = 1 / self.optic.surfaces.radii
         self._ya, self._ua = self.optic.paraxial.marginal_ray()
         self._yb, self._ub = self.optic.paraxial.chief_ray()
         self._hp = self._inv / (self._n[-1] * self._ua[-1])
-        self._dn = self.optic.n(0.4861) - self.optic.n(0.6563)
+        self._dn = self.optic.surfaces.n(0.4861) - self.optic.surfaces.n(0.6563)
 
         i_list = []
         ip_list = []

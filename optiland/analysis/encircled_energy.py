@@ -189,7 +189,7 @@ class EncircledEnergy(SpotDiagram):
 
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
-        x = self.optic.surface_group.x[-1, :]
-        y = self.optic.surface_group.y[-1, :]
-        intensity = self.optic.surface_group.intensity[-1, :]
+        x = self.optic.surfaces.x[-1, :]
+        y = self.optic.surfaces.y[-1, :]
+        intensity = self.optic.surfaces.intensity[-1, :]
         return SpotData(x=x, y=y, intensity=intensity)

@@ -93,7 +93,7 @@ class TestSurfaceGroupUpdatesRealObjects:
     ):
         sg = self._setup_surface_group(use_absolute_cs=use_absolute_cs)
         new_surf = create_real_surface(name="new", thickness_val=5.0, initial_z=10.0)
-        sg.add_surface(new_surface=new_surf)
+        sg.add(new_surface=new_surf)
 
         assert len(sg.surfaces) == 1
         assert sg.surfaces[0] is new_surf
@@ -111,7 +111,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         s0_z = be.copy(sg.surfaces[0].geometry.cs.z)
 
         new_surf = create_real_surface(name="new", thickness_val=5.0, initial_z=20.0)
-        sg.add_surface(new_surface=new_surf)  # Appends
+        sg.add(new_surface=new_surf)  # Appends
 
         assert len(sg.surfaces) == 2
         assert sg.surfaces[1] is new_surf
@@ -134,7 +134,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             name="S1_appended", thickness_val=5.0, initial_z=123.0
         )
         # Appending: index is not specified or index == len(sg.surfaces)
-        sg.add_surface(
+        sg.add(
             new_surface=new_surf
         )  # Appends, update_start_index points to new_surf, is_last_surface=True
 
@@ -158,7 +158,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         s1_orig = sg.surfaces[1]
 
         s_new = create_real_surface(name="S_new", thickness_val=5.0, initial_z=123.0)
-        sg.add_surface(new_surface=s_new, index=1)  # Insert s_new at index 1
+        sg.add(new_surface=s_new, index=1)  # Insert s_new at index 1
 
         # Expected: [s0_orig, s_new, s1_orig]
         assert len(sg.surfaces) == 3
@@ -186,7 +186,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         sg.surfaces[0].is_stop = True  # Set S0 as stop
         new_surf = create_real_surface(name="new_stop", is_stop=True)
         # Append by providing index = len(sg.surfaces)
-        sg.add_surface(new_surface=new_surf, index=len(sg.surfaces))
+        sg.add(new_surface=new_surf, index=len(sg.surfaces))
 
         assert len(sg.surfaces) == 3
         assert not sg.surfaces[0].is_stop  # Old stop is cleared
@@ -204,7 +204,7 @@ class TestSurfaceGroupUpdatesRealObjects:
 
         # Add S1_created at index 1. sg: [s0 (z=-100, t=10), S1_created (z=0, t=5.0)]
         # The 'thickness' kwarg should be handled by the actual SurfaceFactory
-        sg.add_surface(
+        sg.add(
             surface_type="standard",
             comment="S1_created",
             index=1,  # Insert at index 1
@@ -224,7 +224,7 @@ class TestSurfaceGroupUpdatesRealObjects:
 
         # Add S2_inserted at index 1.
         # sg: [s0 (z=-100, t=10), S2_inserted (z=0, t=12.0), S1_created (z=12.0, t=5.0)]
-        sg.add_surface(
+        sg.add(
             surface_type="standard",
             comment="S2_inserted",
             index=1,  # Insert S2_inserted at index 1, shifting S1_created
@@ -260,7 +260,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         with pytest.raises(
             ValueError, match="Must define index when defining surface."
         ):
-            sg.add_surface(surface_type="standard", comment="no_index_surf")
+            sg.add(surface_type="standard", comment="no_index_surf")
 
     # --- Tests for remove_surface ---
     def test_remove_surface_middle_rel_cs_triggers_update(self, set_test_backend):
@@ -273,7 +273,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         # Initial: S0(z=-100,t=10), S1(z=0,t=20), S2(z=20,t=30)
         s2_original_comment = sg.surfaces[2].comment  # Was s2
 
-        sg.remove_surface(index=1)  # Remove S1
+        sg.remove(index=1)  # Remove S1
 
         assert len(sg.surfaces) == 2
         assert sg.surfaces[0].comment == "s0"
@@ -293,7 +293,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         # S0(z=-100,t=10), S1(z=0,t=20), S2(z=20,t=30)
         s1_z_before_removal = be.copy(sg.surfaces[1].geometry.cs.z)
 
-        sg.remove_surface(index=2)  # Remove S2 (last optical surface)
+        sg.remove(index=2)  # Remove S2 (last optical surface)
         # _update_coordinate_systems not called because was_not_last_surface is false
 
         assert len(sg.surfaces) == 2
@@ -310,7 +310,7 @@ class TestSurfaceGroupUpdatesRealObjects:
 
         s2_z_original = be.copy(sg.surfaces[2].geometry.cs.z)
 
-        sg.remove_surface(index=1)  # Remove S1
+        sg.remove(index=1)  # Remove S1
 
         assert len(sg.surfaces) == 2
         # With absolute_cs=True, _update_coordinate_systems is not called
@@ -321,13 +321,13 @@ class TestSurfaceGroupUpdatesRealObjects:
     def test_remove_surface_error_remove_object(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=1)
         with pytest.raises(ValueError, match="Cannot remove object surface"):
-            sg.remove_surface(index=0)
+            sg.remove(index=0)
 
     # --- Error condition tests from SurfaceGroup code directly ---
     def test_add_surface_new_object_error_negative_index(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=1)
         with pytest.raises(IndexError, match="Index -1 cannot be negative."):
-            sg.add_surface(new_surface=create_real_surface(), index=-1)
+            sg.add(new_surface=create_real_surface(), index=-1)
 
     def test_add_surface_new_object_error_index_out_of_bounds(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=1)  # surfaces[0] exists
@@ -338,12 +338,12 @@ class TestSurfaceGroupUpdatesRealObjects:
             IndexError,
             match=r"Index 2 is out of bounds for insertion. Max index for insertion is 1 \(to append\)\.",
         ):
-            sg.add_surface(new_surface=create_real_surface(), index=2)
+            sg.add(new_surface=create_real_surface(), index=2)
 
     def test_add_surface_by_creation_error_negative_index(self, set_test_backend):
         sg = self._setup_surface_group()
         with pytest.raises(IndexError):
-            sg.add_surface(
+            sg.add(
                 surface_type="standard", index=-1, thickness=1
             )  # Assuming factory handles thickness
 
@@ -351,21 +351,21 @@ class TestSurfaceGroupUpdatesRealObjects:
         sg = self._setup_surface_group(num_initial_surfaces=1)  # len(sg.surfaces) = 1
         # Max index for insertion is 1. index=2 is out of bounds.
         with pytest.raises(IndexError):
-            sg.add_surface(surface_type="standard", index=2, thickness=1)
+            sg.add(surface_type="standard", index=2, thickness=1)
 
     def test_remove_surface_error_index_out_of_bounds_negative(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=2)
         with pytest.raises(IndexError, match="Index -1 is out of bounds"):
-            sg.remove_surface(index=-1)
+            sg.remove(index=-1)
 
     def test_remove_surface_error_index_out_of_bounds_too_large(self, set_test_backend):
         sg = self._setup_surface_group(num_initial_surfaces=2)  # Valid remove index: 1
         with pytest.raises(IndexError, match="Index 2 is out of bounds"):
-            sg.remove_surface(index=2)
+            sg.remove(index=2)
         with pytest.raises(
             IndexError, match="Index 3 is out of bounds"
         ):  # Also too large
-            sg.remove_surface(index=3)
+            sg.remove(index=3)
 
     def test_remove_surface_updates_material_link(self, set_test_backend):
         """
@@ -378,27 +378,27 @@ class TestSurfaceGroupUpdatesRealObjects:
         mat2 = IdealMaterial(n=2.0)
         mat3 = IdealMaterial(n=2.5)
 
-        lens.add_surface(index=0, material="Air")
-        lens.add_surface(index=1, material=mat1, thickness=5)  # Surface 1
-        lens.add_surface(
+        lens.surfaces.add(index=0, material="Air")
+        lens.surfaces.add(index=1, material=mat1, thickness=5)  # Surface 1
+        lens.surfaces.add(
             index=2, material=mat2, thickness=5
         )  # Surface 2 (to be removed)
-        lens.add_surface(index=3, material=mat3, thickness=5)  # Surface 3
-        lens.add_surface(index=4, material="Air")
+        lens.surfaces.add(index=3, material=mat3, thickness=5)  # Surface 3
+        lens.surfaces.add(index=4, material="Air")
 
-        surface_before_removal = lens.surface_group.surfaces[1]
-        surface_to_remove = lens.surface_group.surfaces[2]
-        surface_after_removal = lens.surface_group.surfaces[3]
+        surface_before_removal = lens.surfaces.surfaces[1]
+        surface_to_remove = lens.surfaces.surfaces[2]
+        surface_after_removal = lens.surfaces.surfaces[3]
 
         # 2. Check initial state
         # The material before surface 3 should be mat2 (from surface 2)
         assert surface_after_removal.material_pre is surface_to_remove.material_post
 
         # 3. Remove surface at index 2
-        lens.surface_group.remove_surface(2)
+        lens.surfaces.remove(2)
 
         # 4. Get the new surface at index 2 (which was old surface 3)
-        new_surface_at_index_2 = lens.surface_group.surfaces[2]
+        new_surface_at_index_2 = lens.surfaces.surfaces[2]
 
         # 5. Assert that the material link is updated
         # The material before the new surface at index 2 should now be mat1
@@ -413,15 +413,15 @@ class TestSurfaceGroupUpdatesRealObjects:
         """
         # 1. Create the initial lens with two glass slabs
         lens1 = optic.Optic(name="Two Slabs")
-        lens1.add_surface(index=0, thickness=be.inf, material="Air")
-        lens1.add_surface(
+        lens1.surfaces.add(index=0, thickness=be.inf, material="Air")
+        lens1.surfaces.add(
             index=1,
             surface_type="standard",
             material=IdealMaterial(n=2.5),
             thickness=10,
             radius=be.inf,
         )
-        lens1.add_surface(
+        lens1.surfaces.add(
             index=2,
             surface_type="standard",
             material=IdealMaterial(n=1.0001),
@@ -429,21 +429,21 @@ class TestSurfaceGroupUpdatesRealObjects:
             radius=be.inf,
             is_stop=True,
         )
-        lens1.add_surface(
+        lens1.surfaces.add(
             index=3,
             surface_type="standard",
             material="Air",
             thickness=20,
             radius=be.inf,
         )
-        lens1.add_surface(index=4, material="Air")
-        lens1.set_field_type("angle")
-        lens1.add_field(y=10)
-        lens1.add_wavelength(500, unit="nm")
+        lens1.surfaces.add(index=4, material="Air")
+        lens1.fields.set_type("angle")
+        lens1.fields.add(y=10)
+        lens1.wavelengths.add(500, unit="nm")
         lens1.set_aperture("float_by_stop_size", 25)
 
         # 2. Remove the first slab (the one with n=2.5) from lens1
-        lens1.surface_group.remove_surface(1)
+        lens1.surfaces.remove(1)
 
         # 3. Trace rays through the modified lens1 and get final y-coordinates
         traced_rays1 = lens1.trace(Hx=0, Hy=1, wavelength=0.5, num_rays=3)
@@ -451,9 +451,9 @@ class TestSurfaceGroupUpdatesRealObjects:
 
         # 4. Create a second lens from scratch with the expected final configuration
         lens2 = optic.Optic(name="One Slab")
-        lens2.add_surface(index=0, thickness=be.inf, material="Air")
+        lens2.surfaces.add(index=0, thickness=be.inf, material="Air")
         # This surface corresponds to the one that remained in lens1
-        lens2.add_surface(
+        lens2.surfaces.add(
             index=1,
             surface_type="standard",
             material=IdealMaterial(n=1.0001),
@@ -461,17 +461,17 @@ class TestSurfaceGroupUpdatesRealObjects:
             radius=be.inf,
             is_stop=True,
         )
-        lens2.add_surface(
+        lens2.surfaces.add(
             index=2,
             surface_type="standard",
             material="Air",
             thickness=20,
             radius=be.inf,
         )
-        lens2.add_surface(index=3, material="Air")
-        lens2.set_field_type("angle")
-        lens2.add_field(y=10)
-        lens2.add_wavelength(500, unit="nm")
+        lens2.surfaces.add(index=3, material="Air")
+        lens2.fields.set_type("angle")
+        lens2.fields.add(y=10)
+        lens2.wavelengths.add(500, unit="nm")
         lens2.set_aperture("float_by_stop_size", 25)
 
         # 5. Trace rays through the new lens2 and get final y-coordinates
@@ -523,11 +523,11 @@ class TestSurfaceGroupUpdatesRealObjects:
         cooke = CookeTriplet()
 
         lens = optic.Optic()
-        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        lens.add_surface(index=1)
+        lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+        lens.surfaces.add(index=1)
 
-        for surf in cooke.surface_group.surfaces[-2:0:-1]:
-            lens.add_surface(
+        for surf in cooke.surfaces.surfaces[-2:0:-1]:
+            lens.surfaces.add(
                 radius=surf.geometry.radius,
                 index=1,
                 material=surf.material_post,
@@ -536,7 +536,7 @@ class TestSurfaceGroupUpdatesRealObjects:
             )
 
         lens.set_aperture(aperture_type="EPD", value=10)
-        lens.set_field_type(field_type="angle")
+        lens.fields.set_type(field_type="angle")
         lens.fields.fields = cooke.fields.fields
         lens.wavelengths.wavelengths = cooke.wavelengths.wavelengths
 
@@ -560,16 +560,16 @@ class TestSurfaceGroupUpdatesRealObjects:
     def test_set_stop_index(self):
         lens = optic.Optic()
 
-        lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-        lens.add_surface(index=1, radius=be.inf, thickness=5, is_stop=True)
-        lens.add_surface(index=2, radius=be.inf, thickness=5)
-        lens.add_surface(index=3, radius=be.inf, thickness=5)
-        lens.surface_group.stop_index = 2
-        assert lens.surface_group.surfaces[2].is_stop == True
+        lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+        lens.surfaces.add(index=1, radius=be.inf, thickness=5, is_stop=True)
+        lens.surfaces.add(index=2, radius=be.inf, thickness=5)
+        lens.surfaces.add(index=3, radius=be.inf, thickness=5)
+        lens.surfaces.stop_index = 2
+        assert lens.surfaces.surfaces[2].is_stop == True
         with pytest.raises(ValueError, match="Index out of range"):
-            lens.surface_group.stop_index = 0
+            lens.surfaces.stop_index = 0
         with pytest.raises(ValueError, match="Index out of range"):
-            lens.surface_group.stop_index = 3
+            lens.surfaces.stop_index = 3
 
     @pytest.mark.skipif(
         be.get_backend() == "torch",
@@ -577,9 +577,9 @@ class TestSurfaceGroupUpdatesRealObjects:
     )
     def test_second_object_surface_raises(self):
         lens1 = optic.Optic()
-        lens1.add_surface(index=0, thickness=be.inf, material="Air")
+        lens1.surfaces.add(index=0, thickness=be.inf, material="Air")
         with pytest.raises(
             ValueError,
             match=("Surface index cannot be zero after first surface is created."),
         ):
-            lens1.add_surface(index=0, thickness=be.inf, material="Air")
+            lens1.surfaces.add(index=0, thickness=be.inf, material="Air")

@@ -87,6 +87,19 @@ class SurfaceGroup:
     def surfaces(self):
         return tuple(item for item in self._surfaces)
 
+    def __getitem__(self, index):
+        return self._surfaces[index]
+
+    def __iter__(self):
+        return iter(self._surfaces)
+
+    def __len__(self):
+        return len(self._surfaces)
+
+    def index(self, value):
+        """Return the first index of the specified surface."""
+        return self._surfaces.index(value)
+
     def clear(self):
         """Clears the list of surfaces."""
         self._surfaces = []
@@ -243,7 +256,7 @@ class SurfaceGroup:
             surface.trace(rays)
         return rays
 
-    def add_surface(
+    def add(
         self,
         new_surface=None,
         surface_type: SurfaceType = "standard",
@@ -323,7 +336,7 @@ class SurfaceGroup:
             for idx, surface in enumerate(self._surfaces):
                 surface.is_stop = idx == index
 
-    def remove_surface(self, index):
+    def remove(self, index):
         """Remove a surface from the list of surfaces.
 
         Cannot remove the object surface (index 0).

@@ -52,7 +52,7 @@ class IncoherentIrradiance(BaseAnalysis):
          Convenience selectors that work exactly like those in
          `SpotDiagram` - default is to analyse all of them.
      detector_surface : int
-         Index into `optic.surface_group.surfaces` that designates the detector
+         Index into `optic.surfaces` that designates the detector
          plane to analyse (default=`-1`->image surface).
      data : list[list[be.ndarray]]
          2-D irradiance arrays for every (field,wvl) - outer index is field,
@@ -135,7 +135,7 @@ class IncoherentIrradiance(BaseAnalysis):
         self.skip_trace = skip_trace
 
         # The detector surface must have a physical aperture
-        surf = optic.surface_group.surfaces[self.detector_surface]
+        surf = optic.surfaces[self.detector_surface]
         if surf.aperture is None:
             raise ValueError(
                 "Detector surface has no physical aperture - set one "
@@ -276,10 +276,10 @@ class IncoherentIrradiance(BaseAnalysis):
                 )
             else:
                 rays_to_trace = RealRays(**self._initial_ray_data)
-                self.optic.surface_group.trace(rays_to_trace)
+                self.optic.surfaces.trace(rays_to_trace)
                 rays_traced = rays_to_trace
 
-        surf = self.optic.surface_group.surfaces[self.detector_surface]
+        surf = self.optic.surfaces[self.detector_surface]
         if rays_traced is not None:
             x_g, y_g, z_g, power = (
                 rays_traced.x,

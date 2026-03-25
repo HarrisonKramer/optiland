@@ -10,14 +10,14 @@ from .utils import assert_allclose
 def test_paraxial_image_height_infinite_object(set_test_backend):
     """Test paraxial image height field type for an object at infinity."""
     optic = Optic()
-    optic.add_surface(index=0, thickness=be.inf)
-    optic.add_surface(material="N-BK7", radius=50, thickness=5, index=1, is_stop=True)
-    optic.add_surface(thickness=100, index=2)
-    optic.add_surface(index=3)
-    optic.set_field_type("paraxial_image_height")
-    optic.add_field(y=10)
+    optic.surfaces.add(index=0, thickness=be.inf)
+    optic.surfaces.add(material="N-BK7", radius=50, thickness=5, index=1, is_stop=True)
+    optic.surfaces.add(thickness=100, index=2)
+    optic.surfaces.add(index=3)
+    optic.fields.set_type("paraxial_image_height")
+    optic.fields.add(y=10)
     optic.set_aperture("EPD", 10)
-    optic.add_wavelength(0.58756, is_primary=True)
+    optic.wavelengths.add(0.58756, is_primary=True)
 
     # trace a chief ray
     y, u = optic.paraxial.chief_ray()
@@ -30,14 +30,14 @@ def test_paraxial_image_height_infinite_object(set_test_backend):
 def test_paraxial_image_height_finite_object(set_test_backend):
     """Test paraxial image height field type for a finite object."""
     optic = Optic()
-    optic.add_surface(index=0, thickness=50)
-    optic.add_surface(material="N-BK7", radius=50, thickness=5, index=1, is_stop=True)
-    optic.add_surface(thickness=100, index=2)
-    optic.add_surface(index=3)
-    optic.set_field_type("paraxial_image_height")
-    optic.add_field(y=10)
+    optic.surfaces.add(index=0, thickness=50)
+    optic.surfaces.add(material="N-BK7", radius=50, thickness=5, index=1, is_stop=True)
+    optic.surfaces.add(thickness=100, index=2)
+    optic.surfaces.add(index=3)
+    optic.fields.set_type("paraxial_image_height")
+    optic.fields.add(y=10)
     optic.set_aperture("EPD", 10)
-    optic.add_wavelength(0.58756, is_primary=True)
+    optic.wavelengths.add(0.58756, is_primary=True)
 
     # trace a chief ray
     y, u = optic.paraxial.chief_ray()
@@ -91,10 +91,10 @@ def test_paraxial_image_height_cooke_triplet(set_test_backend):
 
     # change the field type to paraxial image height and set the equivalent
     # field value
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
     optic.fields.fields = []
-    optic.add_field(y=0)
-    optic.add_field(y=paraxial_image_height[0])
+    optic.fields.add(y=0)
+    optic.fields.add(y=paraxial_image_height[0])
 
     # recompute the chief ray
     y_chief_pih, u_chief_pih = optic.paraxial.chief_ray()
@@ -111,15 +111,15 @@ def test_paraxial_get_ray_origins(set_test_backend):
     optic = objectives.CookeTriplet()
 
     # change the field type to paraxial image height
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
 
     # set the field value
     optic.fields.fields = []
-    optic.add_field(y=0)
-    optic.add_field(y=20.0)
+    optic.fields.add(y=0)
+    optic.fields.add(y=20.0)
 
     # get the ray origins
-    origins = optic.field_definition.get_ray_origins(
+    origins = optic.fields.field_definition.get_ray_origins(
         optic,
         Hx=0,
         Hy=1,
@@ -139,7 +139,7 @@ def test_paraxial_get_ray_origins(set_test_backend):
     optic.object_surface.geometry.cs.z = be.array([-555.0])
 
     # get the ray origins
-    origins = optic.field_definition.get_ray_origins(
+    origins = optic.fields.field_definition.get_ray_origins(
         optic,
         Hx=0,
         Hy=1,
@@ -161,15 +161,15 @@ def test_get_paraxial_object_position(set_test_backend):
     optic = objectives.CookeTriplet()
 
     # change the field type to paraxial image height
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
 
     # set the field value
     optic.fields.fields = []
-    optic.add_field(y=0)
-    optic.add_field(y=20.0)
+    optic.fields.add(y=0)
+    optic.fields.add(y=20.0)
 
     # get the paraxial object position
-    obj_pos = optic.field_definition.get_paraxial_object_position(
+    obj_pos = optic.fields.field_definition.get_paraxial_object_position(
         optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL()
     )
 
@@ -182,7 +182,7 @@ def test_get_paraxial_object_position(set_test_backend):
     optic.object_surface.geometry.cs.z = be.array([-555.0])
 
     # get the paraxial object position
-    obj_pos = optic.field_definition.get_paraxial_object_position(
+    obj_pos = optic.fields.field_definition.get_paraxial_object_position(
         optic, Hy=1, y1=0.5, EPL=optic.paraxial.EPL()
     )
 
@@ -198,15 +198,15 @@ def test_get_starting_z_offset(set_test_backend):
     optic = objectives.CookeTriplet()
 
     # change the field type to paraxial image height
-    optic.set_field_type("paraxial_image_height")
+    optic.fields.set_type("paraxial_image_height")
 
     # set the field value
     optic.fields.fields = []
-    optic.add_field(y=0)
-    optic.add_field(y=20.0)
+    optic.fields.add(y=0)
+    optic.fields.add(y=20.0)
 
     # get the starting z offset
-    z_offset = optic.field_definition._get_starting_z_offset(optic)
+    z_offset = optic.fields.field_definition._get_starting_z_offset(optic)
 
     # check that the z offset is correct
     assert_allclose(z_offset, optic.paraxial.EPD())

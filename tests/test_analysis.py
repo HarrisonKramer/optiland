@@ -37,35 +37,33 @@ def telescope_objective():
 def triplet_four_fields():
     lens = Optic()
 
-    lens.surface_group.surfaces = []
-
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
-    lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+    lens.surfaces.add(index=2, radius=-435.76044, thickness=6.00755)
+    lens.surfaces.add(
         index=3,
         radius=-22.21328,
         thickness=0.99997,
         material=("F2", "schott"),
     )
-    lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
-    lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
-    lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
-    lens.add_surface(index=7)
+    lens.surfaces.add(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
+    lens.surfaces.add(index=5, radius=79.68360, thickness=2.95208, material="SK16")
+    lens.surfaces.add(index=6, radius=-18.39533, thickness=42.20778)
+    lens.surfaces.add(index=7)
 
     lens.set_aperture(aperture_type="EPD", value=10)
 
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=10)
-    lens.add_field(y=15)
-    lens.add_field(y=20)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=10)
+    lens.fields.add(y=15)
+    lens.fields.add(y=20)
 
-    lens.add_wavelength(value=0.48)
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_wavelength(value=0.65)
+    lens.wavelengths.add(value=0.48)
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.wavelengths.add(value=0.65)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
     return lens
 
 
@@ -817,8 +815,8 @@ def test_generate_field_data_local(set_test_backend, cooke_triplet):
     plot_x = data.x
     plot_y = data.y
     # intensity = data.intensity # if needed for future assertions
-    global_x = spot.optic.surface_group.x[-1, :]
-    global_y = spot.optic.surface_group.y[-1, :]
+    global_x = spot.optic.surfaces.x[-1, :]
+    global_y = spot.optic.surfaces.y[-1, :]
     assert_allclose(plot_x, global_x)
     assert_allclose(plot_y, global_y)
 
@@ -841,8 +839,8 @@ def test_generate_field_data_global(set_test_backend, cooke_triplet):
     plot_x = data.x
     plot_y = data.y
     # intensity = data.intensity # if needed for future assertions
-    global_x = spot.optic.surface_group.x[-1, :]
-    global_y = spot.optic.surface_group.y[-1, :]
+    global_x = spot.optic.surfaces.x[-1, :]
+    global_y = spot.optic.surfaces.y[-1, :]
     assert_allclose(plot_x, global_x)
     assert_allclose(plot_y, global_y)
 
@@ -852,17 +850,17 @@ def test_system_irradiance_v1():
     class TestSystemIrradianceV1(Optic):
         def __init__(self):
             super().__init__()
-            self.add_surface(index=0, thickness=be.inf)
-            self.add_surface(index=1, thickness=0, is_stop=True)
-            self.add_surface(index=2, thickness=10)
-            self.add_surface(index=3)  # image
+            self.surfaces.add(index=0, thickness=be.inf)
+            self.surfaces.add(index=1, thickness=0, is_stop=True)
+            self.surfaces.add(index=2, thickness=10)
+            self.surfaces.add(index=3)  # image
             detector_size = RectangularAperture(
                 x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
             )
-            self.surface_group.surfaces[-1].aperture = detector_size
-            self.add_wavelength(0.55)
-            self.set_field_type("angle")
-            self.add_field(y=0)
+            self.surfaces[-1].aperture = detector_size
+            self.wavelengths.add(0.55)
+            self.fields.set_type("angle")
+            self.fields.add(y=0)
             self.set_aperture("EPD", 5.0)
 
     return TestSystemIrradianceV1()
@@ -873,9 +871,9 @@ def perfect_mirror_system():
     class PerfectMirror(Optic):
         def __init__(self):
             super().__init__()
-            self.add_surface(index=0, thickness=be.inf)
-            self.add_surface(index=1, thickness=50)
-            self.add_surface(
+            self.surfaces.add(index=0, thickness=be.inf)
+            self.surfaces.add(index=1, thickness=50)
+            self.surfaces.add(
                 index=2,
                 thickness=-25,
                 radius=-50,
@@ -883,14 +881,14 @@ def perfect_mirror_system():
                 material="mirror",
                 is_stop=True,
             )
-            self.add_surface(index=3)  # image
+            self.surfaces.add(index=3)  # image
             detector_size = RectangularAperture(
                 x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
             )
-            self.surface_group.surfaces[-1].aperture = detector_size
-            self.add_wavelength(0.55)
-            self.set_field_type("angle")
-            self.add_field(y=0)
+            self.surfaces[-1].aperture = detector_size
+            self.wavelengths.add(0.55)
+            self.fields.set_type("angle")
+            self.fields.add(y=0)
             self.set_aperture("EPD", 5.0)
 
     return PerfectMirror()
@@ -1185,13 +1183,13 @@ class TestIncoherentIrradiance:
         class TestSystemNoAperture(Optic):
             def __init__(self):
                 super().__init__()
-                self.add_surface(index=0, thickness=be.inf)
-                self.add_surface(index=1, thickness=0, is_stop=True)
-                self.add_surface(index=2, thickness=10)
-                self.add_surface(index=3)  # Image plane, no aperture
-                self.add_wavelength(0.55)
-                self.set_field_type("angle")
-                self.add_field(y=0)
+                self.surfaces.add(index=0, thickness=be.inf)
+                self.surfaces.add(index=1, thickness=0, is_stop=True)
+                self.surfaces.add(index=2, thickness=10)
+                self.surfaces.add(index=3)  # Image plane, no aperture
+                self.wavelengths.add(0.55)
+                self.fields.set_type("angle")
+                self.fields.add(y=0)
                 self.set_aperture("EPD", 5.0)
 
         optic_no_ap = TestSystemNoAperture()
@@ -1413,19 +1411,19 @@ class TestIncoherentIrradiance:
         # affect the final irradiance.
         radius_tensor = be.array(20.0)
         radius_tensor.requires_grad = True
-        optic_sys.add_surface(index=0, thickness=be.inf)
-        optic_sys.add_surface(
+        optic_sys.surfaces.add(index=0, thickness=be.inf)
+        optic_sys.surfaces.add(
             index=1, thickness=7, radius=radius_tensor, is_stop=True, material="bk7"
         )
-        optic_sys.add_surface(index=2, thickness=10)
-        optic_sys.add_surface(index=3)
+        optic_sys.surfaces.add(index=2, thickness=10)
+        optic_sys.surfaces.add(index=3)
         detector_size = RectangularAperture(
             x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
         )
-        optic_sys.surface_group.surfaces[-1].aperture = detector_size
-        optic_sys.add_wavelength(0.55)
-        optic_sys.set_field_type("angle")
-        optic_sys.add_field(y=0)
+        optic_sys.surfaces[-1].aperture = detector_size
+        optic_sys.wavelengths.add(0.55)
+        optic_sys.fields.set_type("angle")
+        optic_sys.fields.add(y=0)
         optic_sys.set_aperture("EPD", 5.0)
 
         # Perform analysis
@@ -1438,7 +1436,7 @@ class TestIncoherentIrradiance:
         loss = be.sum(irr_map**2)
         loss.backward()
 
-        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
+        grad = optic_sys.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
 
@@ -1806,23 +1804,23 @@ def system_1():
 
             self.set_aperture(aperture_type="objectNA", value=0.095)
 
-            self.set_field_type(field_type="angle")
-            self.add_field(y=0)
+            self.fields.set_type(field_type="angle")
+            self.fields.add(y=0)
 
-            self.add_wavelength(value=1.55, is_primary=True)
+            self.wavelengths.add(value=1.55, is_primary=True)
 
             H_K3 = Material("H-K3", reference="cdgm")
 
             apt_detector = RectangularAperture(-30, 30, -30, 30)
 
-            self.add_surface(index=0, thickness=0)
-            self.add_surface(index=1, thickness=0.01)
-            self.add_surface(index=2, thickness=129.6554)
-            self.add_surface(
+            self.surfaces.add(index=0, thickness=0)
+            self.surfaces.add(index=1, thickness=0.01)
+            self.surfaces.add(index=2, thickness=129.6554)
+            self.surfaces.add(
                 index=3, thickness=4, radius=131.9743, is_stop=True, material=H_K3
             )
-            self.add_surface(index=4, thickness=10.0, radius=-131.9743)
-            self.add_surface(index=5, aperture=apt_detector)
+            self.surfaces.add(index=4, thickness=10.0, radius=-131.9743)
+            self.surfaces.add(index=5, aperture=apt_detector)
 
     return TestSystemForIntensity()
 
@@ -1950,19 +1948,19 @@ class TestRadiantIntensity:
 
         radius_tensor = be.array(20.0)
         radius_tensor.requires_grad = True
-        optic_sys.add_surface(index=0, thickness=be.inf)
-        optic_sys.add_surface(
+        optic_sys.surfaces.add(index=0, thickness=be.inf)
+        optic_sys.surfaces.add(
             index=1, thickness=7, radius=radius_tensor, is_stop=True, material="bk7"
         )
-        optic_sys.add_surface(index=2, thickness=10)
-        optic_sys.add_surface(index=3)
+        optic_sys.surfaces.add(index=2, thickness=10)
+        optic_sys.surfaces.add(index=3)
         detector_size = RectangularAperture(
             x_max=2.5, x_min=-2.5, y_max=2.5, y_min=-2.5
         )
-        optic_sys.surface_group.surfaces[-1].aperture = detector_size
-        optic_sys.add_wavelength(0.55)
-        optic_sys.set_field_type("angle")
-        optic_sys.add_field(y=0)
+        optic_sys.surfaces[-1].aperture = detector_size
+        optic_sys.wavelengths.add(0.55)
+        optic_sys.fields.set_type("angle")
+        optic_sys.fields.add(y=0)
         optic_sys.set_aperture("EPD", 5.0)
 
         user_rays = _create_square_grid_rays(10, -2.5, 2.5)
@@ -1984,7 +1982,7 @@ class TestRadiantIntensity:
         loss = be.sum(int_map**2)
         loss.backward()
 
-        grad = optic_sys.surface_group.surfaces[1].geometry.radius.grad
+        grad = optic_sys.surfaces[1].geometry.radius.grad
         assert grad is not None
         assert be.to_numpy(grad) != 0
 

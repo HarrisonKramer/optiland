@@ -42,7 +42,7 @@ def polarized_optic(set_test_backend):
     state = PolarizationState(
         is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
     )
-    optic.set_polarization(state)
+    optic.updater.set_polarization(state)
     return optic
 
 
@@ -53,7 +53,7 @@ def unpolarized_optic(set_test_backend):
 
     optic = CookeTriplet()
     state = PolarizationState(is_polarized=False)
-    optic.set_polarization(state)
+    optic.updater.set_polarization(state)
     return optic
 
 
@@ -80,7 +80,7 @@ def test_factory_returns_vectorial_when_polarized(generic_optic, set_test_backen
     state = PolarizationState(
         is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
     )
-    generic_optic.set_polarization(state)
+    generic_optic.updater.set_polarization(state)
     psf = HuygensPSF(
         generic_optic,
         field=(0.0, 0.0),
@@ -96,7 +96,7 @@ def test_factory_returns_vectorial_when_unpolarized_state(
 ):
     """An unpolarized PolarizationState should still dispatch to VectorialHuygensPSF."""
     state = PolarizationState(is_polarized=False)
-    generic_optic.set_polarization(state)
+    generic_optic.updater.set_polarization(state)
     psf = HuygensPSF(
         generic_optic,
         field=(0.0, 0.0),
@@ -181,7 +181,7 @@ def test_vectorial_strehl_matches_scalar_on_axis(generic_optic, set_test_backend
     state = PolarizationState(
         is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0
     )
-    generic_optic.set_polarization(state)
+    generic_optic.updater.set_polarization(state)
     psf_vectorial = VectorialHuygensPSF(
         generic_optic,
         field=(0.0, 0.0),

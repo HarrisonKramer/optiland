@@ -511,7 +511,7 @@ def test_paraxial_init(set_test_backend):
     paraxial = Paraxial(optic)
 
     assert paraxial.optic == optic
-    assert paraxial.surfaces == optic.surface_group
+    assert paraxial.surfaces == optic.surfaces
 
 
 @pytest.mark.parametrize("optic_and_values", get_optic_data(), indirect=True)
@@ -613,30 +613,30 @@ def test_calculate_invariant(optic_and_values):
 def test_EPD_float_by_stop_size_finite(set_test_backend):
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
-    lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+    lens.surfaces.add(index=2, radius=-435.76044, thickness=6.00755)
+    lens.surfaces.add(
         index=3,
         radius=-22.21328,
         thickness=0.99997,
         material=("F2", "schott"),
     )
-    lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
-    lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
-    lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
-    lens.add_surface(index=7)
+    lens.surfaces.add(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
+    lens.surfaces.add(index=5, radius=79.68360, thickness=2.95208, material="SK16")
+    lens.surfaces.add(index=6, radius=-18.39533, thickness=42.20778)
+    lens.surfaces.add(index=7)
 
     lens.set_aperture(aperture_type="float_by_stop_size", value=7.6)
 
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=14)
-    lens.add_field(y=20)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=14)
+    lens.fields.add(y=20)
 
-    lens.add_wavelength(value=0.48)
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_wavelength(value=0.65)
+    lens.wavelengths.add(value=0.48)
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.wavelengths.add(value=0.65)
 
     assert_allclose(lens.paraxial.EPD(), 9.997764563903155)
 
@@ -644,30 +644,30 @@ def test_EPD_float_by_stop_size_finite(set_test_backend):
 def test_EPD_float_by_stop_size_infinite(set_test_backend):
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=10_000)
-    lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
-    lens.add_surface(index=2, radius=-435.76044, thickness=6.00755)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=10_000)
+    lens.surfaces.add(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+    lens.surfaces.add(index=2, radius=-435.76044, thickness=6.00755)
+    lens.surfaces.add(
         index=3,
         radius=-22.21328,
         thickness=0.99997,
         material=("F2", "schott"),
     )
-    lens.add_surface(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
-    lens.add_surface(index=5, radius=79.68360, thickness=2.95208, material="SK16")
-    lens.add_surface(index=6, radius=-18.39533, thickness=42.20778)
-    lens.add_surface(index=7)
+    lens.surfaces.add(index=4, radius=20.29192, thickness=4.75041, is_stop=True)
+    lens.surfaces.add(index=5, radius=79.68360, thickness=2.95208, material="SK16")
+    lens.surfaces.add(index=6, radius=-18.39533, thickness=42.20778)
+    lens.surfaces.add(index=7)
 
     lens.set_aperture(aperture_type="float_by_stop_size", value=7.6)
 
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=14)
-    lens.add_field(y=20)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=14)
+    lens.fields.add(y=20)
 
-    lens.add_wavelength(value=0.48)
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_wavelength(value=0.65)
+    lens.wavelengths.add(value=0.48)
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.wavelengths.add(value=0.65)
 
     assert_allclose(lens.paraxial.EPD(), 9.997764563903152)
 
@@ -676,13 +676,13 @@ def test_negative_lens():
     """A simple test to ensure negative paraxial lenses are handled correctly"""
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(
         index=1, surface_type="paraxial", f=-50.0, thickness=0.0, is_stop=True
     )
-    lens.add_surface(index=2)
+    lens.surfaces.add(index=2)
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
-    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.wavelengths.add(value=0.55, is_primary=True)
     assert_allclose(
         [
             lens.paraxial.f1(),
@@ -803,19 +803,19 @@ class CompoundLens(Lens):
 @pytest.mark.parametrize("d", [0.0, 1.0, 2.0, 5.0, 10.0, 100.0])
 def test_thick_lens(n1, n2, n3, r1, r2, d, set_test_backend):
     lens = Optic()
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n1)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=1, radius=r1, thickness=d, material=IdealMaterial(n2), is_stop=True
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=2, radius=r2, thickness=0.0, material=IdealMaterial(n3), is_stop=False
     )
-    lens.add_surface(index=3, material=IdealMaterial(n3))
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_field(y=0)
-    lens.set_field_type(field_type="angle")
+    lens.surfaces.add(index=3, material=IdealMaterial(n3))
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.fields.add(y=0)
+    lens.fields.set_type(field_type="angle")
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
     px = lens.paraxial
     tl = ThickLens(n1, n2, n3, r1, r2, d)
@@ -834,10 +834,10 @@ def test_thick_lens(n1, n2, n3, r1, r2, d, set_test_backend):
 def test_compound_lens(n1, n2, n3, f1, f2, d, set_test_backend):
     cl = CompoundLens(n1, n2, n3, f1, f2, d)
     lens = Optic()
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n1)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=1,
         surface_type="paraxial",
         f=f1 / n1,
@@ -845,7 +845,7 @@ def test_compound_lens(n1, n2, n3, f1, f2, d, set_test_backend):
         material=IdealMaterial(n2),
         is_stop=True,
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=2,
         surface_type="paraxial",
         f=f2 / n3,
@@ -853,10 +853,10 @@ def test_compound_lens(n1, n2, n3, f1, f2, d, set_test_backend):
         material=IdealMaterial(n3),
         is_stop=False,
     )
-    lens.add_surface(index=3, material=IdealMaterial(n3))
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_field(y=0)
-    lens.set_field_type(field_type="angle")
+    lens.surfaces.add(index=3, material=IdealMaterial(n3))
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.fields.add(y=0)
+    lens.fields.set_type(field_type="angle")
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
     px = lens.paraxial
     assert_allclose(

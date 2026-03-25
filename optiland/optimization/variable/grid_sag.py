@@ -28,7 +28,7 @@ class GridSagVariable(VariableBehavior):
             be.ndarray: The current value of the sag grid.
 
         """
-        return self._surfaces.surfaces[self.surface_number].geometry.sag_grid
+        return self._surfaces[self.surface_number].geometry.sag_grid
 
     def update_value(self, new_value):
         """Updates the value of the sag grid.
@@ -37,7 +37,7 @@ class GridSagVariable(VariableBehavior):
             new_value (be.ndarray): The new value of the sag grid.
 
         """
-        self._surfaces.surfaces[self.surface_number].geometry.sag_grid = new_value
+        self._surfaces[self.surface_number].geometry.sag_grid = new_value
 
     def __str__(self):
         """Return a string representation of the variable.

@@ -13,10 +13,10 @@ def flat_transmission_grating():
     """flat transmission grating with 3 fields and 1 wavelength"""
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(index=1, radius=be.inf, thickness=10)
-    lens.add_surface(index=2, radius=be.inf, thickness=5, material="N-BK7")
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(index=1, radius=be.inf, thickness=10)
+    lens.surfaces.add(index=2, radius=be.inf, thickness=5, material="N-BK7")
+    lens.surfaces.add(
         index=3,
         radius=be.inf,
         thickness=30,
@@ -26,21 +26,21 @@ def flat_transmission_grating():
         groove_orientation_angle=0.0,
         is_stop=True,
     )
-    lens.add_surface(index=4)
+    lens.surfaces.add(index=4)
 
     # add aperture
     lens.set_aperture(aperture_type="EPD", value=15)
 
     # add field
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=10)
-    lens.add_field(y=0, x=10)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=10)
+    lens.fields.add(y=0, x=10)
 
     # add wavelength
-    lens.add_wavelength(value=0.587, is_primary=True)
+    lens.wavelengths.add(value=0.587, is_primary=True)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
 
     return lens
 
@@ -50,10 +50,10 @@ def curved_transmission_grating():
     """curved transmission grating with 3 fields and 1 wavelength"""
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(index=1, radius=be.inf, thickness=10)
-    lens.add_surface(index=2, radius=be.inf, thickness=5, material="N-BK7")
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(index=1, radius=be.inf, thickness=10)
+    lens.surfaces.add(index=2, radius=be.inf, thickness=5, material="N-BK7")
+    lens.surfaces.add(
         index=3,
         radius=50.0,
         thickness=30,
@@ -64,21 +64,21 @@ def curved_transmission_grating():
         groove_orientation_angle=0.0,
         is_stop=True,
     )
-    lens.add_surface(index=4)
+    lens.surfaces.add(index=4)
 
     # add aperture
     lens.set_aperture(aperture_type="EPD", value=15)
 
     # add field
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=10)
-    lens.add_field(y=0, x=10)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=10)
+    lens.fields.add(y=0, x=10)
 
     # add wavelength
-    lens.add_wavelength(value=0.587, is_primary=True)
+    lens.wavelengths.add(value=0.587, is_primary=True)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
 
     return lens
 
@@ -88,8 +88,8 @@ def curved_reflective_grating():
     """curved reflective grating with 3 fields and 1 wavelength"""
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(
         index=1,
         radius=70,
         thickness=-30,
@@ -100,21 +100,21 @@ def curved_reflective_grating():
         grating_order=1,
         groove_orientation_angle=0.0,
     )
-    lens.add_surface(index=2)
+    lens.surfaces.add(index=2)
 
     # add aperture
     lens.set_aperture(aperture_type="EPD", value=15)
 
     # add field
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=10)
-    lens.add_field(y=0, x=10)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=10)
+    lens.fields.add(y=0, x=10)
 
     # add wavelength
-    lens.add_wavelength(value=0.587, is_primary=True)
+    lens.wavelengths.add(value=0.587, is_primary=True)
 
-    lens.update_paraxial()
+    lens.updater.update_paraxial()
 
     return lens
 
@@ -197,18 +197,18 @@ def test_paraxial_flat_grating_transmission(
     Hy = 0.0
     Py = 0.0
     lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
-    u = lens.surface_group.u[-1].item()
-    y = lens.surface_group.y[-1].item()
+    u = lens.surfaces.u[-1].item()
+    y = lens.surfaces.y[-1].item()
     assert_allclose([u, y], [0.1174, 3.522])
     Hy = 0.0
     Py = 1.0
     lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
-    u = lens.surface_group.u[-1].item()
-    y = lens.surface_group.y[-1].item()
+    u = lens.surfaces.u[-1].item()
+    y = lens.surfaces.y[-1].item()
     assert_allclose([u, y], [0.1174, 11.022])
     Hy = 0.8
     Py = 0.8
     lens.paraxial.trace(Hy=Hy, Py=Py, wavelength=wv)
-    u = lens.surface_group.u[-1].item()
-    y = lens.surface_group.y[-1].item()
+    u = lens.surfaces.u[-1].item()
+    y = lens.surfaces.y[-1].item()
     assert_allclose([u, y], [0.25794083, 13.73822504])

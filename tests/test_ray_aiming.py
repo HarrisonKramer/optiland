@@ -26,15 +26,15 @@ def test_iterative_aimer_infinite(set_test_backend):
 
     x, y, z, L, M, N = aimer.aim_rays((Hx, Hy), wavelength, (Px, Py))
 
-    stop_idx = optic.surface_group.stop_index
+    stop_idx = optic.surfaces.stop_index
 
     from optiland.rays import RealRays
 
     rays = RealRays(x, y, z, L, M, N, intensity=1.0, wavelength=wavelength)
     for i in range(1, stop_idx + 1):
-        optic.surface_group.surfaces[i].trace(rays)
+        optic.surfaces[i].trace(rays)
 
-    stop_surf = optic.surface_group.surfaces[stop_idx]
+    stop_surf = optic.surfaces[stop_idx]
     assert not be.any(be.isnan(x))
 
 
@@ -102,7 +102,7 @@ def test_integration_via_optic(set_test_backend):
     """Test setting the ray aimer via the Optic class."""
     optic = ReverseTelephoto()
 
-    optic.set_ray_aiming("iterative", max_iter=25, tol=1e-5)
+    optic.ray_tracer.set_aiming("iterative", max_iter=25, tol=1e-5)
     ray_gen = optic.ray_tracer.ray_generator
     optic.trace(0, 0, 0.55, num_rays=1)
 
@@ -111,7 +111,7 @@ def test_integration_via_optic(set_test_backend):
     assert aimer.max_iter == 25
     assert aimer.tol == 1e-5
 
-    optic.set_ray_aiming("robust", max_iter=15, tol=1e-6, scale_fields=True)
+    optic.ray_tracer.set_aiming("robust", max_iter=15, tol=1e-6, scale_fields=True)
     optic.trace(0, 0, 0.55, num_rays=1)
 
     aimer = ray_gen.aimer
@@ -124,7 +124,7 @@ def test_integration_via_optic(set_test_backend):
 def test_robust_caching_regression(set_test_backend):
     """Regression test for cached RobustRayAimer accepting initial_guess."""
     optic = ReverseTelephoto()
-    optic.set_ray_aiming("robust", cache=True)
+    optic.ray_tracer.set_aiming("robust", cache=True)
 
     # 1. First trace (populates cache)
     optic.trace(0, 0, 0.55, num_rays=1)
@@ -132,7 +132,7 @@ def test_robust_caching_regression(set_test_backend):
     # 2. Perturb system to force reuse of result as initial_guess
     # Modify a radius slightly. We can just set a new value directly.
     # This ensures the system hash changes.
-    optic.set_radius(100.0, 1)
+    optic.updater.set_radius(100.0, 1)
 
     # 3. Second trace (should call robust aimer with initial_guess)
     optic.trace(0, 0, 0.55, num_rays=1)
@@ -148,20 +148,20 @@ def test_robust_aimer_infinite_object_90_degree_field(set_test_backend):
     # We'll use a simplified version of the user's lens to avoid clutter,
     # but ensure it has infinite object and large field.
 
-    optic.add_surface(index=0, radius=float("inf"), thickness=float("inf"))
+    optic.surfaces.add(index=0, radius=float("inf"), thickness=float("inf"))
     # A dummy surface to aim at
-    optic.add_surface(
+    optic.surfaces.add(
         index=1, radius=100.0, thickness=10.0, material="air", is_stop=True
     )
-    optic.add_surface(index=2)
+    optic.surfaces.add(index=2)
 
     optic.set_aperture("EPD", 1.0)
-    optic.set_field_type("angle")
-    optic.add_field(y=0)
-    optic.add_field(y=90)
-    optic.add_wavelength(0.55, is_primary=True)
+    optic.fields.set_type("angle")
+    optic.fields.add(y=0)
+    optic.fields.add(y=90)
+    optic.wavelengths.add(0.55, is_primary=True)
 
-    optic.set_ray_aiming("robust")
+    optic.ray_tracer.set_aiming("robust")
 
     from optiland.rays.ray_generator import RayGenerator
 

@@ -56,7 +56,7 @@ class Paraxial:
     @property
     def surfaces(self) -> SurfaceGroup:
         """SurfaceGroup: the surface group of the optical system."""
-        return self.optic.surface_group
+        return self.optic.surfaces
 
     def f1(self) -> ScalarOrArray:
         """Calculate the front focal length (f1).
@@ -296,7 +296,7 @@ class Paraxial:
 
         """
         _, ua = self.marginal_ray()
-        n = self.optic.n()
+        n = self.optic.surfaces.n(self.optic.primary_wavelength)
         mag = n[0] * ua[0] / (n[-1] * ua[-1])
         return mag[0]
 
@@ -309,7 +309,7 @@ class Paraxial:
         """
         ya, ua = self.marginal_ray()
         yb, ub = self.chief_ray()
-        n = self.optic.n()
+        n = self.optic.surfaces.n(self.optic.primary_wavelength)
         inv = yb[1] * n[1] * ua[1] - ya[1] * n[1] * ub[1]
         return inv[0]
 
@@ -356,8 +356,8 @@ class Paraxial:
                 - u_chief: Slopes of the chief ray after each surface.
 
         """
-        stop_index = self.optic.surface_group.stop_index
-        pos = self.optic.surface_group.positions
+        stop_index = self.optic.surfaces.stop_index
+        pos = self.optic.surfaces.positions
         wavelength = self.optic.primary_wavelength
         num_surf = self.surfaces.num_surfaces
         y0 = 0.0
@@ -379,16 +379,16 @@ class Paraxial:
         u_obj_unit = u_rev_unit[-1]
 
         # Scale based on field definition
-        if self.optic.field_definition is None:
+        if self.optic.fields.field_definition is None:
             # TODO: make some nice error message
             raise ValueError()
 
-        scaling_factor = self.optic.field_definition.scale_chief_ray_for_field(
+        scaling_factor = self.optic.fields.field_definition.scale_chief_ray_for_field(
             self.optic, y_obj_unit, u_obj_unit, y_img_unit
         )
 
         # Determine initial ray parameters for final forward trace
-        if isinstance(self.optic.field_definition, ParaxialImageHeightField):
+        if isinstance(self.optic.fields.field_definition, ParaxialImageHeightField):
             y_obj_start = y_obj_unit * scaling_factor
         else:
             y_obj_start = -(y_obj_unit * scaling_factor)

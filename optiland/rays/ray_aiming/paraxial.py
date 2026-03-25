@@ -74,7 +74,7 @@ class ParaxialRayAimer(BaseRayAimer):
         vx = 1 - be.array(vxf)
         vy = 1 - be.array(vyf)
 
-        x0, y0, z0 = self.optic.field_definition.get_ray_origins(
+        x0, y0, z0 = self.optic.fields.field_definition.get_ray_origins(
             self.optic, Hx, Hy, Px, Py, vx, vy
         )
 
@@ -107,7 +107,7 @@ class ParaxialRayAimer(BaseRayAimer):
 
     def _check_telecentric_compatibility(self) -> None:
         """Video compatibility checks for telecentric object space."""
-        if isinstance(self.optic.field_definition, AngleField):
+        if isinstance(self.optic.fields.field_definition, AngleField):
             raise ValueError(
                 'Field type cannot be "angle" for telecentric object space.'
             )

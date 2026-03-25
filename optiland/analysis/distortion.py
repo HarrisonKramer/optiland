@@ -119,7 +119,7 @@ class Distortion(BaseAnalysis):
         data = []
         for wavelength in self.wavelengths:
             self.optic.trace_generic(Hx=Hx, Hy=Hy, Px=0, Py=0, wavelength=wavelength)
-            yr = self.optic.surface_group.y[-1, :]
+            yr = self.optic.surfaces.y[-1, :]
 
             const = yr[0] / (be.tan(1e-10 * be.radians(self.optic.fields.max_field)))
 

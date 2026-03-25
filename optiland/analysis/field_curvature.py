@@ -147,17 +147,17 @@ class FieldCurvature(BaseAnalysis):
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 
-        M1 = self.optic.surface_group.M[-1, ::2]
-        N1 = self.optic.surface_group.N[-1, ::2]
+        M1 = self.optic.surfaces.M[-1, ::2]
+        N1 = self.optic.surfaces.N[-1, ::2]
 
-        M2 = self.optic.surface_group.M[-1, 1::2]
-        N2 = self.optic.surface_group.N[-1, 1::2]
+        M2 = self.optic.surfaces.M[-1, 1::2]
+        N2 = self.optic.surfaces.N[-1, 1::2]
 
-        y01 = self.optic.surface_group.y[-1, ::2]
-        z01 = self.optic.surface_group.z[-1, ::2]
+        y01 = self.optic.surfaces.y[-1, ::2]
+        z01 = self.optic.surfaces.z[-1, ::2]
 
-        y02 = self.optic.surface_group.y[-1, 1::2]
-        z02 = self.optic.surface_group.z[-1, 1::2]
+        y02 = self.optic.surfaces.y[-1, 1::2]
+        z02 = self.optic.surfaces.z[-1, 1::2]
 
         t1 = (M2 * z01 - M2 * z02 - N2 * y01 + N2 * y02) / (M1 * N2 - M2 * N1)
 
@@ -183,17 +183,17 @@ class FieldCurvature(BaseAnalysis):
 
         self.optic.trace_generic(Hx, Hy, Px, Py, wavelength=wavelength)
 
-        L1 = self.optic.surface_group.L[-1, ::2]
-        N1 = self.optic.surface_group.N[-1, ::2]
+        L1 = self.optic.surfaces.L[-1, ::2]
+        N1 = self.optic.surfaces.N[-1, ::2]
 
-        L2 = self.optic.surface_group.L[-1, 1::2]
-        N2 = self.optic.surface_group.N[-1, 1::2]
+        L2 = self.optic.surfaces.L[-1, 1::2]
+        N2 = self.optic.surfaces.N[-1, 1::2]
 
-        x01 = self.optic.surface_group.x[-1, ::2]
-        z01 = self.optic.surface_group.z[-1, ::2]
+        x01 = self.optic.surfaces.x[-1, ::2]
+        z01 = self.optic.surfaces.z[-1, ::2]
 
-        x02 = self.optic.surface_group.x[-1, 1::2]
-        z02 = self.optic.surface_group.z[-1, 1::2]
+        x02 = self.optic.surfaces.x[-1, 1::2]
+        z02 = self.optic.surfaces.z[-1, 1::2]
 
         t2 = (L2 * z01 - L2 * z02 - N2 * x01 + N2 * x02) / (L1 * N2 - L2 * N1)
 

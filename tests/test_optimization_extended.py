@@ -27,10 +27,7 @@ def test_nurbs_points_variable(set_test_backend):
     else:
         mock_surf.geometry.P = np.zeros(shape, dtype=float)
 
-    mock_optic.surface_group.surfaces = [mock_surf]
-    mock_optic.surfaces = [mock_surf]  # Usually accessible via wrapper or property
-    # VariableBehavior accesses self._surfaces.surfaces[self.surface_number]
-    # self._surfaces is usually self.optic.surface_group
+    mock_optic.surfaces = [mock_surf]
 
     var = NurbsPointsVariable(mock_optic, 0, (0, 1, 1))
 
@@ -65,7 +62,7 @@ def test_nurbs_weights_variable(set_test_backend):
     else:
         mock_surf.geometry.W = np.zeros(shape, dtype=float)
 
-    mock_optic.surface_group.surfaces = [mock_surf]
+    mock_optic.surfaces = [mock_surf]
 
     var = NurbsWeightsVariable(mock_optic, 0, (1, 1))
 

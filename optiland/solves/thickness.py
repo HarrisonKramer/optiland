@@ -81,7 +81,7 @@ class ThicknessSolve(BaseSolve, ABC):
         offset = (self.height - y[self.surface_idx]) / u_incident
 
         # Shift current surface and all subsequent surfaces
-        num_surfaces_in_group = len(self.optic.surface_group.surfaces)
+        num_surfaces_in_group = len(self.optic.surfaces)
         if not (0 <= self.surface_idx < num_surfaces_in_group):
             raise IndexError(
                 f"surface_idx {self.surface_idx} is out of bounds for surface group "
@@ -89,7 +89,7 @@ class ThicknessSolve(BaseSolve, ABC):
             )
 
         for i in range(self.surface_idx, num_surfaces_in_group):
-            surface = self.optic.surface_group.surfaces[i]
+            surface = self.optic.surfaces[i]
             current_z = surface.geometry.cs.z
             new_z = current_z + offset
             surface.geometry.cs.z = new_z

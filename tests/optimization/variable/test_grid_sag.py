@@ -26,7 +26,7 @@ def grid_sag_optic():
         previous_surface=None,
         material_post=IdealMaterial(1.5),
     )
-    optic.add_surface(new_surface=surface, index=0)
+    optic.surfaces.add(new_surface=surface, index=0)
     return optic
 
 
@@ -43,7 +43,7 @@ def test_grid_sag_variable_update_value(grid_sag_optic):
     new_sag = be.asarray([[1, 1, 1], [1, 0, 1], [1, 1, 1]])
     variable.update_value(new_sag)
     assert be.allclose(
-        grid_sag_optic.surface_group.surfaces[0].geometry.sag_grid, new_sag
+        grid_sag_optic.surfaces[0].geometry.sag_grid, new_sag
     )
 
 

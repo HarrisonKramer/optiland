@@ -13,16 +13,16 @@ class TestRayAimingEdgeCases(unittest.TestCase):
     def setUp(self):
         be.set_backend("numpy")
         self.optic = Optic()
-        self.optic.add_surface(index=0, thickness=100)
-        self.optic.add_surface(
+        self.optic.surfaces.add(index=0, thickness=100)
+        self.optic.surfaces.add(
             index=1, radius=20, thickness=10, material=IdealMaterial(n=1.5)
         )
-        self.optic.add_surface(index=2, is_stop=True, aperture=10.0, thickness=10)
-        self.optic.add_surface(index=3)
-        self.optic.set_field_type("angle")
-        self.optic.add_field(y=0)
+        self.optic.surfaces.add(index=2, is_stop=True, aperture=10.0, thickness=10)
+        self.optic.surfaces.add(index=3)
+        self.optic.fields.set_type("angle")
+        self.optic.fields.add(y=0)
         self.optic.set_aperture("EPD", 10.0)
-        self.optic.add_wavelength(0.55)
+        self.optic.wavelengths.add(0.55)
 
     def test_zero_aperture(self):
         """Test handling of zero or near-zero aperture."""
@@ -40,10 +40,10 @@ class TestRayAimingEdgeCases(unittest.TestCase):
     def test_extreme_fields(self):
         """Test ray generation at extreme field angles."""
         self.optic.fields.fields.clear()
-        self.optic.add_field(y=85.0)  # 85 degrees!!
+        self.optic.fields.add(y=85.0)  # 85 degrees!!
 
         # Paraxial might fail or produce weird results, but robust/iterative should try
-        self.optic.set_ray_aiming("robust", fractions=[0.1, 0.5, 1.0])
+        self.optic.ray_tracer.set_aiming("robust", fractions=[0.1, 0.5, 1.0])
 
         from optiland.rays import RayGenerator
 
@@ -67,15 +67,15 @@ class TestRayAimingEdgeCases(unittest.TestCase):
 
     def test_config_reset(self):
         """Test resetting ray aiming to defaults."""
-        self.optic.set_ray_aiming("robust", max_iter=50)
-        self.assertEqual(self.optic.ray_aiming_config["mode"], "robust")
+        self.optic.ray_tracer.set_aiming("robust", max_iter=50)
+        self.assertEqual(self.optic.ray_tracer.ray_aiming_config["mode"], "robust")
 
         # Manually reset or use set_ray_aiming with default values?
         # Requirement said verify empty config resets?
         # But set_ray_aiming doesn't have default mode=None.
         # Let's verify we can switch back to paraxial.
-        self.optic.set_ray_aiming("paraxial")
-        self.assertEqual(self.optic.ray_aiming_config["mode"], "paraxial")
+        self.optic.ray_tracer.set_aiming("paraxial")
+        self.assertEqual(self.optic.ray_tracer.ray_aiming_config["mode"], "paraxial")
 
 
 if __name__ == "__main__":

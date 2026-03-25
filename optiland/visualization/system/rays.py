@@ -45,7 +45,7 @@ class Rays2D:
         self.z = None
         self.i = None
 
-        n = optic.surface_group.num_surfaces
+        n = optic.surfaces.num_surfaces
         self.r_extent = be.zeros(n)
 
     def plot(
@@ -122,10 +122,10 @@ class Rays2D:
 
     def _process_traced_rays(self):
         """Processes the traced rays and updates the surface extents."""
-        self.x = self.optic.surface_group.x
-        self.y = self.optic.surface_group.y
-        self.z = self.optic.surface_group.z
-        self.i = self.optic.surface_group.intensity
+        self.x = self.optic.surfaces.x
+        self.y = self.optic.surfaces.y
+        self.z = self.optic.surfaces.z
+        self.i = self.optic.surfaces.intensity
 
         # update surface extents
         self._update_surface_extents()
@@ -170,7 +170,7 @@ class Rays2D:
     def _update_surface_extents(self):
         """Updates the extents of the surfaces in the optic's surface group."""
         r_extent_new = be.copy(be.zeros_like(self.r_extent))
-        for i, surf in enumerate(self.optic.surface_group.surfaces):
+        for i, surf in enumerate(self.optic.surfaces):
             x_surf = self.x[i]
             y_surf = self.y[i]
             z_surf = self.z[i]
@@ -222,13 +222,13 @@ class Rays2D:
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
 
-            if hide_vignetted and np.any(ik == 0):
-                continue
-
-            # remove rays outside aperture
-            xk[ik == 0] = np.nan
-            zk[ik == 0] = np.nan
-            yk[ik == 0] = np.nan
+            if np.any(ik == 0):
+                if hide_vignetted:
+                    continue
+                first_zero_idx = np.where(ik == 0)[0][0]
+                xk[first_zero_idx + 1 :] = np.nan
+                yk[first_zero_idx + 1 :] = np.nan
+                zk[first_zero_idx + 1 :] = np.nan
 
             artist, ray_bundle = self._plot_single_line(
                 ax,
@@ -383,13 +383,13 @@ class Rays3D(Rays2D):
             zk = be.to_numpy(self.z[:, k])
             ik = be.to_numpy(self.i[:, k])
 
-            if hide_vignetted and np.any(ik == 0):
-                continue
-
-            # remove rays outside aperture
-            xk[ik == 0] = np.nan
-            zk[ik == 0] = np.nan
-            yk[ik == 0] = np.nan
+            if np.any(ik == 0):
+                if hide_vignetted:
+                    continue
+                first_zero_idx = np.where(ik == 0)[0][0]
+                xk[first_zero_idx + 1 :] = np.nan
+                yk[first_zero_idx + 1 :] = np.nan
+                zk[first_zero_idx + 1 :] = np.nan
 
             self._plot_single_line(
                 ax, xk, yk, zk, color_idx, field, linewidth, theme=theme
@@ -422,6 +422,9 @@ class Rays3D(Rays2D):
             color = self._rgb_colors[color_idx % 10]
 
         for k in range(1, len(x)):
+            if np.isnan(x[k - 1]) or np.isnan(x[k]):
+                continue
+
             p0 = [x[k - 1], y[k - 1], z[k - 1]]
             p1 = [x[k], y[k], z[k]]
 

@@ -69,8 +69,8 @@ class MultiConfiguration:
         # Link Radii and Conics
         for i, (surf_s, _surf_t) in enumerate(
             zip(
-                source.surface_group.surfaces,
-                target.surface_group.surfaces,
+                source.surfaces,
+                target.surfaces,
                 strict=False,
             )
         ):
@@ -93,7 +93,7 @@ class MultiConfiguration:
                 )
 
             # Thickness (except last surface)
-            if i < len(source.surface_group.surfaces) - 1:
+            if i < len(source.surfaces) - 1:
                 target.pickups.add(
                     source_surface_idx=i,
                     attr_type="thickness",
@@ -262,7 +262,7 @@ class MultiConfiguration:
         optic = self.configurations[config_idx]
         if surface_index is not None:
             # Relative to surface
-            full_path = f"surface_group.surfaces[{surface_index}].{path}"
+            full_path = f"surfaces.surfaces[{surface_index}].{path}"
         else:
             # Relative to optic
             full_path = path
@@ -311,7 +311,7 @@ class MultiConfiguration:
         source_optic = self.configurations[source_idx]
 
         if surface_index is not None:
-            full_path = f"surface_group.surfaces[{surface_index}].{path}"
+            full_path = f"surfaces.surfaces[{surface_index}].{path}"
         else:
             full_path = path
 
@@ -331,7 +331,7 @@ class MultiConfiguration:
     def _remove_generic_pickup(self, config_idx, surface_index, path):
         optic = self.configurations[config_idx]
         if surface_index is not None:
-            full_path = f"surface_group.surfaces[{surface_index}].{path}"
+            full_path = f"surfaces.surfaces[{surface_index}].{path}"
         else:
             full_path = path
 

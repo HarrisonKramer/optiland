@@ -81,7 +81,7 @@ def test_add_perturbation(setup_tolerancing, set_test_backend):
     surface_number = 1
 
     # Ensure original optic data is not modified before adding perturbation
-    original_radius = optic.surface_group.surfaces[surface_number].geometry.radius
+    original_radius = optic.surfaces[surface_number].geometry.radius
 
     tolerancing.add_perturbation(
         variable_type, perturbation, surface_number=surface_number
@@ -93,7 +93,7 @@ def test_add_perturbation(setup_tolerancing, set_test_backend):
     assert added_perturbation.type == variable_type
     # Check that adding the perturbation definition doesn't apply it yet
     assert_allclose(
-        optic.surface_group.surfaces[surface_number].geometry.radius, original_radius
+        optic.surfaces[surface_number].geometry.radius, original_radius
     )
 
 

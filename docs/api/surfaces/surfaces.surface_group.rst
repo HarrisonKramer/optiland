@@ -1,7 +1,7 @@
 ﻿surfaces.surface\_group
 =======================
 
-.. automodule:: surfaces.surface_group
+.. automodule:: surfaces.surfaces
 
    
    .. rubric:: Classes

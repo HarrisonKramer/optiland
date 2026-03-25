@@ -52,7 +52,7 @@ class ForbesQNormalSlopeCoeffVariable(VariableBehavior):
         Raises:
             TypeError: If the geometry is not a ForbesQNormalSlopeGeometry.
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         geom = surf.geometry
         if not isinstance(geom, ForbesQNormalSlopeGeometry):
             raise TypeError("This variable is only for ForbesQNormalSlopeGeometry.")
@@ -65,7 +65,7 @@ class ForbesQNormalSlopeCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value for the coefficient.
         """
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         geom = surf.geometry
 
         geom.radial_terms[self.coeff_number] = new_value
@@ -137,7 +137,7 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         Raises:
             TypeError: If the geometry is not a ForbesQ2dGeometry.
         """
-        surf = self._surfaces.surfaces[self.surface_number]
+        surf = self._surfaces[self.surface_number]
         geom = surf.geometry
         if not isinstance(geom, ForbesQ2dGeometry):
             raise TypeError("This variable is only for ForbesQ2dGeometry.")
@@ -150,7 +150,7 @@ class ForbesQ2dCoeffVariable(VariableBehavior):
         Args:
             new_value (float): The new value for the coefficient.
         """
-        surf = self.optic.surface_group.surfaces[self.surface_number]
+        surf = self.optic.surfaces[self.surface_number]
         geom = surf.geometry
 
         geom.freeform_coeffs[self.coeff_tuple] = new_value

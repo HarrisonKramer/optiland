@@ -17,11 +17,10 @@ import warnings
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Literal
 
+from optiland._deprecation import deprecated
 from optiland.aberrations import Aberrations
 from optiland.aperture import BaseSystemAperture, make_system_aperture
 from optiland.fields import (
-    BaseFieldDefinition,
-    Field,
     FieldGroup,
 )
 from optiland.optic.optic_serializer import OpticSerializer
@@ -32,12 +31,6 @@ from optiland.rays import PolarizationState
 from optiland.raytrace.real_ray_tracer import RealRayTracer
 from optiland.solves import SolveManager
 from optiland.surfaces import ObjectSurface, SurfaceGroup
-from optiland.visualization import (
-    LensInfoViewer,
-    OpticViewer,
-    OpticViewer3D,
-    SurfaceSagViewer,
-)
 from optiland.wavelength import WavelengthGroup
 
 if TYPE_CHECKING:
@@ -82,10 +75,6 @@ class Optic:
     Attributes:
         name (str | None): An optional name for the optical system.
         aperture (Aperture | None): The aperture of the optical system.
-        field_definition (BaseFieldDefinition | None): The definition of the field used
-            in the optical system, e.g., AngleField or ObjectHeightField.
-        surface_group (SurfaceGroup): The group of surfaces that constitute
-            the optical system.
         fields (FieldGroup): The group of fields defined for the system.
         wavelengths (WavelengthGroup): The group of wavelengths used for
             analysis.
@@ -122,20 +111,14 @@ class Optic:
     def _initialize_attributes(self):
         """Initialize the attributes of the optical system."""
         self.aperture: BaseSystemAperture | None = None
-        self.field_definition: BaseFieldDefinition | None = None
 
-        self.surface_group: SurfaceGroup = SurfaceGroup()
+        self.surfaces: SurfaceGroup = SurfaceGroup()
         self.fields: FieldGroup = FieldGroup()
         self.wavelengths: WavelengthGroup = WavelengthGroup()
 
         self.paraxial: Paraxial = Paraxial(self)
         self.aberrations: Aberrations = Aberrations(self)
         self.ray_tracer: RealRayTracer = RealRayTracer(self)
-        self.ray_aiming_config = {
-            "mode": "paraxial",
-            "max_iter": 10,
-            "tol": 1e-6,
-        }
 
         self.polarization: PolarizationState | Literal["ignore"] = "ignore"
 
@@ -144,6 +127,24 @@ class Optic:
         self.solves: SolveManager = SolveManager(self)
         self.obj_space_telecentric: bool = False
         self.updater: OpticUpdater = OpticUpdater(self)
+
+    @property
+    def surface_group(self) -> SurfaceGroup:
+        warnings.warn(
+            "Optic.surface_group is deprecated; use Optic.surfaces instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.surfaces
+
+    @surface_group.setter
+    def surface_group(self, value):
+        warnings.warn(
+            "Optic.surface_group is deprecated; use Optic.surfaces instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.surfaces = value
 
     def __add__(self, other: Optic) -> Optic:
         """Add two Optic objects together.
@@ -158,7 +159,7 @@ class Optic:
             Optic: A new Optic object containing the combined surfaces.
         """
         new_optic = deepcopy(self)
-        new_optic.surface_group += other.surface_group
+        new_optic.surfaces += other.surfaces
         return new_optic
 
     @property
@@ -169,7 +170,7 @@ class Optic:
     @property
     def object_surface(self) -> ObjectSurface | None:
         """The object surface instance (`ObjectSurface` or `None`)."""
-        for surface in self.surface_group.surfaces:
+        for surface in self.surfaces.surfaces:
             if isinstance(surface, ObjectSurface):
                 return surface
         return None
@@ -177,12 +178,12 @@ class Optic:
     @property
     def image_surface(self) -> Surface:
         """The image surface instance."""
-        return self.surface_group.surfaces[-1]
+        return self.surfaces.surfaces[-1]
 
     @property
     def total_track(self) -> float:
         """The total track length of the system."""
-        return self.surface_group.total_track
+        return self.surfaces.total_track
 
     @property
     def polarization_state(self) -> PolarizationState | None:
@@ -209,6 +210,7 @@ class Optic:
         """Reset the optical system to its initial state."""
         self._initialize_attributes()
 
+    @deprecated("optic.surfaces.add()")
     def add_surface(
         self,
         new_surface: Surface | None = None,
@@ -220,6 +222,9 @@ class Optic:
         **kwargs: Unpack[SurfaceParameters],
     ):
         """Adds a new surface to the optic.
+
+        .. deprecated::
+            Use ``optic.surfaces.add()`` instead.
 
         Args:
             new_surface (Surface, optional): The new surface to add. If not
@@ -240,7 +245,7 @@ class Optic:
             IndexError: If the index is out of bounds for insertion, or negative.
 
         """
-        self.surface_group.add_surface(
+        self.surfaces.add(
             new_surface=new_surface,
             surface_type=surface_type,
             comment=comment,
@@ -250,22 +255,30 @@ class Optic:
             **kwargs,
         )
 
+    @deprecated("optic.surfaces.remove()")
     def remove_surface(
         self,
         index: int,
     ):
         """Removes a surface from the optic.
 
+        .. deprecated::
+            Use ``optic.surfaces.remove()`` instead.
+
         Args:
             index (int, optional): The index of the surface to remove.
 
         """
-        self.surface_group.remove_surface(
+        self.surfaces.remove(
             index=index,
         )
 
+    @deprecated("optic.fields.add()")
     def add_field(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
         """Add a field to the optical system.
+
+        .. deprecated::
+            Use ``optic.fields.add()`` instead.
 
         Args:
             y: The y-coordinate of the field.
@@ -277,9 +290,9 @@ class Optic:
                 factor. Defaults to 0.0.
 
         """
-        new_field = Field(x, y, vx, vy)
-        self.fields.add_field(new_field)
+        self.fields.add(x, y, vx, vy)
 
+    @deprecated("optic.wavelengths.add()")
     def add_wavelength(
         self,
         value: float,
@@ -288,6 +301,9 @@ class Optic:
         weight: float = 1.0,
     ):
         """Add a wavelength to the optical system.
+
+        .. deprecated::
+            Use ``optic.wavelengths.add()`` instead.
 
         Args:
             value (float): The value of the wavelength.
@@ -299,7 +315,7 @@ class Optic:
                 polychromatic analysis. Defaults to 1.0.
 
         """
-        self.wavelengths.add_wavelength(
+        self.wavelengths.add(
             value=value, is_primary=is_primary, unit=unit, weight=weight
         )
 
@@ -314,8 +330,12 @@ class Optic:
         """
         self.aperture = make_system_aperture(aperture_type, value)
 
+    @deprecated("optic.fields.set_type()")
     def set_field_type(self, field_type: FieldType):
         """Set the type of field used in the optical system.
+
+        .. deprecated::
+            Use ``optic.fields.set_type()`` instead.
 
         Args:
             field_type (FieldType): The type of field, e.g., 'angle',
@@ -324,8 +344,9 @@ class Optic:
         Raises:
             ValueError: If the field type is invalid.
         """
-        self.field_definition = BaseFieldDefinition.create(field_type)
+        self.fields.set_type(field_type)
 
+    @deprecated("optic.updater.set_radius()")
     def set_radius(self, value: float, surface_number: int):
         """Set the radius of curvature of a surface.
 
@@ -337,13 +358,9 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        warnings.warn(
-            "Optic.set_radius() is deprecated; use optic.updater.set_radius() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_radius(value, surface_number)
 
+    @deprecated("optic.updater.set_conic()")
     def set_conic(self, value: float, surface_number: int):
         """Set the conic constant of a surface.
 
@@ -355,13 +372,9 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        warnings.warn(
-            "Optic.set_conic() is deprecated; use optic.updater.set_conic() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_conic(value, surface_number)
 
+    @deprecated("optic.updater.set_thickness()")
     def set_thickness(self, value: float, surface_number: int):
         """Set the thickness of a surface.
 
@@ -373,14 +386,9 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        warnings.warn(
-            "Optic.set_thickness() is deprecated; "
-            "use optic.updater.set_thickness() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_thickness(value, surface_number)
 
+    @deprecated("optic.updater.set_index()")
     def set_index(self, value: float, surface_number: int):
         """Set the index of refraction of a surface.
 
@@ -392,13 +400,9 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        warnings.warn(
-            "Optic.set_index() is deprecated; use optic.updater.set_index() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_index(value, surface_number)
 
+    @deprecated("optic.updater.set_material()")
     def set_material(self, material: BaseMaterial, surface_number: int):
         """Set the material of a surface.
 
@@ -410,14 +414,9 @@ class Optic:
             surface_number (int): The index of the surface.
 
         """
-        warnings.warn(
-            "Optic.set_material() is deprecated; "
-            "use optic.updater.set_material() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_material(material, surface_number)
 
+    @deprecated("optic.updater.set_norm_radius()")
     def set_norm_radius(self, value: float, surface_number: int, is_fixed: bool = True):
         """Set the normalization radius of a surface.
 
@@ -430,14 +429,9 @@ class Optic:
             is_fixed (bool, optional): Whether to lock the normalization radius
                 from automatic paraxial updates. Defaults to True.
         """
-        warnings.warn(
-            "Optic.set_norm_radius() is deprecated; "
-            "use optic.updater.set_norm_radius() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_norm_radius(value, surface_number, is_fixed)
 
+    @deprecated("optic.updater.set_asphere_coeff()")
     def set_asphere_coeff(
         self, value: float, surface_number: int, aspher_coeff_idx: int
     ):
@@ -453,14 +447,9 @@ class Optic:
                 set.
 
         """
-        warnings.warn(
-            "Optic.set_asphere_coeff() is deprecated; "
-            "use optic.updater.set_asphere_coeff() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_asphere_coeff(value, surface_number, aspher_coeff_idx)
 
+    @deprecated("optic.updater.set_polarization()")
     def set_polarization(self, polarization: PolarizationState | Literal["ignore"]):
         """Set the polarization state of the optic.
 
@@ -473,25 +462,16 @@ class Optic:
                 'ignore'.
 
         """
-        warnings.warn(
-            "Optic.set_polarization() is deprecated; "
-            "use optic.updater.set_polarization() instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.updater.set_polarization(polarization)
 
+    @deprecated("optic.updater.set_apodization()")
     def set_apodization(
         self, apodization: BaseApodization | str | dict = None, **kwargs
     ):
         """Sets the apodization for the optical system.
 
-        This method supports setting the apodization in multiple ways:
-        1. By providing an instance of a `BaseApodization` subclass.
-        2. By providing a string identifier (e.g., "GaussianApodization")
-           and keyword arguments for its parameters.
-        3. By providing a dictionary that can be passed to `from_dict`.
-        4. By passing `None` to remove any existing apodization.
+        .. deprecated::
+            Use ``optic.updater.set_apodization()`` instead.
 
         Args:
             apodization (BaseApodization | str | dict, optional): The
@@ -501,8 +481,12 @@ class Optic:
         """
         self.updater.set_apodization(apodization, **kwargs)
 
+    @deprecated("optic.updater.scale_system()")
     def scale_system(self, scale_factor: float):
         """Scales the optical system by a given scale factor.
+
+        .. deprecated::
+            Use ``optic.updater.scale_system()`` instead.
 
         Args:
             scale_factor (float): The factor by which to scale the system.
@@ -510,18 +494,32 @@ class Optic:
         """
         self.updater.scale_system(scale_factor)
 
+    @deprecated("optic.updater.update_paraxial()")
     def update_paraxial(self):
-        """Update the semi-aperture of the surfaces based on paraxial analysis."""
+        """Update the semi-aperture of the surfaces based on paraxial analysis.
+
+        .. deprecated::
+            Use ``optic.updater.update_paraxial()`` instead.
+        """
         self.updater.update_paraxial()
 
+    @deprecated("optic.updater.update_normalization()")
     def update_normalization(self, surface: Surface) -> None:
-        """Update the normalization radius of surfaces."""
+        """Update the normalization radius of surfaces.
+
+        .. deprecated::
+            Use ``optic.updater.update_normalization()`` instead.
+        """
         self.updater.update_normalization(surface)
 
+    @deprecated("optic.ray_tracer.set_aiming()")
     def set_ray_aiming(
         self, mode: str, max_iter: int = 10, tol: float = 1e-6, **kwargs
     ):
         """Configure the ray aiming strategy.
+
+        .. deprecated::
+            Use ``optic.ray_tracer.set_aiming()`` instead.
 
         Args:
             mode: The aiming mode ("paraxial", "iterative", "robust").
@@ -529,25 +527,33 @@ class Optic:
             tol: Convergence tolerance for iterative solvers.
             **kwargs: Additional configuration parameters.
         """
-        self.ray_aiming_config = {
-            "mode": mode,
-            "max_iter": max_iter,
-            "tol": tol,
-            **kwargs,
-        }
+        self.ray_tracer.set_aiming(mode, max_iter, tol, **kwargs)
 
+    @deprecated("optic.updater.update()")
     def update(self) -> None:
-        """Update the surface properties (pickups, solves, paraxial properties)."""
+        """Update the surface properties (pickups, solves, paraxial properties).
+
+        .. deprecated::
+            Use ``optic.updater.update()`` instead.
+        """
         self.updater.update()
 
+    @deprecated("optic.updater.image_solve()")
     def image_solve(self):
         """Update the image position such that the marginal ray crosses the optical axis
         at the image location.
+
+        .. deprecated::
+            Use ``optic.updater.image_solve()`` instead.
         """
         self.updater.image_solve()
 
+    @deprecated("optic.updater.flip()")
     def flip(self):
         """Flips the optical system.
+
+        .. deprecated::
+            Use ``optic.updater.flip()`` instead.
 
         This reverses the order of surfaces (excluding object and image planes),
         their geometries, and materials. Pickups and solves referencing surface
@@ -609,6 +615,8 @@ class Optic:
             Axes objects of the plot.
 
         """
+        from optiland.visualization import OpticViewer
+
         viewer = OpticViewer(self)
         fig, ax, _ = viewer.view(
             fields,
@@ -660,6 +668,8 @@ class Optic:
                 surface are not shown. Defaults to False.
 
         """
+        from optiland.visualization import OpticViewer3D
+
         viewer = OpticViewer3D(self)
         viewer.view(
             fields,
@@ -674,14 +684,18 @@ class Optic:
 
     def info(self):
         """Display the optical system information."""
+        from optiland.visualization import LensInfoViewer
+
         viewer = LensInfoViewer(self)
         viewer.view()
 
+    @deprecated("optic.surfaces.n(wavelength)")
     def n(self, wavelength: float | Literal["primary"] = "primary") -> BEArray:
         """Get the refractive indices of materials at a given wavelength.
 
-        This method calculates the refractive indices for each space between
-        surfaces in the optical system.
+        .. deprecated::
+            Use ``optic.surfaces.n(wavelength)`` instead.  To resolve the
+            primary wavelength use ``optic.primary_wavelength``.
 
         Args:
             wavelength (float | Literal['primary'], optional): The wavelength
@@ -696,7 +710,7 @@ class Optic:
         if wavelength == "primary":
             wavelength = self.primary_wavelength
 
-        return self.surface_group.n(wavelength)
+        return self.surfaces.n(wavelength)
 
     def trace(
         self,
@@ -767,6 +781,8 @@ class Optic:
             x_cross_section: The x-coordinate for the
                 y-sag plot. Defaults to 0.
         """
+        from optiland.visualization import SurfaceSagViewer
+
         viewer = SurfaceSagViewer(self)
         viewer.view(
             surface_index=surface_index,

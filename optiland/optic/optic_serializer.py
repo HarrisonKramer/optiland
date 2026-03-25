@@ -48,14 +48,11 @@ class OpticSerializer:
             "apodization": optic.apodization.to_dict() if optic.apodization else None,
             "pickups": optic.pickups.to_dict(),
             "solves": optic.solves.to_dict(),
-            "surface_group": optic.surface_group.to_dict(),
+            "surface_group": optic.surfaces.to_dict(),
         }
 
         data["wavelengths"]["polarization"] = optic.polarization
-        data["fields"]["field_definition"] = (
-            optic.field_definition.to_dict() if optic.field_definition else None
-        )
-        data["fields"]["object_space_telecentric"] = optic.obj_space_telecentric
+        data["ray_tracer"] = {"ray_aiming_config": optic.ray_tracer.ray_aiming_config}
         return data
 
     @classmethod
@@ -74,7 +71,7 @@ class OpticSerializer:
         optic = Optic()
         optic.name = data.get("name")
         optic.aperture = BaseSystemAperture.from_dict(data["aperture"])
-        optic.surface_group = SurfaceGroup.from_dict(data["surface_group"])
+        optic.surfaces = SurfaceGroup.from_dict(data["surface_group"])
         optic.fields = FieldGroup.from_dict(data["fields"])
         optic.wavelengths = WavelengthGroup.from_dict(data["wavelengths"])
 
@@ -87,17 +84,22 @@ class OpticSerializer:
 
         optic.polarization = data["wavelengths"]["polarization"]
         if data["fields"].get("field_definition"):
-            optic.field_definition = BaseFieldDefinition.from_dict(
+            optic.fields.field_definition = BaseFieldDefinition.from_dict(
                 data["fields"]["field_definition"]
             )
         elif data["fields"].get("field_type"):
-            optic.set_field_type(data["fields"]["field_type"])
+            optic.fields.set_type(data["fields"]["field_type"])
         else:
-            optic.field_definition = None
-        optic.obj_space_telecentric = data["fields"]["object_space_telecentric"]
+            optic.fields.field_definition = None
+        optic.obj_space_telecentric = data["fields"]["telecentric"]
 
         optic.paraxial = Paraxial(optic)
         optic.aberrations = Aberrations(optic)
         optic.ray_tracer = RealRayTracer(optic)
+
+        if data.get("ray_tracer"):
+            optic.ray_tracer.ray_aiming_config = data["ray_tracer"].get(
+                "ray_aiming_config", optic.ray_tracer.ray_aiming_config
+            )
 
         return optic

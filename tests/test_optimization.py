@@ -227,7 +227,7 @@ class TestOptimizerGeneric:
 
             lens = UVReflectingMicroscope()
             # this will "break" the lens, resulting in NaN (for testing)
-            lens.set_radius(0.2, 3)
+            lens.updater.set_radius(0.2, 3)
             problem = optimization.OptimizationProblem()
             input_data = {
                 "optic": lens,
@@ -317,7 +317,7 @@ class TestLeastSquares:
         result = optimizer.optimize(method_choice="trf", maxiter=10, tol=1e-3)
         assert result.success
         # Check if the optimized variable is within bounds (SciPy's TRF handles this)
-        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        optimized_radius = lens.surfaces[1].geometry.radius
         assert min_b <= optimized_radius <= max_b
 
     def test_method_dogbox_with_bounds(self):
@@ -337,7 +337,7 @@ class TestLeastSquares:
         optimizer = optimization.LeastSquares(problem)
         result = optimizer.optimize(method_choice="dogbox", maxiter=10, tol=1e-3)
         assert result.success
-        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        optimized_radius = lens.surfaces[1].geometry.radius
         assert min_b <= optimized_radius <= max_b
 
     def test_method_lm_with_bounds_warning(self, capsys):
@@ -762,14 +762,14 @@ class TestOptimizerWithBounds:
         optimizer = optimization.OptimizerGeneric(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         assert result.success
-        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        optimized_radius = lens.surfaces[1].geometry.radius
         assert optimized_radius >= min_b
 
     def test_optimize_with_reciprocal_scaler_and_max_bounds(self):
         from optiland.optimization.scaling.reciprocal import ReciprocalScaler
 
         lens = Microscope20x()
-        lens.set_radius(-1000, 1)
+        lens.updater.set_radius(-1000, 1)
         problem = optimization.OptimizationProblem()
         max_b = -500.0
         problem.add_variable(
@@ -785,7 +785,7 @@ class TestOptimizerWithBounds:
         optimizer = optimization.OptimizerGeneric(problem)
         result = optimizer.optimize(maxiter=10, disp=False, tol=1e-3)
         assert result.success
-        optimized_radius = lens.surface_group.surfaces[1].geometry.radius
+        optimized_radius = lens.surfaces[1].geometry.radius
         assert optimized_radius <= max_b
 
     def test_optimize_with_reciprocal_scaler_and_crossing_bounds(self):

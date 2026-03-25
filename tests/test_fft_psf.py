@@ -197,7 +197,7 @@ def test_view_oversampling(projection, make_fftpsf):
 
 def test_get_units_finite_obj(make_fftpsf):
     def tweak(optic):
-        optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e6)
+        optic.surfaces[0].geometry.cs.z = -be.array(1e6)
 
     fftpsf = make_fftpsf(field=(0, 1), tweak_optic=tweak)
     image = be.zeros((128, 128))
@@ -217,7 +217,7 @@ def test_psf_log_tick_formatter(make_fftpsf):
 
 def test_invalid_working_FNO(make_fftpsf):
     def tweak(optic):
-        optic.surface_group.surfaces[0].geometry.cs.z = -be.array(1e100)
+        optic.surfaces[0].geometry.cs.z = -be.array(1e100)
 
     fftpsf = make_fftpsf(field=(0, 1), tweak_optic=tweak)
     with pytest.raises(ValueError):

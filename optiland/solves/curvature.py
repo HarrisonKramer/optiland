@@ -105,15 +105,15 @@ class MarginalRayAngleCurvatureSolve(CurvatureSolve):
 
         # Indices of refraction
         if self.surface_idx == 0:
-            n_pre = self.optic.surface_group.surfaces[
-                self.surface_idx - 1
-            ].material_post.n(self.optic.primary_wavelength)
+            n_pre = self.optic.surfaces[self.surface_idx - 1].material_post.n(
+                self.optic.primary_wavelength
+            )
         else:
-            n_pre = self.optic.surface_group.surfaces[
-                self.surface_idx - 1
-            ].material_post.n(self.optic.primary_wavelength)
+            n_pre = self.optic.surfaces[self.surface_idx - 1].material_post.n(
+                self.optic.primary_wavelength
+            )
 
-        n_post = self.optic.surface_group.surfaces[self.surface_idx].material_post.n(
+        n_post = self.optic.surfaces[self.surface_idx].material_post.n(
             self.optic.primary_wavelength
         )
 
@@ -135,19 +135,13 @@ class MarginalRayAngleCurvatureSolve(CurvatureSolve):
         c = (num / den).item()
 
         # Update curvature
-        if hasattr(self.optic.surface_group.surfaces[self.surface_idx].geometry, "c"):
-            self.optic.surface_group.surfaces[self.surface_idx].geometry.c = c
-        elif hasattr(
-            self.optic.surface_group.surfaces[self.surface_idx].geometry, "radius"
-        ):
+        if hasattr(self.optic.surfaces[self.surface_idx].geometry, "c"):
+            self.optic.surfaces[self.surface_idx].geometry.c = c
+        elif hasattr(self.optic.surfaces[self.surface_idx].geometry, "radius"):
             if c != 0:
-                self.optic.surface_group.surfaces[self.surface_idx].geometry.radius = (
-                    1.0 / c
-                )
+                self.optic.surfaces[self.surface_idx].geometry.radius = 1.0 / c
             else:
-                self.optic.surface_group.surfaces[
-                    self.surface_idx
-                ].geometry.radius = float("inf")
+                self.optic.surfaces[self.surface_idx].geometry.radius = float("inf")
 
     def to_dict(self):
         """Returns a dictionary representation of the solve."""
@@ -211,17 +205,17 @@ class ChiefRayAngleCurvatureSolve(CurvatureSolve):
 
             # Indices of refraction
             if self.surface_idx == 0:
-                n_pre = self.optic.surface_group.surfaces[
-                    self.surface_idx - 1
-                ].material_post.n(self.optic.primary_wavelength)
+                n_pre = self.optic.surfaces[self.surface_idx - 1].material_post.n(
+                    self.optic.primary_wavelength
+                )
             else:
-                n_pre = self.optic.surface_group.surfaces[
-                    self.surface_idx - 1
-                ].material_post.n(self.optic.primary_wavelength)
+                n_pre = self.optic.surfaces[self.surface_idx - 1].material_post.n(
+                    self.optic.primary_wavelength
+                )
 
-            n_post = self.optic.surface_group.surfaces[
-                self.surface_idx
-            ].material_post.n(self.optic.primary_wavelength)
+            n_post = self.optic.surfaces[self.surface_idx].material_post.n(
+                self.optic.primary_wavelength
+            )
 
             # Delta n
             delta_n = n_post - n_pre
@@ -240,10 +234,8 @@ class ChiefRayAngleCurvatureSolve(CurvatureSolve):
             c_target = (num / den).item()
 
             # Get current curvature
-            if hasattr(
-                self.optic.surface_group.surfaces[self.surface_idx].geometry, "radius"
-            ):
-                r = self.optic.surface_group.surfaces[self.surface_idx].geometry.radius
+            if hasattr(self.optic.surfaces[self.surface_idx].geometry, "radius"):
+                r = self.optic.surfaces[self.surface_idx].geometry.radius
                 c_current = 1.0 / r if r != 0 else 0.0
             else:
                 return
@@ -253,17 +245,11 @@ class ChiefRayAngleCurvatureSolve(CurvatureSolve):
             c = (1 - damping) * c_current + damping * c_target
 
             # Update curvature
-            if hasattr(
-                self.optic.surface_group.surfaces[self.surface_idx].geometry, "radius"
-            ):
+            if hasattr(self.optic.surfaces[self.surface_idx].geometry, "radius"):
                 if c != 0:
-                    self.optic.surface_group.surfaces[
-                        self.surface_idx
-                    ].geometry.radius = 1.0 / c
+                    self.optic.surfaces[self.surface_idx].geometry.radius = 1.0 / c
                 else:
-                    self.optic.surface_group.surfaces[
-                        self.surface_idx
-                    ].geometry.radius = float("inf")
+                    self.optic.surfaces[self.surface_idx].geometry.radius = float("inf")
 
     def to_dict(self):
         """Returns a dictionary representation of the solve."""

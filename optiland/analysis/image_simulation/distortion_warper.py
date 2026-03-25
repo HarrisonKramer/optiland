@@ -66,8 +66,8 @@ class DistortionWarper:
         )
 
         # 2. Get Landing Coordinates (Real Image Plane)
-        x_real = self.optic.surface_group.x[-1, :]
-        y_real = self.optic.surface_group.y[-1, :]
+        x_real = self.optic.surfaces.x[-1, :]
+        y_real = self.optic.surfaces.y[-1, :]
 
         # Center relative to chief ray
         chief_ray = self.optic.trace_generic(

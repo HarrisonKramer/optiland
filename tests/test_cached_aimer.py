@@ -16,12 +16,22 @@ def mock_dependencies():
     surface_group_mock = MagicMock()
     surface_group_mock.to_dict.return_value = {"surfaces": []}
     surface_group_mock.stop_index = 1
-    optic.surface_group = surface_group_mock
+    optic.surfaces = surface_group_mock
     optic.fields = MagicMock()
+    optic.fields.to_dict.return_value = {}
     optic.wavelengths = MagicMock()
+    optic.wavelengths.to_dict.return_value = {}
     optic.aperture = MagicMock()
+    optic.aperture.to_dict.return_value = {}
     optic.object_surface = MagicMock()
-    optic.ray_aiming_config = MagicMock()
+
+    ray_tracer_mock = MagicMock()
+    ray_tracer_mock.ray_aiming_config = {
+        "mode": "paraxial",
+        "max_iter": 10,
+        "tol": 1e-6,
+    }
+    optic.ray_tracer = ray_tracer_mock
 
     wrapped_aimer = MagicMock(spec=BaseRayAimer)
     return optic, wrapped_aimer
@@ -75,7 +85,7 @@ def test_system_change_uses_cached_as_guess(set_test_backend, mock_dependencies)
     cached_aimer.aim_rays(*inputs)
 
     # Perturb system (change dict representation)
-    optic.surface_group.to_dict.return_value = {"surfaces": ["changed"]}
+    optic.surfaces.to_dict.return_value = {"surfaces": ["changed"]}
 
     # Second call
     result2 = (7, 8, 9, 10, 11, 12)
@@ -105,12 +115,22 @@ def test_robust_aimer_integration_with_cache(set_test_backend):
     surface_group_mock = MagicMock()
     surface_group_mock.to_dict.return_value = {"surfaces": []}
     surface_group_mock.stop_index = 1
-    optic.surface_group = surface_group_mock
+    optic.surfaces = surface_group_mock
     optic.fields = MagicMock()
+    optic.fields.to_dict.return_value = {}
     optic.wavelengths = MagicMock()
+    optic.wavelengths.to_dict.return_value = {}
     optic.aperture = MagicMock()
+    optic.aperture.to_dict.return_value = {}
     optic.object_surface = MagicMock()
-    optic.ray_aiming_config = MagicMock()
+
+    ray_tracer_mock = MagicMock()
+    ray_tracer_mock.ray_aiming_config = {
+        "mode": "paraxial",
+        "max_iter": 10,
+        "tol": 1e-6,
+    }
+    optic.ray_tracer = ray_tracer_mock
 
     # Mock Paraxial Aimer (needed by Robust)
     paraxial_mock = MagicMock(spec=BaseRayAimer)
@@ -142,7 +162,7 @@ def test_robust_aimer_integration_with_cache(set_test_backend):
     assert res1 == expected_first_result
 
     # 2. Perturb System
-    optic.surface_group.to_dict.return_value = {"surfaces": ["changed"]}
+    optic.surfaces.to_dict.return_value = {"surfaces": ["changed"]}
 
     # 3. Second call (System Change -> Pass cached result as initial_guess)
     # This calls robust_aimer.aim_rays(..., initial_guess=expected_first_result)

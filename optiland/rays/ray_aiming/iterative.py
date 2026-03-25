@@ -114,8 +114,8 @@ class IterativeRayAimer(BaseRayAimer):
         Px, Py = pupil_coords
         Px = be.as_array_1d(Px)
         Py = be.as_array_1d(Py)
-        stop_idx = self.optic.surface_group.stop_index
-        self.optic.surface_group.surfaces[stop_idx]
+        stop_idx = self.optic.surfaces.stop_index
+        self.optic.surfaces[stop_idx]
         is_inf = getattr(self.optic.object_surface, "is_infinite", False)
 
         # Determine target coordinates
@@ -320,7 +320,7 @@ class IterativeRayAimer(BaseRayAimer):
         Returns:
             tuple: Local (x, y) coordinates on the stop surface.
         """
-        stop_cs = self.optic.surface_group.surfaces[stop_idx].geometry.cs
+        stop_cs = self.optic.surfaces[stop_idx].geometry.cs
 
         # Create a temporary copy of rays to avoid mutating the originals
         temp = RealRays(
@@ -363,5 +363,5 @@ class IterativeRayAimer(BaseRayAimer):
         rays = RealRays(x, y, z, L, M, N, intensity=be.ones_like(x), wavelength=wl)
         start = 1 if is_inf else 0
         for i in range(start, stop + 1):
-            self.optic.surface_group.surfaces[i].trace(rays)
+            self.optic.surfaces[i].trace(rays)
         return rays

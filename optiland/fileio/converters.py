@@ -109,6 +109,9 @@ class ZemaxToOpticConverter:
                 "coefficients": coeffs,
             }
 
+            if surf.get("aperture") is not None:
+                surface_params["aperture"] = surf["aperture"]
+
             if surf["type"] == "toroidal":
                 # Zemax CURV (data["radius"]) is the Y-Radius
                 surface_params["radius_y"] = surf["radius"]
@@ -144,7 +147,7 @@ class ZemaxToOpticConverter:
                     }
                 )
 
-            self.optic.add_surface(**surface_params)
+            self.optic.surfaces.add(**surface_params)
             surf_idx = surf_idx + 1
 
             # we need to advance the cs by the surface thickness
@@ -154,19 +157,6 @@ class ZemaxToOpticConverter:
                 self.current_cs = CoordinateSystem(
                     x=0.0, y=0.0, z=dt, reference_cs=self.current_cs
                 )
-
-        # image surface specific
-        translation, _ = self.current_cs.get_effective_transform()
-        rx_, ry_, rz_ = self.current_cs.get_effective_rotation_euler()
-        self.optic.add_surface(
-            index=surf_idx,
-            x=translation[0],
-            y=translation[1],
-            z=translation[2],
-            rx=rx_,
-            ry=ry_,
-            rz=rz_,
-        )
 
     def _configure_surface(self, index: int, data: dict):
         """Configures a single surface for the optic.
@@ -189,9 +179,8 @@ class ZemaxToOpticConverter:
             "material": data.get("material"),
         }
 
-        diameter = data.get("diameter")
-        if diameter:
-            surface_params["aperture"] = diameter * 2
+        if data.get("aperture") is not None:
+            surface_params["aperture"] = data["aperture"]
 
         # only the coefficient key differs for toroidal surfaces
         if data["type"] == "toroidal":
@@ -219,7 +208,7 @@ class ZemaxToOpticConverter:
             # For all other surfaces, use the standard radius.
             surface_params["radius"] = data["radius"]
 
-        self.optic.add_surface(**surface_params)
+        self.optic.surfaces.add(**surface_params)
 
     def _configure_surface_coefficients(self, data: dict):
         """Configures the aspheric coefficients for a surface.
@@ -280,7 +269,7 @@ class ZemaxToOpticConverter:
 
     def _configure_fields(self):
         """Configure the fields for the optic."""
-        self.optic.set_field_type(field_type=self.data["fields"]["type"])
+        self.optic.fields.set_type(field_type=self.data["fields"]["type"])
 
         field_x = self.data["fields"]["x"]
         field_y = self.data["fields"]["y"]
@@ -303,10 +292,10 @@ class ZemaxToOpticConverter:
             pass
 
         for k in range(len(field_x)):
-            self.optic.add_field(x=field_x[k], y=field_y[k], vx=vig_x[k], vy=vig_y[k])
+            self.optic.fields.add(x=field_x[k], y=field_y[k], vx=vig_x[k], vy=vig_y[k])
 
     def _configure_wavelengths(self):
         """Configure the wavelengths for the optic."""
         primary_idx = self.data["wavelengths"]["primary_index"]
         for idx, value in enumerate(self.data["wavelengths"]["data"]):
-            self.optic.add_wavelength(value=value, is_primary=(idx == primary_idx))
+            self.optic.wavelengths.add(value=value, is_primary=(idx == primary_idx))

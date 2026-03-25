@@ -163,7 +163,7 @@ class MTFvsField(BaseAnalysis):
         x_plot = y_coords_normalized * max_field
 
         # Determine X-axis label
-        field_def = self.optic.field_definition
+        field_def = self.optic.fields.field_definition
         x_label = "Field Coordinate"
         if field_def is not None:
             field_name = field_def.__class__.__name__

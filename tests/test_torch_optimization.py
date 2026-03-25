@@ -38,7 +38,7 @@ def setup_problem(
 
     # Set the initial state before adding variables to ensure it's captured
     if add_variable:
-        lens.surface_group.surfaces[1].radius = initial_value
+        lens.surfaces[1].radius = initial_value
         problem.add_variable(
             lens,
             "radius",
@@ -336,20 +336,20 @@ class TestTorchOptimizerScaledSpace:
         from optiland.optic import Optic
 
         lens = Optic()
-        lens.add_surface(index=0, thickness=be.inf)
-        lens.add_surface(
+        lens.surfaces.add(index=0, thickness=be.inf)
+        lens.surfaces.add(
             index=1,
             thickness=7,
             radius=15,
             material="N-BK7",
             is_stop=True,
         )
-        lens.add_surface(index=2, thickness=30, radius=-1000)
-        lens.add_surface(index=3)
+        lens.surfaces.add(index=2, thickness=30, radius=-1000)
+        lens.surfaces.add(index=3)
         lens.set_aperture(aperture_type="EPD", value=15)
-        lens.set_field_type(field_type="angle")
-        lens.add_field(y=0)
-        lens.add_wavelength(value=0.55, is_primary=True)
+        lens.fields.set_type(field_type="angle")
+        lens.fields.add(y=0)
+        lens.wavelengths.add(value=0.55, is_primary=True)
 
         problem = OptimizationProblem()
         problem.add_operand(

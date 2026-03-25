@@ -55,7 +55,7 @@ class IndexVariable(VariableBehavior):
             float: The value of the index of refraction.
 
         """
-        n = self.optic.n(self.wavelength)
+        n = self.optic.surfaces.n(self.wavelength)
         return n[self.surface_number]
 
     def update_value(self, new_value):

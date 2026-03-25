@@ -138,10 +138,10 @@ class CachedRayAimer(BaseRayAimer):
     def _get_system_hash(self) -> str:
         """Generate a hash for the current state of the optical system."""
         data = (
-            self.optic.surface_group.to_dict(),
+            self.optic.surfaces.to_dict(),
             self.optic.fields.to_dict(),
             self.optic.wavelengths.to_dict(),
             self.optic.aperture.to_dict() if self.optic.aperture else None,
-            self.optic.ray_aiming_config,
+            self.optic.ray_tracer.ray_aiming_config,
         )
         return hashlib.md5(str(data).encode("utf-8")).hexdigest()

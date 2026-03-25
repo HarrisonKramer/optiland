@@ -43,7 +43,7 @@ class OpticUpdater:
             surface_number (int): The index of the surface to modify.
 
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
+        surface = self.optic.surfaces[surface_number]
 
         # change geometry from plane to standard
         if isinstance(surface.geometry, Plane):
@@ -61,7 +61,7 @@ class OpticUpdater:
             surface_number (int): The index of the surface to modify.
 
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
+        surface = self.optic.surfaces[surface_number]
         surface.geometry.k = value
 
     def set_thickness(self, value, surface_number):
@@ -77,20 +77,20 @@ class OpticUpdater:
         if surface_number == 0:
             # First surface thickness sets the object distance.
             # We treat this specially to avoid issues with infinite values.
-            self.optic.surface_group.surfaces[0].thickness = value
-            self.optic.surface_group.surfaces[0].geometry.cs.z = be.array(-value)
+            self.optic.surfaces[0].thickness = value
+            self.optic.surfaces[0].geometry.cs.z = be.array(-value)
             # No need to shift other surfaces as they are relative to S1 at z=0
             return
 
-        positions = self.optic.surface_group.positions
+        positions = self.optic.surfaces.positions
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
         positions = be.copy(positions)  # required to avoid in-place modification
         positions[surface_number + 1 :] = positions[surface_number + 1 :] + delta_t
         positions = positions - positions[1]  # force surface 1 to be at zero
-        for k, surface in enumerate(self.optic.surface_group.surfaces):
+        for k, surface in enumerate(self.optic.surfaces):
             surface.geometry.cs.z = be.array(positions[k])
-        if surface_number < len(self.optic.surface_group.surfaces):
-            self.optic.surface_group.surfaces[surface_number].thickness = value
+        if surface_number < len(self.optic.surfaces):
+            self.optic.surfaces[surface_number].thickness = value
 
     def set_index(self, value: float, surface_number: int) -> None:
         """Set the index of refraction of a surface.
@@ -115,7 +115,7 @@ class OpticUpdater:
                 the *pre-material* of the subsequent surface.
 
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
+        surface = self.optic.surfaces[surface_number]
         surface.material_post = material
 
     def set_norm_radius(self, value, surface_number, is_fixed=True):
@@ -127,7 +127,7 @@ class OpticUpdater:
             is_fixed (bool, optional): Whether to lock the normalization radius
                 from automatic paraxial updates. Defaults to True.
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
+        surface = self.optic.surfaces[surface_number]
         if hasattr(surface.geometry, "norm_radius"):
             surface.geometry.norm_radius = value
             surface.geometry.normalization_mode = "manual" if is_fixed else "auto"
@@ -149,7 +149,7 @@ class OpticUpdater:
                 within the surface's coefficient list to set.
 
         """
-        surface = self.optic.surface_group.surfaces[surface_number]
+        surface = self.optic.surfaces[surface_number]
         surface.geometry.coefficients[aspher_coeff_idx] = value
 
     def set_polarization(self, polarization: PolarizationState | str):
@@ -176,15 +176,15 @@ class OpticUpdater:
                 system dimensions (radii, thicknesses, EPD, physical apertures).
 
         """
-        num_surfaces = self.optic.surface_group.num_surfaces
+        num_surfaces = self.optic.surfaces.num_surfaces
         thicknesses = [
-            self.optic.surface_group.get_thickness(surf_idx)[0]
+            self.optic.surfaces.get_thickness(surf_idx)[0]
             for surf_idx in range(num_surfaces - 1)
         ]
 
         # Scale radii, geometries, and thicknesses
         for surf_idx in range(num_surfaces):
-            surface = self.optic.surface_group.surfaces[surf_idx]
+            surface = self.optic.surfaces[surf_idx]
             surface.geometry.scale(scale_factor)
 
             if surf_idx != num_surfaces - 1 and not be.isinf(thicknesses[surf_idx]):
@@ -195,7 +195,7 @@ class OpticUpdater:
             self.optic.aperture = self.optic.aperture.scale(scale_factor)
 
         # Scale physical apertures
-        for surface in self.optic.surface_group.surfaces:
+        for surface in self.optic.surfaces:
             if surface.aperture is not None:
                 surface.aperture.scale(scale_factor)
 
@@ -208,7 +208,7 @@ class OpticUpdater:
         yb, _ = self.optic.paraxial.chief_ray()
         ya = be.abs(be.ravel(ya))
         yb = be.abs(be.ravel(yb))
-        for k, surface in enumerate(self.optic.surface_group.surfaces):
+        for k, surface in enumerate(self.optic.surfaces):
             r_max = ya[k] + yb[k]
             if surface.aperture is not None:
                 extent_max = be.max(be.abs(be.array(surface.aperture.extent)))
@@ -243,7 +243,7 @@ class OpticUpdater:
         if any(
             surface.surface_type
             in ["chebyshev", "zernike", "forbes_qbfs", "forbes_q2d"]
-            for surface in self.optic.surface_group.surfaces
+            for surface in self.optic.surfaces
         ):
             self.update_paraxial()
 
@@ -254,11 +254,10 @@ class OpticUpdater:
         """
         ya, ua = self.optic.paraxial.marginal_ray()
         offset = float(ya[-1, 0] / ua[-1, 0])
-        surfaces = self.optic.surface_group.surfaces
-        self.optic.surface_group.surfaces[-1].geometry.cs.z -= offset
+        surfaces = self.optic.surfaces
+        self.optic.surfaces[-1].geometry.cs.z -= offset
         surfaces[-2].thickness = (
-            self.optic.surface_group.surfaces[-1].geometry.cs.z
-            - surfaces[-2].geometry.cs.z
+            self.optic.surfaces[-1].geometry.cs.z - surfaces[-2].geometry.cs.z
         )
 
     def flip(self):
@@ -267,16 +266,16 @@ class OpticUpdater:
         solves referencing surface indices are updated accordingly.
         The new first optical surface (originally the last) is placed at z=0.0.
         """
-        if self.optic.surface_group.num_surfaces < 3:
+        if self.optic.surfaces.num_surfaces < 3:
             raise ValueError(
                 "Optic flip requires at least 3 surfaces (obj, element, img)"
             )
 
         # 1. Call SurfaceGroup.flip()
-        self.optic.surface_group.flip()
+        self.optic.surfaces.flip()
 
         # 2. Define remapping function for indices
-        num_surfaces = self.optic.surface_group.num_surfaces
+        num_surfaces = self.optic.surfaces.num_surfaces
 
         def remap_index_func(old_idx):  # pragma: no cover
             if old_idx == 0 or old_idx == num_surfaces - 1:  # Object or Image surface

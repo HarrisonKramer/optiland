@@ -149,8 +149,8 @@ class GridDistortion(BaseAnalysis):
             Py=0,
             wavelength=current_wavelength,
         )
-        x_chief = self.optic.surface_group.x[-1, 0]
-        y_chief = self.optic.surface_group.y[-1, 0]
+        x_chief = self.optic.surfaces.x[-1, 0]
+        y_chief = self.optic.surfaces.y[-1, 0]
 
         # Trace single reference ray
         current_wavelength = self.wavelengths[0]
@@ -161,7 +161,7 @@ class GridDistortion(BaseAnalysis):
             Py=0,
             wavelength=current_wavelength,
         )
-        y_ref = self.optic.surface_group.y[-1, 0]
+        y_ref = self.optic.surfaces.y[-1, 0]
 
         max_field = np.sqrt(2) / 2
         extent = be.linspace(-max_field, max_field, self.num_points)
@@ -195,14 +195,14 @@ class GridDistortion(BaseAnalysis):
         # make real grid square for ease of plotting
         data["xr"] = (
             be.reshape(
-                self.optic.surface_group.x[-1, :],
+                self.optic.surfaces.x[-1, :],
                 (self.num_points, self.num_points),
             )
             - x_chief
         )
         data["yr"] = (
             be.reshape(
-                self.optic.surface_group.y[-1, :],
+                self.optic.surfaces.y[-1, :],
                 (self.num_points, self.num_points),
             )
             - y_chief

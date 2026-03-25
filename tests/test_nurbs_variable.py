@@ -26,7 +26,7 @@ def optic(backend):
     surf = Surface(previous_surface=None, geometry=geo, material_post=air)
     sg = SurfaceGroup([surf])
     optic = Optic()
-    optic.surface_group = sg
+    optic.surfaces = sg
     return optic
 
 

@@ -32,8 +32,8 @@ class LensOperand:
             The edge thickness between the two surfaces.
         """
 
-        surface1 = optic.surface_group.surfaces[surface_number]
-        surface2 = optic.surface_group.surfaces[surface_number + 1]
+        surface1 = optic.surfaces[surface_number]
+        surface2 = optic.surfaces[surface_number + 1]
         semi_apt_1 = surface1.semi_aperture
         semi_apt_2 = surface2.semi_aperture
         semi_apt_min = semi_apt_1
@@ -45,7 +45,7 @@ class LensOperand:
         sag1 = surface1.geometry.sag(y=semi_apt_min)
         sag2 = surface2.geometry.sag(y=semi_apt_min)
 
-        thickness = optic.surface_group.get_thickness(surface_number)
+        thickness = optic.surfaces.get_thickness(surface_number)
 
         edge_thickness = thickness - sag1 + sag2
         return edge_thickness

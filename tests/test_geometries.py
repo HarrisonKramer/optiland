@@ -1487,8 +1487,8 @@ class TestToroidalGeometry:
         """
         # --- System Setup ---
         lens = Optic()
-        lens.add_surface(index=0, thickness=be.inf)
-        lens.add_surface(
+        lens.surfaces.add(index=0, thickness=be.inf)
+        lens.surfaces.add(
             index=1,
             surface_type="toroidal",
             thickness=5.0,
@@ -1499,13 +1499,13 @@ class TestToroidalGeometry:
             conic=-0.5,
             toroidal_coeffs_poly_y=[0.05, 0.0002],
         )
-        lens.add_surface(index=2, thickness=10.0, material="air")
-        lens.add_surface(index=3)
+        lens.surfaces.add(index=2, thickness=10.0, material="air")
+        lens.surfaces.add(index=3)
 
         lens.set_aperture(aperture_type="EPD", value=10.0)
-        lens.add_wavelength(value=0.550, is_primary=True)
-        lens.set_field_type("angle")
-        lens.add_field(y=0)
+        lens.wavelengths.add(value=0.550, is_primary=True)
+        lens.fields.set_type("angle")
+        lens.fields.add(y=0)
 
         num_rays = 5  # Number of rays per fan
         wavelength = 0.550
@@ -1532,7 +1532,7 @@ class TestToroidalGeometry:
         )
 
         # Trace Y-Fan Rays
-        rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
+        rays_out_yfan = lens.surfaces.trace(rays_in_yfan)
 
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
@@ -1593,7 +1593,7 @@ class TestToroidalGeometry:
             intensity=intensity_xfan,
         )
 
-        rays_out_xfan = lens.surface_group.trace(rays_in_xfan)
+        rays_out_xfan = lens.surfaces.trace(rays_in_xfan)
 
         zemax_x_out_xfan = be.array(
             [
@@ -1640,8 +1640,8 @@ class TestToroidalGeometry:
         """
         # --- System Setup ---
         lens = Optic()
-        lens.add_surface(index=0, thickness=be.inf)
-        lens.add_surface(
+        lens.surfaces.add(index=0, thickness=be.inf)
+        lens.surfaces.add(
             index=1,
             surface_type="toroidal",
             thickness=7.0,
@@ -1652,13 +1652,13 @@ class TestToroidalGeometry:
             conic=-0.5,
             toroidal_coeffs_poly_y=[5e-5, 5e-6],
         )
-        lens.add_surface(index=2, thickness=70.0, material="air")
-        lens.add_surface(index=3)
+        lens.surfaces.add(index=2, thickness=70.0, material="air")
+        lens.surfaces.add(index=3)
 
         lens.set_aperture(aperture_type="EPD", value=20.0)
-        lens.add_wavelength(value=0.550, is_primary=True)
-        lens.set_field_type("angle")
-        lens.add_field(y=0)
+        lens.wavelengths.add(value=0.550, is_primary=True)
+        lens.fields.set_type("angle")
+        lens.fields.add(y=0)
 
         # --- SAG testing ---
         x_coords = be.array([0.0, 2.5, 0.0, -2.5, 5.0, -5.0, 2.5, -2.5])
@@ -1679,7 +1679,7 @@ class TestToroidalGeometry:
         )
 
         # Calculate sag using Optiland
-        optiland_z_sag = lens.surface_group.surfaces[1].geometry.sag(x_coords, y_coords)
+        optiland_z_sag = lens.surfaces[1].geometry.sag(x_coords, y_coords)
 
         assert be.allclose(optiland_z_sag, zemax_z_sag, rtol=1e-5, atol=1e-6)
 
@@ -1708,7 +1708,7 @@ class TestToroidalGeometry:
         )
 
         # Trace Y-Fan Rays
-        rays_out_yfan = lens.surface_group.trace(rays_in_yfan)
+        rays_out_yfan = lens.surfaces.trace(rays_in_yfan)
         # (Lines removed as they are unnecessary debug print statements)
         zemax_x_out_yfan = be.array([0.0] * num_rays)
         zemax_y_out_yfan = be.array(
@@ -1750,7 +1750,7 @@ class TestToroidalGeometry:
         assert be.allclose(rays_out_yfan.N, zemax_N_out_yfan, rtol=1e-5, atol=1e-6)
 
         # --- Surface Normal Comparison ---
-        geom = lens.surface_group.surfaces[1].geometry
+        geom = lens.surfaces[1].geometry
         # choose a test point or array of points
         x_norm = be.array([2.5, -2.5, 2.5, -2.5])
         y_norm = be.array([0.0, 0.0, -2.5, 2.5])
@@ -1799,7 +1799,7 @@ class TestToroidalGeometry:
             intensity=intensity_xfan,
         )
 
-        rays_out_xfan = lens.surface_group.trace(rays_in_xfan)
+        rays_out_xfan = lens.surfaces.trace(rays_in_xfan)
 
         zemax_x_out_xfan = be.array(
             [
@@ -2112,9 +2112,9 @@ class TestBiconicGeometry:
 def forbes_system():
     lens = Optic()
     lens.set_aperture(aperture_type="EPD", value=4.0)
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_wavelength(value=1.55, is_primary=True)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.wavelengths.add(value=1.55, is_primary=True)
     H_K3 = Material("H-K3", reference="cdgm")
     H_ZLAF68C = Material("H-ZLAF68C", reference="cdgm")
 
@@ -2126,10 +2126,10 @@ def forbes_system():
     conic_S4 = 0.038
     norm_radius_S4 = 10.0
 
-    lens.add_surface(index=0, thickness=0.055)
-    lens.add_surface(index=1, thickness=26.5)
-    lens.add_surface(index=2, thickness=4.0, radius=be.inf, material=H_K3, is_stop=True)
-    lens.add_surface(
+    lens.surfaces.add(index=0, thickness=0.055)
+    lens.surfaces.add(index=1, thickness=26.5)
+    lens.surfaces.add(index=2, thickness=4.0, radius=be.inf, material=H_K3, is_stop=True)
+    lens.surfaces.add(
         index=3,
         thickness=25.0,
         radius=22,
@@ -2138,8 +2138,8 @@ def forbes_system():
         norm_radius=norm_radius_S2,
         surface_type="forbes_qbfs",
     )
-    lens.add_surface(index=4, thickness=7.0, radius=be.inf, material=H_ZLAF68C)
-    lens.add_surface(
+    lens.surfaces.add(index=4, thickness=7.0, radius=be.inf, material=H_ZLAF68C)
+    lens.surfaces.add(
         index=5,
         thickness=10.0,
         radius=-31.0,
@@ -2148,7 +2148,7 @@ def forbes_system():
         norm_radius=norm_radius_S4,
         surface_type="forbes_qbfs",
     )
-    lens.add_surface(index=6)
+    lens.surfaces.add(index=6)
     return lens
 
 
@@ -2311,7 +2311,7 @@ class TestForbesQbfsGeometry:
         zmx_rays_M = be.array([3.128052326230352e-002, 0.0, -3.128052326230352e-002])
         zmx_rays_N = be.array([9.995106446979125e-001, 1.0, 9.995106446979125e-001])
 
-        rays_out = system.surface_group.trace(test_rays)
+        rays_out = system.surfaces.trace(test_rays)
 
         assert be.allclose(rays_out.x, zmx_rays_x, rtol=1e-7, atol=1e-7)
         assert be.allclose(rays_out.y, zmx_rays_y, rtol=1e-7, atol=1e-7)
@@ -2324,14 +2324,14 @@ class TestForbesQbfsGeometry:
         """Helper to create a standard Forbes optic for autodiff testing."""
         optic = Optic(name="Autodiff Test Lens")
         optic.set_aperture(aperture_type="EPD", value=30.0)
-        optic.add_wavelength(value=1.55, is_primary=True, unit="um")
-        optic.add_field(y=0.0)
-        optic.add_surface(index=0, thickness=be.inf)
-        optic.add_surface(index=1, thickness=10, is_stop=True)
-        optic.add_surface(
+        optic.wavelengths.add(value=1.55, is_primary=True, unit="um")
+        optic.fields.add(y=0.0)
+        optic.surfaces.add(index=0, thickness=be.inf)
+        optic.surfaces.add(index=1, thickness=10, is_stop=True)
+        optic.surfaces.add(
             index=2, surface_type="standard", radius=60, thickness=7.0, material="N-BK7"
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=3,
             surface_type="forbes_qbfs",
             radius=-120,
@@ -2340,7 +2340,7 @@ class TestForbesQbfsGeometry:
             radial_terms={0: 1.0, 1: 0.8, 2: 0.2},
             norm_radius=30.0,
         )
-        optic.add_surface(index=4)
+        optic.surfaces.add(index=4)
         return optic
 
     @pytest.mark.parametrize("backend_name", ["torch"])
@@ -2351,7 +2351,7 @@ class TestForbesQbfsGeometry:
             pytest.skip("Autodiff test requires the torch backend.")
 
         optic = self._create_forbes_autodiff_optic()
-        forbes_surface = optic.surface_group.surfaces[3].geometry
+        forbes_surface = optic.surfaces[3].geometry
         coeffs_to_test = forbes_surface.radial_terms
 
         for coeff_tensor in coeffs_to_test.values():
@@ -2361,7 +2361,7 @@ class TestForbesQbfsGeometry:
         initial_rays = RealRays(
             x=0.1, y=0.1, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55
         )
-        optic.surface_group.trace(initial_rays)
+        optic.surfaces.trace(initial_rays)
         final_x = initial_rays.x
 
         loss = be.sum(final_x**2)
@@ -2386,14 +2386,14 @@ class TestForbesQbfsGeometry:
         optic = self._create_forbes_autodiff_optic()
 
         # We will test the gradient with respect to the radius
-        trainable_radius = optic.surface_group.surfaces[3].geometry.radius
+        trainable_radius = optic.surfaces[3].geometry.radius
         trainable_radius.requires_grad_(True)
 
         # Ray trace a ray hitting the VERTEX
         initial_rays = RealRays(
             x=0.0, y=0.0, z=0, L=0, M=0, N=1, intensity=1, wavelength=0.55
         )
-        optic.surface_group.trace(initial_rays)
+        optic.surfaces.trace(initial_rays)
         final_y = initial_rays.y
 
         loss = be.sum(final_y**2)
@@ -2418,11 +2418,11 @@ class TestForbesQbfsGeometry:
         # 1. Create a simple optical system with a Forbes Q-bfs surface
         optic = Optic(name="Test Forbes Autodiff")
         optic.set_aperture(aperture_type="EPD", value=10.0)
-        optic.add_wavelength(value=0.55, is_primary=True)
-        optic.set_field_type(field_type="angle")
-        optic.add_field(y=0.0)
-        optic.add_surface(index=0, thickness=be.inf)
-        optic.add_surface(
+        optic.wavelengths.add(value=0.55, is_primary=True)
+        optic.fields.set_type(field_type="angle")
+        optic.fields.add(y=0.0)
+        optic.surfaces.add(index=0, thickness=be.inf)
+        optic.surfaces.add(
             index=1,
             surface_type="forbes_qbfs",
             radius=be.tensor(100.0, requires_grad=True),
@@ -2432,7 +2432,7 @@ class TestForbesQbfsGeometry:
             radial_terms={i: be.tensor(0.0, requires_grad=True) for i in range(2)},
             norm_radius=be.tensor(10.0, requires_grad=True),
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=2, aperture=RectangularAperture(x_min=-5, x_max=5, y_min=-5, y_max=5)
         )
 
@@ -2688,15 +2688,15 @@ class TestForbesQ2dGeometry:
     def _create_forbes_q2d_autodiff_optic(self):
         """Helper to create a standard Forbes Q2D optic for autodiff testing."""
         optic = Optic(name="Q2D Autodiff Test Lens")
-        optic.add_wavelength(value=0.55, is_primary=True)
-        optic.add_field(y=0.0)
+        optic.wavelengths.add(value=0.55, is_primary=True)
+        optic.fields.add(y=0.0)
 
         # Create a trainable freeform coefficient
         trainable_coeff = be.tensor(0.01, requires_grad=True)
         freeform_coeffs = {("a", 1, 1): trainable_coeff}
 
-        optic.add_surface(index=0, thickness=be.inf)
-        optic.add_surface(
+        optic.surfaces.add(index=0, thickness=be.inf)
+        optic.surfaces.add(
             index=1,
             surface_type="forbes_q2d",
             radius=-100.0,
@@ -2705,7 +2705,7 @@ class TestForbesQ2dGeometry:
             freeform_coeffs=freeform_coeffs,
             norm_radius=20.0,
         )
-        optic.add_surface(index=2)
+        optic.surfaces.add(index=2)
         return optic, trainable_coeff
 
     @pytest.mark.parametrize("backend_name", ["torch"])
@@ -2719,7 +2719,7 @@ class TestForbesQ2dGeometry:
         vertex_ray = RealRays(
             x=0.0, y=0.0, z=0.0, L=0.0, M=0.0, N=1.0, intensity=1.0, wavelength=0.55
         )
-        final_ray = optic.surface_group.trace(vertex_ray)
+        final_ray = optic.surfaces.trace(vertex_ray)
 
         # define loss and compute gradient
         loss = be.sum(final_ray.y**2)
@@ -2925,10 +2925,10 @@ class TestForbesValidation:
         optic = Optic()
         optic.set_aperture(aperture_type="EPD", value=4.0)
 
-        optic.set_field_type(field_type="angle")
-        optic.add_field(y=0)
+        optic.fields.set_type(field_type="angle")
+        optic.fields.add(y=0)
 
-        optic.add_wavelength(value=1.550, is_primary=True)
+        optic.wavelengths.add(value=1.550, is_primary=True)
 
         H_K3 = IdealMaterial(n=1.50, k=0)
         H_ZLAF68C = Material("H-ZLAF68C", reference="cdgm")
@@ -2944,9 +2944,9 @@ class TestForbesValidation:
 
         radial_terms = {0: -0.334, 1: 0.130, 2: -0.099, 3: 0.082, 4: -0.093}
 
-        optic.add_surface(index=0, thickness=be.inf)
-        optic.add_surface(index=1, thickness=26.5)
-        optic.add_surface(
+        optic.surfaces.add(index=0, thickness=be.inf)
+        optic.surfaces.add(index=1, thickness=26.5)
+        optic.surfaces.add(
             index=2,
             thickness=4.0,
             radius=be.inf,
@@ -2954,7 +2954,7 @@ class TestForbesValidation:
             is_stop=True,
             aperture=6.0,
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=3,
             thickness=25.0,
             radius=21.7,
@@ -2964,10 +2964,10 @@ class TestForbesValidation:
             surface_type="forbes_q2d",
             aperture=6.0,
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=4, thickness=7.0, radius=be.inf, material=H_ZLAF68C, aperture=16.0
         )
-        optic.add_surface(
+        optic.surfaces.add(
             index=5,
             thickness=10.0,
             radius=-31.408,
@@ -2977,7 +2977,7 @@ class TestForbesValidation:
             surface_type="forbes_qbfs",
             aperture=16.0,
         )
-        optic.add_surface(index=6)
+        optic.surfaces.add(index=6)
 
         # Create rays to trace through this geometry
         rays_1 = RealRays(
@@ -3012,9 +3012,9 @@ class TestForbesValidation:
         )
 
         # trace and group for comparison
-        rays_out_1 = optic.surface_group.trace(rays_1)
-        rays_out_2 = optic.surface_group.trace(rays_2)
-        rays_out_3 = optic.surface_group.trace(rays_3)
+        rays_out_1 = optic.surfaces.trace(rays_1)
+        rays_out_2 = optic.surfaces.trace(rays_2)
+        rays_out_3 = optic.surfaces.trace(rays_3)
 
         rays_out_1 = be.stack(
             [

@@ -96,13 +96,13 @@ class ExtendedSourceOptic:
         rays = self.source.generate_rays(num_rays)
 
         # Trace the rays through the optical system
-        traced_rays = self.optic.surface_group.trace(rays)
+        traced_rays = self.optic.surfaces.trace(rays)
 
         # Get the full ray path through all surfaces
         ray_path = {
-            "x": self.optic.surface_group.x,
-            "y": self.optic.surface_group.y,
-            "z": self.optic.surface_group.z,
+            "x": self.optic.surfaces.x,
+            "y": self.optic.surfaces.y,
+            "z": self.optic.surfaces.z,
         }
 
         return traced_rays, ray_path

@@ -751,13 +751,13 @@ class TestRayGenerator:
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
-        lens.set_field_type("angle")
+        lens.fields.set_type("angle")
         with pytest.raises(ValueError):
             generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
     def test_invalid_polarization(self):
         lens = TessarLens()
-        lens.surface_group.set_fresnel_coatings()
+        lens.surfaces.set_fresnel_coatings()
         generator = RayGenerator(lens)
 
         Hx = 0.5
@@ -779,7 +779,7 @@ class TestRayGenerator:
 
         lens = TessarLens()
         state = PolarizationState(is_polarized=False)
-        lens.set_polarization(state)
+        lens.updater.set_polarization(state)
         generator = RayGenerator(lens)
         rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 
@@ -821,7 +821,7 @@ class TestRayGenerator:
 
     def test_get_ray_origins_invalid_field_type(self):
         lens = TessarLens()
-        lens.set_field_type("object_height")
+        lens.fields.set_type("object_height")
         generator = RayGenerator(lens)
 
         Hx = 0.5
@@ -854,8 +854,8 @@ class TestOpticTrace:
     def sample_optic(self):
         """Provides a configured TessarLens instance for tracing tests."""
         optic = TessarLens()
-        optic.add_field(y=0.7)
-        optic.add_field(y=1.0)
+        optic.fields.add(y=0.7)
+        optic.fields.add(y=1.0)
         return optic
 
     def test_trace_single_field_scalar_input(self, sample_optic):

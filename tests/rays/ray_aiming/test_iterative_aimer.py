@@ -20,23 +20,23 @@ class TestIterativeRayAimer(unittest.TestCase):
         self.optic = Optic()
 
         # Create a fast system where paraxial aiming might fail to be exact at the stop
-        self.optic.add_surface(index=0, thickness=100)
-        self.optic.add_surface(
+        self.optic.surfaces.add(index=0, thickness=100)
+        self.optic.surfaces.add(
             index=1, radius=50, thickness=10, material=IdealMaterial(n=1.5)
         )
-        self.optic.add_surface(index=2, radius=-50, thickness=20)  # Surface 2
-        self.optic.add_surface(
+        self.optic.surfaces.add(index=2, radius=-50, thickness=20)  # Surface 2
+        self.optic.surfaces.add(
             index=3, is_stop=True, thickness=20, aperture=20.0
         )  # Surface 3 (Stop)
-        self.optic.add_surface(index=4)  # Image
+        self.optic.surfaces.add(index=4)  # Image
 
-        self.optic.add_surface(index=4)  # Image
+        self.optic.surfaces.add(index=4)  # Image
 
         self.optic.set_aperture("float_by_stop_size", 1.0)
-        self.optic.set_field_type("angle")
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=10)  # 10 degrees
-        self.optic.add_wavelength(0.55)
+        self.optic.fields.set_type("angle")
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=10)  # 10 degrees
+        self.optic.wavelengths.add(0.55)
 
     def test_creation(self):
         aimer = create_ray_aimer("iterative", self.optic)
@@ -46,14 +46,14 @@ class TestIterativeRayAimer(unittest.TestCase):
     def test_aiming_convergence_finite_object(self):
         # Configure for Finite Object: ensure thickness is finite (set in setUp as 100)
         # S0 thickness=100 -> Object at Z=0, S1 at Z=100.
-        self.optic.set_field_type("object_height")
+        self.optic.fields.set_type("object_height")
         self.optic.fields.fields.clear()
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=5)  # 5mm height
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=5)  # 5mm height
 
         # Determine explicit target stop_r
-        stop_index = self.optic.surface_group.stop_index
-        stop_r = self.optic.surface_group.surfaces[stop_index].aperture.r_max
+        stop_index = self.optic.surfaces.stop_index
+        stop_r = self.optic.surfaces[stop_index].aperture.r_max
 
         # Aim rays
         # Increase max_iter for safety
@@ -72,7 +72,7 @@ class TestIterativeRayAimer(unittest.TestCase):
         rays = RealRays(x, y, z, L, M, N, intensity=intensity, wavelength=wavelengths)
 
         for i in range(stop_index + 1):
-            self.optic.surface_group.surfaces[i].trace(rays)
+            self.optic.surfaces[i].trace(rays)
 
         stop_y = rays.y
         target_y = 1.0 * stop_r
@@ -84,14 +84,14 @@ class TestIterativeRayAimer(unittest.TestCase):
     def test_compare_paraxial_vs_iterative(self):
         # Create a system with strong spherical aberration or distortion
         # Ensure Infinite Object -> Set thickness to inf
-        self.optic.surface_group.surfaces[0].thickness = np.inf
+        self.optic.surfaces[0].thickness = np.inf
 
-        self.optic.set_field_type("angle")
+        self.optic.fields.set_type("angle")
         self.optic.fields.fields.clear()
-        self.optic.add_field(y=0)
-        self.optic.add_field(y=5)  # 5 degrees
+        self.optic.fields.add(y=0)
+        self.optic.fields.add(y=5)  # 5 degrees
 
-        self.optic.surface_group.surfaces[1].geometry.radius = 200  # Weak curve
+        self.optic.surfaces[1].geometry.radius = 200  # Weak curve
 
         paraxial_aimer = ParaxialRayAimer(self.optic)
         iterative_aimer = IterativeRayAimer(self.optic)
@@ -104,8 +104,8 @@ class TestIterativeRayAimer(unittest.TestCase):
         x0, y0, z0, L0, M0, N0 = paraxial_aimer.aim_rays(fields, wavelengths, pupil)
         rays0 = import_rays(x0, y0, z0, L0, M0, N0, wavelengths)
         trace_to_stop(self.optic, rays0)
-        stop_r = self.optic.surface_group.surfaces[
-            self.optic.surface_group.stop_index
+        stop_r = self.optic.surfaces[
+            self.optic.surfaces.stop_index
         ].aperture.r_max
         error0 = np.abs(rays0.y - stop_r)
 
@@ -132,9 +132,9 @@ def import_rays(x, y, z, L, M, N, w):
 
 
 def trace_to_stop(optic, rays):
-    stop_idx = optic.surface_group.stop_index
+    stop_idx = optic.surfaces.stop_index
     for i in range(stop_idx + 1):
-        optic.surface_group.surfaces[i].trace(rays)
+        optic.surfaces[i].trace(rays)
 
 
 if __name__ == "__main__":

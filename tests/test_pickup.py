@@ -11,24 +11,24 @@ class TestPickup:
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "radius", 2, scale=2, offset=3)
         pickup.apply()
-        r0 = lens.surface_group.radii[1]
-        r1 = lens.surface_group.radii[2]
+        r0 = lens.surfaces.radii[1]
+        r1 = lens.surfaces.radii[2]
         assert r1 == 2 * r0 + 3
 
     def test_apply_conic(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "conic", 2, scale=2, offset=3)
         pickup.apply()
-        k0 = lens.surface_group.conic[1]
-        k1 = lens.surface_group.conic[2]
+        k0 = lens.surfaces.conic[1]
+        k1 = lens.surfaces.conic[2]
         assert k1 == 2 * k0 + 3
 
     def test_apply_thickness(self, set_test_backend):
         lens = CookeTriplet()
         pickup = Pickup(lens, 1, "thickness", 2, scale=1, offset=0)
         pickup.apply()
-        t1 = lens.surface_group.get_thickness(1)
-        t2 = lens.surface_group.get_thickness(2)
+        t1 = lens.surfaces.get_thickness(1)
+        t2 = lens.surfaces.get_thickness(2)
         assert t1 == t2
 
     def test_invalid_attr_type(self, set_test_backend):
@@ -40,14 +40,14 @@ class TestPickup:
     def test_apply_generic_coefficients(self, set_test_backend):
         lens = CookeTriplet()
         # Ensure it has aspheric coefficients
-        lens.add_surface(
+        lens.surfaces.add(
             index=1,
             radius=50,
             thickness=3,
             surface_type="even_asphere",
             coefficients=[-2e-4, -4e-6],
         )
-        lens.add_surface(
+        lens.surfaces.add(
             index=2,
             radius=-50,
             thickness=30,
@@ -63,7 +63,7 @@ class TestPickup:
             offset=0,
         )
         pickup.apply()
-        assert lens.surface_group.surfaces[2].geometry.coefficients == [-2e-4, -4e-6]
+        assert lens.surfaces[2].geometry.coefficients == [-2e-4, -4e-6]
 
     def test_invalid_set_attr(self, set_test_backend):
         lens = CookeTriplet()
@@ -110,8 +110,8 @@ class TestPickupManager:
         manager = PickupManager(lens)
         manager.add(1, "radius", 2, scale=2, offset=3)
         manager.apply()
-        r0 = lens.surface_group.surfaces[1].geometry.radius
-        r1 = lens.surface_group.surfaces[2].geometry.radius
+        r0 = lens.surfaces[1].geometry.radius
+        r1 = lens.surfaces[2].geometry.radius
         assert r1 == 2 * r0 + 3
 
     def test_clear_pickups(self, set_test_backend):

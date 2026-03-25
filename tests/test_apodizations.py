@@ -161,11 +161,11 @@ def test_hann_to_from_dict(set_test_backend):
 def test_set_apodization_by_string(set_test_backend):
     """Test setting apodization using a string identifier."""
     optic = Optic()
-    optic.set_apodization("GaussianApodization", sigma=0.8)
+    optic.updater.set_apodization("GaussianApodization", sigma=0.8)
     assert isinstance(optic.apodization, GaussianApodization)
     assert optic.apodization.sigma == 0.8
 
-    optic.set_apodization("TukeyApodization", R=1.2, alpha=0.3)
+    optic.updater.set_apodization("TukeyApodization", R=1.2, alpha=0.3)
     assert isinstance(optic.apodization, TukeyApodization)
     assert optic.apodization.R == 1.2
     assert optic.apodization.alpha == 0.3
@@ -175,7 +175,7 @@ def test_set_apodization_by_dict(set_test_backend):
     """Test setting apodization using a dictionary."""
     optic = Optic()
     apod_dict = {"type": "PolynomialApodization", "R": 1.5, "p": 2}
-    optic.set_apodization(apod_dict)
+    optic.updater.set_apodization(apod_dict)
     assert isinstance(optic.apodization, PolynomialApodization)
     assert optic.apodization.R == 1.5
     assert optic.apodization.p == 2
@@ -185,11 +185,11 @@ def test_set_apodization_invalid_string(set_test_backend):
     """Test setting apodization with an invalid string identifier."""
     optic = Optic()
     with pytest.raises(ValueError):
-        optic.set_apodization("InvalidApodizationName")
+        optic.updater.set_apodization("InvalidApodizationName")
 
 
 def test_set_apodization_invalid_type(set_test_backend):
     """Test setting apodization with an invalid type."""
     optic = Optic()
     with pytest.raises(TypeError):
-        optic.set_apodization(123)
+        optic.updater.set_apodization(123)

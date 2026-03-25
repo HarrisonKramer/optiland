@@ -129,7 +129,7 @@ class YYbar(BaseAnalysis):
         """Plot the main Y Y-bar diagram."""
         ya = self.data["ya"]
         yb = self.data["yb"]
-        num_surfaces = self.optic.surface_group.num_surfaces
+        num_surfaces = self.optic.surfaces.num_surfaces
 
         for idx in range(1, num_surfaces):
             label = self._generate_surface_label(idx, num_surfaces)
@@ -143,7 +143,7 @@ class YYbar(BaseAnalysis):
 
     def _generate_surface_label(self, idx: int, num_surfaces: int) -> str | None:
         """Generate label for a surface in the diagram."""
-        sg = self.optic.surface_group
+        sg = self.optic.surfaces
 
         if idx == num_surfaces - 1:
             return "Image"
@@ -156,7 +156,7 @@ class YYbar(BaseAnalysis):
         label = surface.comment or (
             f"S{surface.id}" if hasattr(surface, "id") else f"S{idx}"
         )
-        if idx == self.optic.surface_group.stop_index:
+        if idx == self.optic.surfaces.stop_index:
             label += " (Stop)"
         return label
 

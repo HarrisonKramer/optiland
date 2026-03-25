@@ -458,7 +458,7 @@ class SpotDiagram(BaseAnalysis):
             A SpotData object with the traced ray intersection data.
         """
         self.optic.trace(*field, wavelength, num_rays, distribution)
-        surf_group = self.optic.surface_group
+        surf_group = self.optic.surfaces
         x_g, y_g, z_g, i_g = (
             surf_group.x[-1, :],
             surf_group.y[-1, :],

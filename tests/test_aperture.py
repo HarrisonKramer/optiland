@@ -171,23 +171,23 @@ def test_from_dict_unknown_type(set_test_backend):
 def test_confirm_stop_size_floating_stop(set_test_backend):
     lens = Optic()
 
-    lens.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    lens.add_surface(index=1, radius=22.01359, thickness=3.25896, material="SK16")
-    lens.add_surface(index=2, radius=-435.76044, thickness=30, is_stop=True)
-    lens.add_surface(index=3)
+    lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    lens.surfaces.add(index=1, radius=22.01359, thickness=3.25896, material="SK16")
+    lens.surfaces.add(index=2, radius=-435.76044, thickness=30, is_stop=True)
+    lens.surfaces.add(index=3)
 
     stop_diam = 8.4
     stop_idx = 2
     lens.set_aperture(aperture_type="float_by_stop_size", value=stop_diam)
 
-    lens.set_field_type(field_type="angle")
-    lens.add_field(y=0)
-    lens.add_field(y=14)
-    lens.add_field(y=20)
+    lens.fields.set_type(field_type="angle")
+    lens.fields.add(y=0)
+    lens.fields.add(y=14)
+    lens.fields.add(y=20)
 
-    lens.add_wavelength(value=0.48)
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_wavelength(value=0.65)
+    lens.wavelengths.add(value=0.48)
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.wavelengths.add(value=0.65)
 
     lens.paraxial.trace(Hy=0, Py=1, wavelength=0.55)
-    assert_allclose(lens.surface_group.y[stop_idx], stop_diam / 2)
+    assert_allclose(lens.surfaces.y[stop_idx], stop_diam / 2)

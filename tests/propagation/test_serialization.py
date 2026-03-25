@@ -76,7 +76,7 @@ def test_optic_serialization_round_trip(
     """
     # 1. SETUP: Create a standard optic with the specified material.
     optic = Optic()
-    optic.add_surface(
+    optic.surfaces.add(
         Surface(
             previous_surface=None,
             geometry=StandardGeometry(coordinate_system=CoordinateSystem(), radius=100),
@@ -89,7 +89,7 @@ def test_optic_serialization_round_trip(
     optic_from_dict = Optic.from_dict(optic_dict)
 
     # 3. VERIFICATION: Check the deserialized object for correctness.
-    deserialized_surface = optic_from_dict.surface_group.surfaces[0]
+    deserialized_surface = optic_from_dict.surfaces[0]
     deserialized_material = deserialized_surface.material_post
     deserialized_model = deserialized_material.propagation_model
 
@@ -115,7 +115,7 @@ def test_material_file_serialization_round_trip(tmp_path, set_test_backend):
     material = MaterialFile(filename=dummy_file)
 
     optic = Optic()
-    optic.add_surface(
+    optic.surfaces.add(
         Surface(
             previous_surface=None,
             geometry=StandardGeometry(
@@ -130,7 +130,7 @@ def test_material_file_serialization_round_trip(tmp_path, set_test_backend):
     optic_from_dict = Optic.from_dict(optic_dict)
 
     # 3. VERIFICATION
-    deserialized_material = optic_from_dict.surface_group.surfaces[0].material_post
+    deserialized_material = optic_from_dict.surfaces[0].material_post
 
     # Check material properties.
     assert isinstance(deserialized_material, MaterialFile)

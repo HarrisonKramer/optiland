@@ -9,10 +9,10 @@ from optiland.utils import resolve_fields, resolve_wavelength, resolve_wavelengt
 @pytest.fixture
 def optic():
     o = Optic()
-    o.add_wavelength(value=0.5, is_primary=True)
-    o.add_wavelength(value=0.6)
-    o.add_field(y=0)
-    o.add_field(y=1)
+    o.wavelengths.add(value=0.5, is_primary=True)
+    o.wavelengths.add(value=0.6)
+    o.fields.add(y=0)
+    o.fields.add(y=1)
     return o
 
 

@@ -174,7 +174,7 @@ class InteractionManager:
         from optiland.visualization.system.surface import Surface2D
 
         if isinstance(optiland_object, Surface2D):
-            provider = SurfaceInfoProvider(self.optic.surface_group)
+            provider = SurfaceInfoProvider(self.optic.surfaces)
             return provider.get_info(optiland_object)
 
         elif isinstance(optiland_object, RayBundle):
@@ -182,7 +182,7 @@ class InteractionManager:
             return provider.get_info(optiland_object)
 
         elif isinstance(optiland_object, Lens2D):
-            provider = LensInfoProvider(self.optic.surface_group)
+            provider = LensInfoProvider(self.optic.surfaces)
             return provider.get_info(optiland_object)
 
         else:

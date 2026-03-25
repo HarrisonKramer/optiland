@@ -15,10 +15,10 @@ def base_optic():
     optic = Optic()
     # Create a simple triplet-like structure
     # Surfaces: 0 (Obj), 1 (Lens1), 2 (Air), 3 (Lens2), 4 (Img)
-    optic.add_surface(radius=100, thickness=10, material="air", index=0)
-    optic.add_surface(radius=-100, thickness=5, material="air", index=1)
-    optic.add_surface(radius=50, thickness=10, material="air", index=2)
-    optic.add_surface(radius=-50, thickness=0, material="air", index=3)  # Image
+    optic.surfaces.add(radius=100, thickness=10, material="air", index=0)
+    optic.surfaces.add(radius=-100, thickness=5, material="air", index=1)
+    optic.surfaces.add(radius=50, thickness=10, material="air", index=2)
+    optic.surfaces.add(radius=-50, thickness=0, material="air", index=3)  # Image
     return optic
 
 
@@ -28,11 +28,11 @@ def test_set_global_radius(base_optic):
     mc.add_configuration()
 
     mc.set_radius(1, 200, configurations="all")
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
-    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 200
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 200
+    assert mc.current_config(0).surfaces[1].geometry.radius == 200
+    assert mc.current_config(1).surfaces[1].geometry.radius == 200
 
 
 def test_set_unique_radius(base_optic):
@@ -42,21 +42,21 @@ def test_set_unique_radius(base_optic):
 
     # Set unique on config 1
     mc.set_radius(1, 300, configurations=[1])
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
     assert (
-        mc.current_config(0).surface_group.surfaces[1].geometry.radius == -100
+        mc.current_config(0).surfaces[1].geometry.radius == -100
     )  # Original
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
+    assert mc.current_config(1).surfaces[1].geometry.radius == 300
 
     # Modify global, config 1 should NOT change
     mc.set_radius(1, 400, configurations=[0])
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
-    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 400
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
+    assert mc.current_config(0).surfaces[1].geometry.radius == 400
+    assert mc.current_config(1).surfaces[1].geometry.radius == 300
 
 
 def test_relink_radius(base_optic):
@@ -66,23 +66,23 @@ def test_relink_radius(base_optic):
 
     # Make unique
     mc.set_radius(1, 300, configurations=[1])
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 300
+    assert mc.current_config(1).surfaces[1].geometry.radius == 300
 
     # Set global 'all', should overwrite unique
     mc.set_radius(1, 500, configurations="all")
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
-    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 500
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 500
+    assert mc.current_config(0).surfaces[1].geometry.radius == 500
+    assert mc.current_config(1).surfaces[1].geometry.radius == 500
 
     # Update global again, check link persists
     mc.set_radius(1, 600, configurations=[0])  # Only set 0, but 1 is linked now
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
-    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 600
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 600
+    assert mc.current_config(0).surfaces[1].geometry.radius == 600
+    assert mc.current_config(1).surfaces[1].geometry.radius == 600
 
 
 def test_set_generic_property(base_optic):
@@ -97,11 +97,11 @@ def test_set_generic_property(base_optic):
 
     # Set global generic
     mc.set_surface_property(1, "geometry.radius", 250, configurations="all")
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
-    assert mc.current_config(0).surface_group.surfaces[1].geometry.radius == 250
-    assert mc.current_config(1).surface_group.surfaces[1].geometry.radius == 250
+    assert mc.current_config(0).surfaces[1].geometry.radius == 250
+    assert mc.current_config(1).surfaces[1].geometry.radius == 250
 
     # Confirm pickup was created (since radius has standard pickup, but we used generic path)
     # Generic path 'surface_group.surfaces[1].geometry.radius'
@@ -110,7 +110,7 @@ def test_set_generic_property(base_optic):
     # So it used _ensure_generic_pickup.
 
     has_generic_pickup = False
-    target_path = "surface_group.surfaces[1].geometry.radius"
+    target_path = "surfaces.surfaces[1].geometry.radius"
     for p in mc.current_config(1).pickups.pickups:
         if p.attr_type == target_path:
             has_generic_pickup = True
@@ -131,8 +131,8 @@ def test_set_optic_property(base_optic):
     # Generic pickup should handle future updates.
 
     mc.set_optic_property("name", "NewName", configurations="all")
-    mc.current_config(0).update()
-    mc.current_config(1).update()
+    mc.current_config(0).updater.update()
+    mc.current_config(1).updater.update()
 
     # Pickups apply on update().
     # Generic pickup sets attr on config 1 from config 0.
@@ -146,10 +146,10 @@ def test_multiconfig_draw(base_optic):
 
     # Setup optic for drawing (needs aperture/fields)
     base_optic.set_aperture("EPD", 20)
-    base_optic.set_field_type("angle")
-    base_optic.add_field(0)
-    base_optic.add_wavelength(0.55, is_primary=True)
-    base_optic.surface_group.surfaces[1].is_stop = True
+    base_optic.fields.set_type("angle")
+    base_optic.fields.add(0)
+    base_optic.wavelengths.add(0.55, is_primary=True)
+    base_optic.surfaces[1].is_stop = True
 
     mc.add_configuration()
 
