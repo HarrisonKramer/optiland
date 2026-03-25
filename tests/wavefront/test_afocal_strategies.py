@@ -21,7 +21,7 @@ def test_afocal_chief_ray_strategy():
     """Test ChiefRayStrategy in afocal mode with a perfect collimator."""
     optic = Optic()
     optic.surfaces.add(new_surface=create_object_surface(), index=0)  # Obj
-    optic.set_thickness(1e12, 0)
+    optic.updater.set_thickness(1e12, 0)
 
     cs_stop = CoordinateSystem()
     stop_surf = ObjectSurface(Plane(cs_stop), IdealMaterial(1.0, 0))
@@ -66,7 +66,7 @@ def test_afocal_best_fit_strategy():
     """Test BestFitStrategy in afocal mode removes tilt from tilted plane wave."""
     optic = Optic()
     optic.surfaces.add(new_surface=create_object_surface(), index=0)
-    optic.set_thickness(1e9, 0)
+    optic.updater.set_thickness(1e9, 0)
     optic.surfaces.add(
         radius=float("inf"), thickness=10, material="air", index=1, is_stop=True
     )
@@ -98,7 +98,7 @@ def test_focal_regression():
     """Ensure standard focal mode still works (regression test)."""
     optic = Optic()
     optic.surfaces.add(new_surface=create_object_surface(), index=0)
-    optic.set_thickness(100, 0)  # Finite object
+    optic.updater.set_thickness(100, 0)  # Finite object
     optic.surfaces.add(
         radius=100, thickness=10, material="N-BK7", index=1, is_stop=True
     )

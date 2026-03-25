@@ -347,7 +347,7 @@ class TestOptic:
 
     def test_image_solve(self, set_test_backend):
         lens = HeliarLens()
-        lens.image_solve()
+        lens.updater.image_solve()
         # This test is just to ensure the method runs without error
 
     def test_trace(self, set_test_backend):

@@ -21,7 +21,7 @@ def test_fftpsf_factory_dispatch(generic_optic, set_test_backend):
 
     # Enable polarization
     state = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0)
-    generic_optic.set_polarization(state)
+    generic_optic.updater.set_polarization(state)
     psf_vectorial = FFTPSF(generic_optic, field=(0.0, 0.0), wavelength="primary", num_rays=32)
     assert isinstance(psf_vectorial, VectorialFFTPSF)
 
@@ -36,13 +36,13 @@ def test_vectorial_fft_strehl_matches_scalar(generic_optic, set_test_backend):
 
     # Enable polarization (Horizontal)
     state = PolarizationState(is_polarized=True, Ex=1.0, Ey=0.0, phase_x=0.0, phase_y=0.0)
-    generic_optic.set_polarization(state)
+    generic_optic.updater.set_polarization(state)
     psf_vectorial_h = FFTPSF(generic_optic, field=(0.0, 0.0), wavelength="primary", num_rays=64)
     strehl_vectorial_h = psf_vectorial_h.strehl_ratio()
 
     # Enable polarization (unpolarized source -> 2 incoherent states)
     state_unpol = PolarizationState(is_polarized=False)
-    generic_optic.set_polarization(state_unpol)
+    generic_optic.updater.set_polarization(state_unpol)
     psf_vectorial_unpol = FFTPSF(generic_optic, field=(0.0, 0.0), wavelength="primary", num_rays=64)
     strehl_vectorial_unpol = psf_vectorial_unpol.strehl_ratio()
 

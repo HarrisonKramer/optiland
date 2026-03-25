@@ -11,7 +11,7 @@ def create_simple_lens(infinite=True):
 
     # Lens Front (1)
     optic.surfaces.add(surface_type="standard", radius=100.0, thickness=10.0, index=1)
-    optic.set_index(1.5, 1)  # N=1.5
+    optic.updater.set_index(1.5, 1)  # N=1.5
 
     # Lens Back (2) - Aperture Stop
     optic.surfaces.add(
@@ -32,7 +32,7 @@ def create_simple_lens(infinite=True):
     optic.fields.set_type("real_image_height")
     optic.fields.add(y=5.0, x=0.0)  # Sets max_field to 5.0
 
-    optic.image_solve()  # Solve for paraxial focus
+    optic.updater.image_solve()  # Solve for paraxial focus
     return optic
 
 

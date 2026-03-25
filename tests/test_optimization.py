@@ -227,7 +227,7 @@ class TestOptimizerGeneric:
 
             lens = UVReflectingMicroscope()
             # this will "break" the lens, resulting in NaN (for testing)
-            lens.set_radius(0.2, 3)
+            lens.updater.set_radius(0.2, 3)
             problem = optimization.OptimizationProblem()
             input_data = {
                 "optic": lens,
@@ -769,7 +769,7 @@ class TestOptimizerWithBounds:
         from optiland.optimization.scaling.reciprocal import ReciprocalScaler
 
         lens = Microscope20x()
-        lens.set_radius(-1000, 1)
+        lens.updater.set_radius(-1000, 1)
         problem = optimization.OptimizationProblem()
         max_b = -500.0
         problem.add_variable(

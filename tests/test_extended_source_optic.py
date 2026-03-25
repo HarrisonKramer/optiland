@@ -59,7 +59,7 @@ class TestExtendedSourceOptic:
 
         # Test delegation
         assert ext_optic.name == optic.name
-        assert ext_optic.surface_group is optic.surface_group
+        assert ext_optic.surfaces is optic.surfaces
 
         # Test setting attribute on optic via wrapper (should affect optic)
         ext_optic.name = "New Name"
@@ -77,7 +77,7 @@ class TestExtendedSourceOptic:
         assert "z" in ray_path
 
         # Check shapes of ray path arrays
-        num_surfaces = ext_optic.optic.surface_group.num_surfaces
+        num_surfaces = ext_optic.optic.surfaces.num_surfaces
         actual_num_rays = be.size(traced_rays.x)
         assert be.shape(ray_path["x"]) == (num_surfaces, actual_num_rays)
 

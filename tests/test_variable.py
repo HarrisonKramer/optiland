@@ -90,7 +90,7 @@ class TestReciprocalRadiusVariable:
     def test_optimization(self):
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
         optimizer = OptimizerGeneric(self.problem)
-        self.optic.set_radius(22.0, 1)
+        self.optic.updater.set_radius(22.0, 1)
         optimizer.optimize(tol=1e-9)
         expected_radius = 19.93
         optimized_radius = self.optic.surfaces.radii[1]
@@ -98,7 +98,7 @@ class TestReciprocalRadiusVariable:
 
     def test_optimization_with_flat_surface(self):
         self.problem.add_variable(self.optic, "reciprocal_radius", surface_number=1)
-        self.optic.set_radius(-be.inf, 1)
+        self.optic.updater.set_radius(-be.inf, 1)
         optimizer = OptimizerGeneric(self.problem)
         optimizer.optimize(tol=1e-9)
         optimizer.optimize(tol=1e-9)

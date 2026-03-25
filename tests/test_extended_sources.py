@@ -434,13 +434,13 @@ class TestExtendedSourceOptic:
         assert len(optic.wavelengths.wavelengths) == initial_count + 1
 
     def test_set_radius_through_wrapper(self, optic, ext_optic):
-        ext_optic.set_radius(100.0, surface_number=1)
+        ext_optic.updater.set_radius(100.0, surface_number=1)
         assert float(optic.surfaces[1].geometry.radius) == pytest.approx(
             100.0
         )
 
     def test_set_thickness_through_wrapper(self, optic, ext_optic):
-        ext_optic.set_thickness(99.0, surface_number=1)
+        ext_optic.updater.set_thickness(99.0, surface_number=1)
         assert optic.surfaces.get_thickness(1).item() == (pytest.approx(99.0))
 
     def test_paraxial_calculations_through_wrapper(self, ext_optic):

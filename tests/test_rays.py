@@ -779,7 +779,7 @@ class TestRayGenerator:
 
         lens = TessarLens()
         state = PolarizationState(is_polarized=False)
-        lens.set_polarization(state)
+        lens.updater.set_polarization(state)
         generator = RayGenerator(lens)
         rays = generator.generate_rays(Hx, Hy, Px, Py, wavelength)
 

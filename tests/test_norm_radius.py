@@ -71,7 +71,7 @@ def test_default_behavior(zernike_optic, set_test_backend):
 def test_fixed_behavior(zernike_optic, set_test_backend):
     # Set norm_radius explicitly
     custom_norm_radius = 42.0
-    zernike_optic.set_norm_radius(custom_norm_radius, 2)  # surface index 2
+    zernike_optic.updater.set_norm_radius(custom_norm_radius, 2)  # surface index 2
 
     zernike_surface = zernike_optic.surfaces[2]
     assert getattr(zernike_surface.geometry, "normalization_mode", "auto") == "manual"
@@ -85,10 +85,10 @@ def test_fixed_behavior(zernike_optic, set_test_backend):
 def test_reversibility(zernike_optic, set_test_backend):
     # Fix it
     custom_norm_radius = 42.0
-    zernike_optic.set_norm_radius(custom_norm_radius, 2)
+    zernike_optic.updater.set_norm_radius(custom_norm_radius, 2)
 
     # Unfix it
-    zernike_optic.set_norm_radius(custom_norm_radius, 2, is_fixed=False)
+    zernike_optic.updater.set_norm_radius(custom_norm_radius, 2, is_fixed=False)
 
     zernike_surface = zernike_optic.surfaces[2]
     assert getattr(zernike_surface.geometry, "normalization_mode", "manual") == "auto"
@@ -113,7 +113,7 @@ def test_reversibility(zernike_optic, set_test_backend):
 def test_optimizer_precedence(zernike_optic, set_test_backend):
     # Fix it
     custom_norm_radius = 42.0
-    zernike_optic.set_norm_radius(custom_norm_radius, 2)
+    zernike_optic.updater.set_norm_radius(custom_norm_radius, 2)
 
     zernike_surface = zernike_optic.surfaces[2]
 

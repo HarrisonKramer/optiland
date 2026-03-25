@@ -386,19 +386,19 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens.surfaces.add(index=3, material=mat3, thickness=5)  # Surface 3
         lens.surfaces.add(index=4, material="Air")
 
-        surface_before_removal = lens.surface_group.surfaces[1]
-        surface_to_remove = lens.surface_group.surfaces[2]
-        surface_after_removal = lens.surface_group.surfaces[3]
+        surface_before_removal = lens.surfaces.surfaces[1]
+        surface_to_remove = lens.surfaces.surfaces[2]
+        surface_after_removal = lens.surfaces.surfaces[3]
 
         # 2. Check initial state
         # The material before surface 3 should be mat2 (from surface 2)
         assert surface_after_removal.material_pre is surface_to_remove.material_post
 
         # 3. Remove surface at index 2
-        lens.surface_group.remove(2)
+        lens.surfaces.remove(2)
 
         # 4. Get the new surface at index 2 (which was old surface 3)
-        new_surface_at_index_2 = lens.surface_group.surfaces[2]
+        new_surface_at_index_2 = lens.surfaces.surfaces[2]
 
         # 5. Assert that the material link is updated
         # The material before the new surface at index 2 should now be mat1
@@ -443,7 +443,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens1.set_aperture("float_by_stop_size", 25)
 
         # 2. Remove the first slab (the one with n=2.5) from lens1
-        lens1.surface_group.remove(1)
+        lens1.surfaces.remove(1)
 
         # 3. Trace rays through the modified lens1 and get final y-coordinates
         traced_rays1 = lens1.trace(Hx=0, Hy=1, wavelength=0.5, num_rays=3)
@@ -526,7 +526,7 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
         lens.surfaces.add(index=1)
 
-        for surf in cooke.surface_group.surfaces[-2:0:-1]:
+        for surf in cooke.surfaces.surfaces[-2:0:-1]:
             lens.surfaces.add(
                 radius=surf.geometry.radius,
                 index=1,
@@ -564,12 +564,12 @@ class TestSurfaceGroupUpdatesRealObjects:
         lens.surfaces.add(index=1, radius=be.inf, thickness=5, is_stop=True)
         lens.surfaces.add(index=2, radius=be.inf, thickness=5)
         lens.surfaces.add(index=3, radius=be.inf, thickness=5)
-        lens.surface_group.stop_index = 2
-        assert lens.surface_group.surfaces[2].is_stop == True
+        lens.surfaces.stop_index = 2
+        assert lens.surfaces.surfaces[2].is_stop == True
         with pytest.raises(ValueError, match="Index out of range"):
-            lens.surface_group.stop_index = 0
+            lens.surfaces.stop_index = 0
         with pytest.raises(ValueError, match="Index out of range"):
-            lens.surface_group.stop_index = 3
+            lens.surfaces.stop_index = 3
 
     @pytest.mark.skipif(
         be.get_backend() == "torch",
