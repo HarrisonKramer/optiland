@@ -149,6 +149,8 @@ def resolve_wavelength(optic, wavelength):
             )
     elif isinstance(wavelength, int | float):
         return float(wavelength)
+    elif hasattr(wavelength, "item"):
+        return float(wavelength.item())
     else:
         raise TypeError("Wavelength must be a string ('primary') or a number.")
 

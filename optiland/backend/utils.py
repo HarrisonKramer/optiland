@@ -40,7 +40,7 @@ def to_numpy(obj: ScalarOrArrayT) -> NDArray:
         return obj
 
     elif isinstance(obj, int | float | np.number):
-        return np.array([obj])
+        return np.array(obj)
 
     # Handle lists: Iterate and convert elements individually
     elif isinstance(obj, list | tuple):
