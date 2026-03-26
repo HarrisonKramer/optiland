@@ -1,13 +1,15 @@
 """File input/output operations for Optiland.
 
 This package handles loading and saving Optiland's native JSON format and
-importing/exporting Zemax (.zmx) files.
+importing/exporting Zemax (.zmx) and CODE V Sequential (.seq) files.
 """
 
 from __future__ import annotations
 
 import warnings
 
+from optiland.fileio.codev.reader.converter import CodeVToOpticConverter as _CodeVTC
+from optiland.fileio.codev.writer.exporter import save_codev_file
 from optiland.fileio.optiland_handler import (
     load_obj_from_json,
     load_optiland_file,
@@ -28,6 +30,18 @@ def load_zemax_file(source: str):
         An Optic object created from the Zemax file data.
     """
     return _NewZTC({}).read(source)
+
+
+def load_codev_file(source: str):
+    """Load a CODE V Sequential file and return an Optic object.
+
+    Args:
+        source: The path to a local .seq file.
+
+    Returns:
+        An Optic object created from the CODE V file data.
+    """
+    return _CodeVTC({}).read(source)
 
 
 # ---------------------------------------------------------------------------
@@ -51,10 +65,12 @@ ZemaxToOpticConverter = _NewZTC
 
 
 __all__ = [
-    # New
+    # Zemax
     "save_zemax_file",
-    # Reader
     "load_zemax_file",
+    # CODE V
+    "load_codev_file",
+    "save_codev_file",
     # Optiland JSON handler
     "load_obj_from_json",
     "save_obj_to_json",
