@@ -290,7 +290,7 @@ class Optic:
                 factor. Defaults to 0.0.
 
         """
-        self.fields.add(x, y, vx, vy)
+        self.fields.add(y, x, vx, vy)
 
     @deprecated("optic.wavelengths.add()")
     def add_wavelength(

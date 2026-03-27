@@ -140,26 +140,26 @@ class TestFFTMTF:
         m = FFTMTF(optic)
         wl = m.resolved_wavelength
         N = m.num_rays
-        fno_on = float(be.to_numpy(get_working_FNO(optic, (0.0, 0.0), wl)))
+        fno_on = be.to_numpy(get_working_FNO(optic, (0.0, 0.0), wl)).item()
 
         for k, field in enumerate(m.resolved_fields):
-            fno_off = float(be.to_numpy(get_working_FNO(optic, field, wl)))
+            fno_off = be.to_numpy(get_working_FNO(optic, field, wl)).item()
             df_chief = 1.0 / ((N - 1) * wl * 1e-3 * fno_off)
 
             # Tangential: corrected by image-plane projection factor
             expected_df_tang = df_chief * (fno_on / fno_off)
-            actual_df_tang = float(be.to_numpy(m.freq_tang[k][1])) - float(
-                be.to_numpy(m.freq_tang[k][0])
-            )
+            actual_df_tang = be.to_numpy(m.freq_tang[k][1]).item() - be.to_numpy(
+                m.freq_tang[k][0]
+            ).item()
             assert actual_df_tang == pytest.approx(expected_df_tang, rel=1e-5), (
                 f"field {field}: tang df={actual_df_tang:.5f} "
                 f"expected={expected_df_tang:.5f}"
             )
 
             # Sagittal: no tilt correction, uses plain per-field df
-            actual_df_sag = float(be.to_numpy(m.freq_sag[k][1])) - float(
-                be.to_numpy(m.freq_sag[k][0])
-            )
+            actual_df_sag = be.to_numpy(m.freq_sag[k][1]).item() - be.to_numpy(
+                m.freq_sag[k][0]
+            ).item()
             assert actual_df_sag == pytest.approx(df_chief, rel=1e-5), (
                 f"field {field}: sag df={actual_df_sag:.5f} "
                 f"expected={df_chief:.5f}"
@@ -168,10 +168,10 @@ class TestFFTMTF:
         # Off-axis tangential df must be strictly less than on-axis
         # (larger effective FNO due to image-plane correction)
         if len(m.resolved_fields) > 1:
-            df_tang_off = float(be.to_numpy(m.freq_tang[-1][1])) - float(
-                be.to_numpy(m.freq_tang[-1][0])
-            )
-            df_tang_on = float(be.to_numpy(m.freq_tang[0][1])) - float(
-                be.to_numpy(m.freq_tang[0][0])
-            )
+            df_tang_off = be.to_numpy(m.freq_tang[-1][1]).item() - be.to_numpy(
+                m.freq_tang[-1][0]
+            ).item()
+            df_tang_on = be.to_numpy(m.freq_tang[0][1]).item() - be.to_numpy(
+                m.freq_tang[0][0]
+            ).item()
             assert df_tang_off < df_tang_on

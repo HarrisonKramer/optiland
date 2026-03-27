@@ -228,9 +228,9 @@ class TestVectorialHuygensMTF:
         )
         optic_vectorial.updater.set_polarization(state)
 
-        mtf_scalar = ScalarHuygensMTF(optic_scalar, fields=[(0, 0)], image_size=32)
+        mtf_scalar = ScalarHuygensMTF(optic_scalar, fields=[(0, 0)], image_size=16)
         mtf_vectorial = VectorialHuygensMTF(
-            optic_vectorial, fields=[(0, 0)], image_size=32
+            optic_vectorial, fields=[(0, 0)], image_size=16
         )
 
         tang_s, sag_s = mtf_scalar.mtf[0]

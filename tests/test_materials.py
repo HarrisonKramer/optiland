@@ -279,24 +279,24 @@ class TestIdealMaterial:
 
 class TestAbbeMaterial:
     def test_refractive_index(self, set_test_backend):
-        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50, model="polynomial")
         wavelength = 0.58756  # in microns
         value = abbe_material.n(wavelength)
         assert_allclose(value, 1.4999167964912952)
 
     def test_extinction_coefficient(self, set_test_backend):
-        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50, model="polynomial")
         wavelength = 0.58756  # in microns
         assert abbe_material.k(wavelength) == 0
 
     def test_coefficients(self, set_test_backend):
-        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50, model="polynomial")
         # Access the private method on the underlying model (AbbePolynomialModel)
         coefficients = abbe_material.model._get_coefficients()
         assert coefficients.shape == (4,)  # Assuming the polynomial is of degree 3
 
     def test_abbe_to_dict(self, set_test_backend):
-        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50, model="polynomial")
         abbe_dict = abbe_material.to_dict()
         assert abbe_dict == {
             "type": "AbbeMaterial",
@@ -307,20 +307,22 @@ class TestAbbeMaterial:
         }
 
     def test_abbe_from_dict(self, set_test_backend):
+        # Legacy dict without model= key triggers FutureWarning; explicitly consume it.
         abbe_dict = {"type": "AbbeMaterial", "index": 1.5, "abbe": 50}
-        abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
+        with pytest.warns(FutureWarning, match="default model for AbbeMaterial"):
+            abbe_material = materials.BaseMaterial.from_dict(abbe_dict)
         assert abbe_material.index == 1.5
         assert abbe_material.abbe == 50
 
     def test_abbe_out_of_bounds_wavelength(self, set_test_backend):
-        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50, model="polynomial")
         with pytest.raises(ValueError):
             abbe_material.n(0.3)
         with pytest.raises(ValueError):
             abbe_material.n(0.8)
 
     def test_ray_trace(self, set_test_backend):
-        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50)
+        abbe_material = materials.AbbeMaterial(n=1.5, abbe=50, model="polynomial")
         lens = build_model(abbe_material)
 
         lens.trace(Hx=0, Hy=0, wavelength=0.55)
@@ -711,7 +713,7 @@ def test___eq__():
     ideal1 = materials.IdealMaterial(1.0, 0.0)
     ideal2 = materials.IdealMaterial(1.0, 0.0)
     ideal3 = materials.IdealMaterial(1.0, 0.1)
-    abbe = materials.AbbeMaterial(1.5, 60.0)
+    abbe = materials.AbbeMaterial(1.5, 60.0, model="polynomial")
     assert ideal1 == ideal2
     assert ideal1 != ideal3
     assert abbe != ideal1

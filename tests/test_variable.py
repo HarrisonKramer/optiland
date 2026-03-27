@@ -506,6 +506,15 @@ class TestNormalizationRadiusVariable:
 
 
 class TestForbesQbfsCoeffVariable:
+    pytestmark = [
+        pytest.mark.filterwarnings(
+            "ignore:ForbesQbfsGeometry is deprecated:DeprecationWarning"
+        ),
+        pytest.mark.filterwarnings(
+            "ignore:ForbesQbfsCoeffVariable is deprecated:DeprecationWarning"
+        ),
+    ]
+
     @pytest.fixture(autouse=True)
     def setup(self):
         self.optic = AsphericSinglet()

@@ -147,7 +147,7 @@ def test_vectorial_psf_normalization_positive(polarized_optic, set_test_backend)
         image_size=32,
     )
     norm = psf._get_normalization()
-    assert float(be.to_numpy(norm)) > 0
+    assert be.to_numpy(norm).item() > 0
 
 
 # ---------------------------------------------------------------------------

@@ -577,7 +577,7 @@ class WideAngle100FOV(optic.Optic):
         self.wavelengths.add(value=0.5876, is_primary=True)
         self.wavelengths.add(value=0.6563)
 
-        self.set_ray_aiming("iterative", cache=True)
+        self.ray_tracer.set_aiming("iterative", cache=True)
 
 
 class ProjectionLens120FOV(optic.Optic):
@@ -627,7 +627,7 @@ class ProjectionLens120FOV(optic.Optic):
         self.wavelengths.add(value=0.5876, is_primary=True)
         self.wavelengths.add(value=0.6563)
 
-        self.set_ray_aiming("robust", cache=True)
+        self.ray_tracer.set_aiming("robust", cache=True)
 
 
 class ProjectionLens160FOV(optic.Optic):
@@ -672,7 +672,7 @@ class ProjectionLens160FOV(optic.Optic):
         self.wavelengths.add(value=0.5876, is_primary=True)
         self.wavelengths.add(value=0.6563)
 
-        self.set_ray_aiming("robust", cache=True)
+        self.ray_tracer.set_aiming("robust", cache=True)
 
 
 class WideAngle170FOV(optic.Optic):
@@ -715,4 +715,4 @@ class WideAngle170FOV(optic.Optic):
         self.wavelengths.add(value=0.5876, is_primary=True)
         self.wavelengths.add(value=0.6563)
 
-        self.set_ray_aiming("robust", cache=True)
+        self.ray_tracer.set_aiming("robust", cache=True)
