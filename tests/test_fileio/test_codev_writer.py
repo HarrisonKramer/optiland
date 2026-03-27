@@ -310,3 +310,59 @@ class TestRoundTrip:
         assert_allclose(
             float(o1.aperture.value), float(o2.aperture.value), rtol=1e-4
         )
+
+
+# ---------------------------------------------------------------------------
+# OpticToCodeVConverter Extended
+# ---------------------------------------------------------------------------
+
+class TestOpticToCodeVConverterExtended:
+    def test_convert_aperture_codev(self):
+        from optiland.aperture import ImageFNOAperture
+        optic = Optic()
+        optic.aperture = ImageFNOAperture(4.0)
+        conv = OpticToCodeVConverter(optic)
+        model = conv.convert()
+        assert model.aperture["FNO"] == 4.0
+
+    def test_warn_unknown_aperture_codev(self):
+        optic = Optic()
+        class UnknownAp:
+            ap_type = "unknown"
+            value = 0.0
+        optic.aperture = UnknownAp()
+        optic.surfaces.add(index=0, thickness=0.0)
+        conv = OpticToCodeVConverter(optic)
+        with pytest.warns(UserWarning, match="Unknown aperture type"):
+            conv.convert()
+
+    def test_no_surfaces_codev(self):
+        optic = Optic()
+        conv = OpticToCodeVConverter(optic)
+        model = conv.convert()
+        assert model.surfaces == {}
+
+    def test_glass_fictitious_codev(self):
+        from optiland.materials import IdealMaterial
+        optic = Optic()
+        # Add 3 surfaces: Obj, Real, Img
+        optic.surfaces.add(index=0, thickness=0.0)
+        optic.surfaces.add(index=1, radius=50.0, thickness=5.0, material=IdealMaterial(1.7))
+        optic.surfaces.add(index=2, thickness=0.0)
+        optic.add_wavelength(0.5876, is_primary=True)
+        conv = OpticToCodeVConverter(optic)
+        with pytest.warns(UserWarning, match="writing as fictitious glass"):
+            model = conv.convert()
+        # Obj(0) + Surf(1) + Img(2)
+        assert "glass" in model.surfaces[1]
+        assert float(model.surfaces[1]["glass"]["nd"]) == pytest.approx(1.7)
+
+    def test_reflective_surface_codev(self):
+        optic = Optic()
+        # Add object and reflective surface
+        optic.surfaces.add(index=0, thickness=0.0)
+        optic.surfaces.add(index=1, radius=100.0, thickness=-50.0, material="mirror")
+        optic.surfaces.add(index=2, thickness=0.0)
+        conv = OpticToCodeVConverter(optic)
+        model = conv.convert()
+        assert model.surfaces[1]["glass"]["name"] == "REFL"

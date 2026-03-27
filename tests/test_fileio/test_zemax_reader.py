@@ -313,3 +313,32 @@ class TestZemaxToOpticConverterExtended:
         }
         optic = ZemaxToOpticConverter(zemax_data).convert()
         assert be.isinf(optic.surfaces[0].thickness)
+
+
+# ---------------------------------------------------------------------------
+# Zemax Surfaces
+# ---------------------------------------------------------------------------
+
+class TestZemaxSurfaces:
+    def test_get_handler_error(self):
+        from optiland.fileio.zemax.surfaces import get_handler
+        with pytest.raises(NotImplementedError, match="Zemax surface type 'NON_EXISTENT_SURFACE' is not supported"):
+            get_handler("NON_EXISTENT_SURFACE")
+
+    def test_base_surface_handler_radius(self):
+        from optiland.fileio.zemax.surfaces import _radius, _curvature
+        # Test _radius helper (Zemax CURV → Optiland RAD)
+        assert _radius(0.0) == float(be.inf)
+        assert _radius(0.02) == 50.0
+        
+        # Test _curvature helper (Optiland RAD → Zemax CURV)
+        assert _curvature(float(be.inf)) == 0.0
+        assert _curvature(50.0) == 0.02
+
+    def test_standard_surface_handler_defaults(self):
+        from optiland.fileio.zemax.surfaces import StandardSurfaceHandler
+        handler = StandardSurfaceHandler()
+        data = {"radius": 100.0, "conic": 0.0}
+        params = handler.parse(data)
+        assert params["radius"] == 100.0
+        assert params["conic"] == 0.0

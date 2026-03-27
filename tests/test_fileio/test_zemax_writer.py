@@ -235,3 +235,60 @@ class TestUnsupportedSurface:
 
         with pytest.raises(NotImplementedError):
             save_zemax_file(optic, str(tmp_path / "unsupported.zmx"))
+
+
+# ---------------------------------------------------------------------------
+# OpticToZemaxConverter Extended
+# ---------------------------------------------------------------------------
+
+class TestOpticToZemaxConverterExtended:
+    def test_field_type_string_none(self):
+        from optiland.fileio.zemax.writer.formatter import _field_type_string
+        optic = Optic()
+        # No fields added
+        assert _field_type_string(optic) == "angle"
+
+    def test_warn_unknown_aperture(self):
+        optic = Optic()
+        # Mock an unknown aperture type
+        class UnknownAp:
+            ap_type = "unknown"
+            value = 0.0
+        optic.aperture = UnknownAp()
+        conv = OpticToZemaxConverter(optic)
+        with pytest.warns(UserWarning, match="Unknown aperture type"):
+            conv.convert()
+
+    def test_coordinate_break_insertion(self):
+        optic = Optic()
+        optic.surfaces.add(index=0, thickness=0.0)
+        optic.surfaces.add(index=1, radius=50.0, thickness=5.0, dx=1.0)
+        optic.surfaces.add(index=2, thickness=0.0)
+        conv = OpticToZemaxConverter(optic)
+        model = conv.convert()
+        # Obj(0) + CB(1) + Surf(2) + Img(3) = 4 surfaces?
+        # Actually OpticToZemaxConverter adds a CB AFTER to return to original CS if needed?
+        # Let's check the length and that at least one CB exists.
+        assert any(s.get("TYPE") == "COORDBRK" for s in model.surfaces.values())
+        # Find the CB
+        cb = next(s for s in model.surfaces.values() if s.get("TYPE") == "COORDBRK")
+        assert cb["PARM_1"] == 1.0  # dx
+
+    def test_format_glass_model(self):
+        from optiland.materials import IdealMaterial
+        optic = Optic()
+        optic.surfaces.add(index=0, thickness=0.0)
+        # Use an IdealMaterial to trigger the MODEL glass branch
+        optic.surfaces.add(index=1, radius=50.0, thickness=5.0, material=IdealMaterial(1.6))
+        optic.surfaces.add(index=2, thickness=0.0)
+        optic.add_wavelength(0.5876, is_primary=True)
+        conv = OpticToZemaxConverter(optic)
+        with pytest.warns(UserWarning, match="writing as MODEL glass"):
+            model = conv.convert()
+        assert model.surfaces[1]["GLAS"]["name"] == "MODEL"
+
+    def test_is_air_ideal(self):
+        from optiland.materials import IdealMaterial
+        from optiland.fileio.zemax.writer.formatter import _is_air
+        assert _is_air(IdealMaterial(1.0)) is True
+        assert _is_air(IdealMaterial(1.5)) is False

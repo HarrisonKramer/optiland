@@ -134,3 +134,10 @@ def test_remove_surface_after_load(set_test_backend, tmp_path):
     positions = loaded.surfaces.positions.flatten()
     expected = be.array([0.0, 10.0, 30.0])
     assert_allclose(positions[1:], expected)
+
+
+def test_zemax_to_optic_converter_shim():
+    from optiland.fileio import _make_deprecated_ztoc, ZemaxToOpticConverter
+    with pytest.warns(DeprecationWarning, match="Import ZemaxToOpticConverter from optiland.fileio.zemax"):
+        conv = _make_deprecated_ztoc({})
+        assert isinstance(conv, ZemaxToOpticConverter)
