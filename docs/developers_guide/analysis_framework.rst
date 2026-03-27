@@ -25,6 +25,11 @@ Optiland includes several built-in analysis tools, each tailored to a specific a
 - **Zernike Polynomials**: Decompose the wavefront error into Zernike polynomials.
 - **Image Simulation**: Simulate the image formation process, accounting for spatially variable blur, distortion, and lateral color.
 
+Weighted Analysis
+-----------------
+
+Optiland analyses can optionally aggregate results over multiple fields and wavelengths based on user-defined weights. When creating ``Field`` and ``Wavelength`` objects, you can assign a ``weight`` attribute (defaulting to ``1.0``). Analyses that generate aggregated system metrics (e.g., MTF, PSF, Spot Diagram, RMS vs. Field) will automatically compute weighted averages across the specified fields and wavelengths to reflect these importance values. Assigning a weight of ``0.0`` will exclude the field or wavelength from the weighted mean, but it will still be evaluated individually in the standalone data arrays.
+
 Analysis Workflow
 -----------------
 

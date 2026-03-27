@@ -41,7 +41,9 @@ class Wavelength:
             is_primary (bool): Indicates whether the wavelength is a primary
                 wavelength.
             unit (str): The unit of the wavelength value. Defaults to 'um'.
-            weight (float): The weight of the wavelength. Defaults to 1.0.
+            weight (float): Non-negative relative importance scalar. A weight
+                of 0.0 excludes the wavelength from optimization and weighted
+                analysis. Defaults to 1.0.
         """
         self._value = value
         self.is_primary = is_primary
