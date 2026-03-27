@@ -42,11 +42,10 @@ class RayFan(BaseAnalysis):
     """
 
     def __init__(self, optic, fields="all", wavelengths="all", num_points=256):
+        from optiland.utils import resolve_fields
+
         _optic_ref = optic
-        if fields == "all":
-            self.fields = _optic_ref.fields.get_field_coords()
-        else:
-            self.fields = fields
+        self.fields = resolve_fields(_optic_ref, fields)
 
         if num_points % 2 == 0:
             self.num_points = num_points + 1  # force to be odd so a point lies at P=0
@@ -103,9 +102,11 @@ class RayFan(BaseAnalysis):
         axs = np.atleast_2d(axs)
         Px, Py = self.data["Px"], self.data["Py"]
 
-        for k, field in enumerate(self.fields):
+        for k, fp in enumerate(self.fields):
+            field = fp.coord
             ax_y, ax_x = axs[k, 0], axs[k, 1]
-            for wavelength in self.wavelengths:
+            for wp in self.wavelengths:
+                wavelength = wp.value
                 ex = self.data[f"{field}"][f"{wavelength}"]["x"]
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
                 i_x = self.data[f"{field}"][f"{wavelength}"]["intensity_x"]
@@ -170,7 +171,8 @@ class RayFan(BaseAnalysis):
         wave_ref = self.optic.primary_wavelength
         center_idx = self.num_points // 2
 
-        for field in self.fields:
+        for fp in self.fields:
+            field = fp.coord
             ref_data_x = data[f"{field}"][f"{wave_ref}"]["x"]
             ref_data_y = data[f"{field}"][f"{wave_ref}"]["y"]
             intensity_x = data[f"{field}"][f"{wave_ref}"]["intensity_x"]
@@ -192,7 +194,8 @@ class RayFan(BaseAnalysis):
                 valid_y = ref_data_y[intensity_y > 0]
                 y_offset = be.mean(valid_y) if be.size(valid_y) > 0 else 0.0
 
-            for wavelength in self.wavelengths:
+            for wp in self.wavelengths:
+                wavelength = wp.value
                 orig_x = data[f"{field}"][f"{wavelength}"]["x"]
                 orig_y = data[f"{field}"][f"{wavelength}"]["y"]
                 data[f"{field}"][f"{wavelength}"]["x"] = orig_x - x_offset
@@ -209,10 +212,12 @@ class RayFan(BaseAnalysis):
         data = {}
         data["Px"] = be.linspace(-1, 1, self.num_points)
         data["Py"] = be.linspace(-1, 1, self.num_points)
-        for field in self.fields:
+        for fp in self.fields:
+            field = fp.coord
             Hx, Hy = field[0], field[1]
             data[f"{field}"] = {}
-            for wavelength in self.wavelengths:
+            for wp in self.wavelengths:
+                wavelength = wp.value
                 data[f"{field}"][f"{wavelength}"] = {}
 
                 rays_x = self.optic.trace(
@@ -306,7 +311,8 @@ class BestFitRayFan(RayFan):
         dist_2d = create_distribution("hexapolar")
         dist_2d.generate_points(self.num_rays_for_fit)
 
-        for field in self.fields:
+        for fp in self.fields:
+            field = fp.coord
             Hx, Hy = field
             data[f"{field}"] = {}
 
@@ -316,7 +322,8 @@ class BestFitRayFan(RayFan):
             strategy.compute_wavefront_data(field, self.optic.primary_wavelength)
             ref_x, ref_y, _ = strategy.center
 
-            for wavelength in self.wavelengths:
+            for wp in self.wavelengths:
+                wavelength = wp.value
                 data[f"{field}"][f"{wavelength}"] = {}
 
                 # 2. Trace the tangential ray fan (along the x-axis of pupil)

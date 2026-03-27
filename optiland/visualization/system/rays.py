@@ -77,15 +77,18 @@ class Rays2D:
                 surface are not shown. Defaults to False.
 
         """
-        fields = resolve_fields(self.optic, fields)
-        wavelengths = resolve_wavelengths(self.optic, wavelengths)
+        # Visualization ignores weights; extract coords and values directly
+        field_points = resolve_fields(self.optic, fields)
+        wl_points = resolve_wavelengths(self.optic, wavelengths)
+        fields_coords = [fp.coord for fp in field_points]
+        wavelengths_vals = [wp.value for wp in wl_points]
 
         artists = {}
 
-        for i, field in enumerate(fields):
-            for j, wavelength in enumerate(wavelengths):
+        for i, field in enumerate(fields_coords):
+            for j, wavelength in enumerate(wavelengths_vals):
                 # if only one field, use different colors for each wavelength
-                color_idx = i if len(fields) > 1 else j
+                color_idx = i if len(fields_coords) > 1 else j
 
                 if distribution is None:
                     # trace only for surface extents
@@ -322,13 +325,16 @@ class Rays3D(Rays2D):
                 surface are not shown. Defaults to False.
 
         """
-        fields = resolve_fields(self.optic, fields)
-        wavelengths = resolve_wavelengths(self.optic, wavelengths)
+        # Visualization ignores weights; extract coords and values directly
+        field_points = resolve_fields(self.optic, fields)
+        wl_points = resolve_wavelengths(self.optic, wavelengths)
+        fields_coords = [fp.coord for fp in field_points]
+        wavelengths_vals = [wp.value for wp in wl_points]
 
-        for i, field in enumerate(fields):
-            for j, wavelength in enumerate(wavelengths):
+        for i, field in enumerate(fields_coords):
+            for j, wavelength in enumerate(wavelengths_vals):
                 # if only one field, use different colors for each wavelength
-                color_idx = i if len(fields) > 1 else j
+                color_idx = i if len(fields_coords) > 1 else j
 
                 if distribution is None:
                     # trace only for surface extents

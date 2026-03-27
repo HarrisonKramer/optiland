@@ -291,11 +291,24 @@ class ZemaxToOpticConverter:
         except KeyError:
             pass
 
+        weights = self.data["fields"].get("weights", [1.0] * len(field_x))
         for k in range(len(field_x)):
-            self.optic.fields.add(x=field_x[k], y=field_y[k], vx=vig_x[k], vy=vig_y[k])
+            self.optic.fields.add(
+                x=field_x[k],
+                y=field_y[k],
+                vx=vig_x[k],
+                vy=vig_y[k],
+                weight=weights[k],
+            )
 
     def _configure_wavelengths(self):
         """Configure the wavelengths for the optic."""
         primary_idx = self.data["wavelengths"]["primary_index"]
-        for idx, value in enumerate(self.data["wavelengths"]["data"]):
-            self.optic.wavelengths.add(value=value, is_primary=(idx == primary_idx))
+        wl_data = self.data["wavelengths"]["data"]
+        wl_weights = self.data["wavelengths"].get("weights", [1.0] * len(wl_data))
+        for idx, value in enumerate(wl_data):
+            self.optic.wavelengths.add(
+                value=value,
+                is_primary=(idx == primary_idx),
+                weight=wl_weights[idx],
+            )

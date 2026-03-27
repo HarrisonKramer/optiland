@@ -74,14 +74,14 @@ class FieldCurvature(BaseAnalysis):
         field = be.linspace(0, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
 
-        for k, wavelength in enumerate(self.wavelengths):
+        for k, wp in enumerate(self.wavelengths):
             dk_np_tan = be.to_numpy(self.data[k][0])
             ax.plot(
                 dk_np_tan,
                 field_np,
                 f"C{k}",
                 zorder=10,
-                label=f"{wavelength:.4f} µm, Tangential",
+                label=f"{wp.value:.4f} µm, Tangential",
             )
             dk_np_sag = be.to_numpy(self.data[k][1])
             ax.plot(
@@ -89,7 +89,7 @@ class FieldCurvature(BaseAnalysis):
                 field_np,
                 f"C{k}--",
                 zorder=10,
-                label=f"{wavelength:.4f} µm, Sagittal",
+                label=f"{wp.value:.4f} µm, Sagittal",
             )
 
         ax.set_xlabel("Image Plane Delta (mm)")
@@ -119,7 +119,8 @@ class FieldCurvature(BaseAnalysis):
 
         """
         data = []
-        for wavelength in self.wavelengths:
+        for wp in self.wavelengths:
+            wavelength = wp.value
             tangential = self._intersection_parabasal_tangential(wavelength)
             sagittal = self._intersection_parabasal_sagittal(wavelength)
 

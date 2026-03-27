@@ -65,7 +65,9 @@ class ZemaxDataModel:
     name: str | None = None
     aperture: dict[str, Any] = field(default_factory=dict)
     fields: dict[str, Any] = field(default_factory=dict)
-    wavelengths: dict[str, Any] = field(default_factory=lambda: {"data": []})
+    wavelengths: dict[str, Any] = field(
+        default_factory=lambda: {"data": [], "weights": []}
+    )
     surfaces: dict[int, dict[str, Any]] = field(default_factory=dict)
     glass_catalogs: list[str] | None = None
 
@@ -229,11 +231,13 @@ class ZemaxDataParser:
 
     def _read_wavelength(self, data):
         val = float(data[2])
+        weight = float(data[3]) if len(data) > 3 else 1.0
         if (
             len(self.data_model.wavelengths["data"])
             < self.data_model.wavelengths["num_wavelengths"]
         ):
             self.data_model.wavelengths["data"].append(val)
+            self.data_model.wavelengths["weights"].append(weight)
 
     def _read_primary_wave(self, data):
         self.data_model.wavelengths["primary_index"] = int(data[1]) - 1

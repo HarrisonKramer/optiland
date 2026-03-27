@@ -455,4 +455,6 @@ class BasePSF(Wavefront):
         Returns:
             float: The working F-number.
         """
-        return get_working_FNO(self.optic, self.fields[0], self.wavelengths[0])
+        return get_working_FNO(
+            self.optic, self.fields[0].coord, self.wavelengths[0].value
+        )

@@ -98,11 +98,30 @@ class OptimizationProblem:
         self.variables.clear()
 
     def fun_array(self):
-        """Array of operand weighted deltas squared"""
-        terms = [op.fun() for op in self.operands]
+        """Array of operand contribution terms for the merit function.
+
+        Each term is computed as::
+
+            effective_weight(op) × op.delta() ** 2
+
+        where ``effective_weight = operand.weight × field_weight × wl_weight``.
+        Field and wavelength weights are read from the optic stored in each
+        operand's ``input_data``.  Operands with an effective weight of zero are
+        excluded from the result (their delta is never evaluated).
+
+        Returns:
+            be.ndarray: 1-D array of per-operand contribution values.  Returns
+            ``[0.0]`` when there are no active operands.
+        """
+        terms = []
+        for op in self.operands:
+            ew = op.effective_weight()
+            if ew == 0.0:
+                continue
+            terms.append(ew * op.delta() ** 2)
         if not terms:
             return be.array([0.0])
-        return be.stack(terms) ** 2
+        return be.stack(terms)
 
     def sum_squared(self):
         """Calculate the sum of squared operand weighted deltas"""
@@ -137,21 +156,32 @@ class OptimizationProblem:
                 for op in self.operands
             ],
             "Weight": [self._to_item(op.weight) for op in self.operands],
+            "Eff. Weight": [
+                self._to_item(op.effective_weight()) for op in self.operands
+            ],
             "Value": [f"{self._to_item(op.value):+.3f}" for op in self.operands],
             "Delta": [f"{self._to_item(op.delta()):+.3f}" for op in self.operands],
         }
 
         df = pd.DataFrame(data)
-        values = self.fun_array()
-        total = be.sum(values)
 
-        total_item = self._to_item(total)
+        # Contribution uses effective_weight × delta² per operand
+        ew_list = [op.effective_weight() for op in self.operands]
+        contrib_values = []
+        for op, ew in zip(self.operands, ew_list, strict=False):
+            if ew == 0.0:
+                contrib_values.append(be.array(0.0))
+            else:
+                contrib_values.append(be.array(ew) * op.delta() ** 2)
 
-        if total_item == 0.0:
+        total = sum(self._to_item(v) for v in contrib_values)
+
+        if total == 0.0:
             df["Contrib. [%]"] = 0.0
         else:
-            contrib = be.round(values / total * 100, decimals=2)
-            df["Contrib. [%]"] = be.to_numpy(contrib)
+            df["Contrib. [%]"] = [
+                round(self._to_item(v) / total * 100, 2) for v in contrib_values
+            ]
 
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
 
@@ -193,6 +223,62 @@ class OptimizationProblem:
         }
         df = pd.DataFrame(data)
         print(df.to_markdown(headers="keys", tablefmt="fancy_outline"))
+
+    def weight_breakdown(self) -> list[dict]:
+        """Return a list of dicts describing each operand's effective weight.
+
+        The effective weight is the product of the operand's own weight, the
+        field weight (looked up from the optic via the operand's ``input_data``),
+        and the wavelength weight.  The formula used in the merit function is::
+
+            effective_weight × delta ** 2
+
+        Each returned dict contains:
+
+        * ``operand_type`` (str): The operand type string.
+        * ``field``: The field index or coordinate from ``input_data`` (or None).
+        * ``wavelength``: The wavelength index or value from ``input_data``
+          (or None).
+        * ``operand_weight`` (float): The user-set ``Operand.weight``.
+        * ``field_weight`` (float): The field's weight from the optic (1.0 if
+          not resolvable).
+        * ``wl_weight`` (float): The wavelength's weight from the optic (1.0 if
+          not resolvable).
+        * ``effective_weight`` (float): Product of the three weights above.
+
+        Returns:
+            list[dict]: One dict per operand in ``self.operands``.
+        """
+        import contextlib
+
+        rows = []
+        for op in self.operands:
+            optic = op.input_data.get("optic") if op.input_data else None
+            field_idx = op.input_data.get("field") if op.input_data else None
+            wl_idx = op.input_data.get("wavelength") if op.input_data else None
+
+            field_w = 1.0
+            wl_w = 1.0
+            if optic is not None:
+                if field_idx is not None and isinstance(field_idx, int):
+                    with contextlib.suppress(IndexError):
+                        field_w = optic.fields.fields[field_idx].weight
+                if wl_idx is not None and isinstance(wl_idx, int):
+                    with contextlib.suppress(IndexError):
+                        wl_w = optic.wavelengths.wavelengths[wl_idx].weight
+
+            rows.append(
+                {
+                    "operand_type": op.operand_type,
+                    "field": field_idx,
+                    "wavelength": wl_idx,
+                    "operand_weight": op.weight,
+                    "field_weight": field_w,
+                    "wl_weight": wl_w,
+                    "effective_weight": op.weight * field_w * wl_w,
+                }
+            )
+        return rows
 
     def info(self):
         """Print information about the optimization problem."""

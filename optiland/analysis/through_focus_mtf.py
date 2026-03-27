@@ -102,7 +102,8 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
              {'tangential': 0.3, 'sagittal': 0.28}]  # Field 2
         """
         results_at_this_focus = []
-        for field_coord in self.fields:
+        for fp in self.fields:
+            field_coord = fp.coord
             sampled_mtf = SampledMTF(
                 optic=self.optic,
                 field=field_coord,
@@ -174,7 +175,8 @@ class ThroughFocusMTF(ThroughFocusAnalysis):
         np_nominal_focus = be.to_numpy(be.asarray(self.nominal_focus))
         defocus_values_np = np_positions - np_nominal_focus
 
-        for i_field, field_coord in enumerate(self.fields):
+        for i_field, fp in enumerate(self.fields):
+            field_coord = fp.coord
             mtf_t_values = be.to_numpy(
                 be.asarray(
                     [

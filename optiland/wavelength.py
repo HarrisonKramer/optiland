@@ -45,9 +45,20 @@ class Wavelength:
         """
         self._value = value
         self.is_primary = is_primary
-        self.weight = weight
         self._unit = unit.lower()
         self._value_in_um = self._convert_to_um()
+        self.weight = weight  # uses the validated setter
+
+    @property
+    def weight(self) -> float:
+        """float: Non-negative relative importance scalar for this wavelength."""
+        return self._weight
+
+    @weight.setter
+    def weight(self, value: float) -> None:
+        if value < 0:
+            raise ValueError(f"Wavelength weight must be non-negative, got {value}.")
+        self._weight = float(value)
 
     @property
     def value(self) -> float:

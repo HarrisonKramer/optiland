@@ -139,11 +139,14 @@ def plot_field(
             be.to_numpy(points.intensity),
         )
         mask = intensity != 0
+        # wavelengths[i] may be a WavelengthPoint or a float; extract value safely
+        wl_entry = wavelengths[i]
+        wl_val = wl_entry.value if hasattr(wl_entry, "value") else wl_entry
         ax.scatter(
             x[mask],
             y[mask],
             s=10,
-            label=f"{wavelengths[i]:.4f} µm",
+            label=f"{wl_val:.4f} µm",
             marker=markers[i % 3],
             alpha=0.7,
         )

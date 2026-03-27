@@ -160,8 +160,10 @@ class Wavefront:
         This method iterates through each field and wavelength pair and
         delegates the computation to the selected strategy object.
         """
-        for field in self.fields:
-            for wl in self.wavelengths:
+        for fp in self.fields:
+            field = fp.coord
+            for wp in self.wavelengths:
+                wl = wp.value
                 data = self.strategy.compute_wavefront_data(field, wl)
 
                 if self.remove_tilt:

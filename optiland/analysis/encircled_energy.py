@@ -106,7 +106,7 @@ class EncircledEnergy(SpotDiagram):
         ax.legend(bbox_to_anchor=(1.05, 0.5), loc="center left")
         ax.set_xlabel("Radius (mm)")
         ax.set_ylabel("Encircled Energy (-)")
-        ax.set_title(f"Wavelength: {self.wavelengths[0]:.4f} µm")
+        ax.set_title(f"Wavelength: {self.wavelengths[0].value:.4f} µm")
         ax.set_xlim((0, None))
         ax.set_ylim((0, None))
         ax.grid(True)
