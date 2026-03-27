@@ -118,7 +118,7 @@ class OptimizationProblem:
         for var in self.variables:
             unique_optics.add(var.optic)
         for optic in unique_optics:
-            optic.update()
+            optic.updater.update()
 
     def operand_info(self):
         """Print information about the operands in the merit function"""

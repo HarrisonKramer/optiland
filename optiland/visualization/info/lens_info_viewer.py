@@ -51,7 +51,7 @@ class LensInfoViewer(BaseViewer):
         The lens information includes the surface type, radius, thickness,
         material, conic, and semi-aperture of each surface.
         """
-        self.optic.update_paraxial()
+        self.optic.updater.update_paraxial()
 
         surf_type = self._get_surface_types()
         comments = self._get_comments()
@@ -61,7 +61,7 @@ class LensInfoViewer(BaseViewer):
         semi_aperture = self._get_semi_apertures()
         mat = self._get_materials()
 
-        self.optic.update_paraxial()
+        self.optic.updater.update_paraxial()
 
         df = pd.DataFrame(
             {

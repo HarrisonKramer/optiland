@@ -2153,6 +2153,10 @@ def forbes_system():
 
 
 class TestForbesQbfsGeometry:
+    pytestmark = pytest.mark.filterwarnings(
+        "ignore:ForbesQbfsGeometry is deprecated:DeprecationWarning"
+    )
+
     def test_str(self, set_test_backend):
         """Test the string representation of the geometry."""
         cs = CoordinateSystem()
@@ -2623,6 +2627,9 @@ class TestForbesQ2dGeometry:
         assert len(geometry.ams_coeffs) == 0
         assert len(geometry.bms_coeffs) == 0
 
+    @pytest.mark.filterwarnings(
+        "ignore:ForbesQbfsGeometry is deprecated:DeprecationWarning"
+    )
     def test_sag_symmetric_terms_only(self, set_test_backend):
         """Test sag with only m=0 terms, should match Q-bfs."""
         radial_terms = {0: 1e-3, 1: -2e-4}
