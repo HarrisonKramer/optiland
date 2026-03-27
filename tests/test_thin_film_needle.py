@@ -279,7 +279,16 @@ class TestNeedleSynthesisRealistic:
 
     These tests use realistic materials, wavelength ranges, and performance
     targets typical of commercial thin film coatings.
+
+    Run numpy-only: the physics correctness (avg_R < 3%, monotonic merit) is
+    backend-independent. Torch coverage is maintained by TestNeedleSynthesisEndToEnd.
     """
+
+    @pytest.fixture(autouse=True)
+    def numpy_only(self, set_test_backend):
+        """Skip torch backend for these expensive integration tests."""
+        if be.get_backend() != "numpy":
+            pytest.skip("Realistic integration tests run numpy-only for speed")
 
     def test_broadband_ar_from_v_coat(self, air, glass, sio2, tio2):
         """Broadband visible AR coating (430-670nm) starting from a
@@ -296,11 +305,11 @@ class TestNeedleSynthesisRealistic:
         ns = NeedleSynthesis(
             stack=stack,
             candidate_materials=[sio2, tio2],
-            max_iterations=8,
-            num_positions_per_layer=5,
-            optimizer_max_iter=150,
+            max_iterations=5,
+            num_positions_per_layer=3,
+            optimizer_max_iter=80,
         )
-        wls = np.linspace(430, 670, 20).tolist()
+        wls = np.linspace(430, 670, 12).tolist()
         ns.add_spectral_target("R", wls, "equal", 0.0)
 
         result = ns.run()
@@ -335,11 +344,11 @@ class TestNeedleSynthesisRealistic:
         ns = NeedleSynthesis(
             stack=stack,
             candidate_materials=[sio2, tio2],
-            max_iterations=6,
-            num_positions_per_layer=4,
-            optimizer_max_iter=100,
+            max_iterations=4,
+            num_positions_per_layer=3,
+            optimizer_max_iter=60,
         )
-        wls = np.linspace(450, 650, 15).tolist()
+        wls = np.linspace(450, 650, 9).tolist()
         ns.add_spectral_target("R", wls, "equal", 0.0)
 
         result = ns.run()

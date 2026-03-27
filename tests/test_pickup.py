@@ -57,7 +57,7 @@ class TestPickup:
         pickup = Pickup(
             lens,
             1,
-            "surface_group.surfaces[i].geometry.coefficients",
+            "surfaces.surfaces[i].geometry.coefficients",
             2,
             scale=1,
             offset=0,

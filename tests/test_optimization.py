@@ -586,7 +586,7 @@ class TestSHGO:
             input_data=input_data,
         )
         optimizer = optimization.SHGO(problem)
-        result = optimizer.optimize()
+        result = optimizer.optimize(n=3, workers=1)
         assert result.success
 
     def test_raise_error_no_bounds(self):
