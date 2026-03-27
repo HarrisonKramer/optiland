@@ -95,7 +95,9 @@ Interoperability and Scripting
 ------------------------------
 
 - **Zemax File Support**:
-  Import and adapt existing designs from Zemax for further development or analysis.
+  Import and adapt existing designs from Zemax .zmx files. Write Optiland designs to .zmx format.
+- **CODE V File Support**:
+  Import and adapt existing designs from CODE V .seq files. Write Optiland designs to .seq format.
 - **JSON-Based I/O**:
   Save and load optical systems in a human-readable JSON format.
 - **Python API**:

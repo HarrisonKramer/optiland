@@ -1,14 +1,14 @@
-﻿fileio.zemax\_handler
+optiland.fileio.zemax
 =====================
 
-.. automodule:: fileio.zemax_handler
+.. automodule:: optiland.fileio.zemax
 
    
    .. rubric:: Functions
 
    .. autosummary::
    
-      load_zemax_file
+      save_zemax_file
    
    .. rubric:: Classes
 
@@ -17,4 +17,5 @@
       ZemaxDataModel
       ZemaxDataParser
       ZemaxFileSourceHandler
-   
+      ZemaxToOpticConverter
+      OpticToZemaxConverter
