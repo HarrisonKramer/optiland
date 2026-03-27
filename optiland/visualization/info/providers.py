@@ -105,7 +105,9 @@ class RayBundleInfoProvider(BaseInfoProvider):
         # Field is always a tuple of two floats (x, y)
         field = obj.field
         x, y = field
-        info.append(f"Field: ({float(x):.2f}, {float(y):.2f})")
+        x_val = x.item() if hasattr(x, "item") else float(x)
+        y_val = y.item() if hasattr(y, "item") else float(y)
+        info.append(f"Field: ({x_val:.2f}, {y_val:.2f})")
 
         # TODO: Add wavelength info to RayBundle
         if hasattr(obj, "wavelength"):
