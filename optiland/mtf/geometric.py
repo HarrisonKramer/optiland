@@ -219,14 +219,14 @@ class GeometricMTF(SpotDiagram):
         ax.plot(
             be.to_numpy(self.freq),
             be.to_numpy(mtf_data[0]),
-            label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Tangential",
+            label=f"Hx: {field.coord[0]:.1f}, Hy: {field.coord[1]:.1f}, Tangential",
             color=color,
             linestyle="-",
         )
         ax.plot(
             be.to_numpy(self.freq),
             be.to_numpy(mtf_data[1]),
-            label=f"Hx: {field[0]:.1f}, Hy: {field[1]:.1f}, Sagittal",
+            label=f"Hx: {field.coord[0]:.1f}, Hy: {field.coord[1]:.1f}, Sagittal",
             color=color,
             linestyle="--",
         )

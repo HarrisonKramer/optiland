@@ -118,11 +118,11 @@ class ScalarHuygensPSF(BasePSF):
 
     def _determine_image_center(self):
         """Determine center of image via raytrace across field"""
-        Hx, Hy = self.fields[0]
+        Hx, Hy = self.fields[0].coord
         rays = self.optic.trace(
             Hx=Hx,
             Hy=Hy,
-            wavelength=self.wavelengths[0],
+            wavelength=self.wavelengths[0].value,
             distribution="hexapolar",
             num_rays=6,
         )
@@ -185,7 +185,7 @@ class ScalarHuygensPSF(BasePSF):
         The oversampling factor scales the cutoff to achieve finer-than-Nyquist
         sampling, ensuring that the PSF is adequately resolved on the image grid.
         """
-        f_cutoff = 1.0 / (self._get_working_FNO() * self.wavelengths[0] * 1e-3)
+        f_cutoff = 1.0 / (self._get_working_FNO() * self.wavelengths[0].value * 1e-3)
         f_nyquist = self.oversample * f_cutoff
         self.pixel_pitch = 1.0 / (2 * f_nyquist)
         return 0.5 * self.image_size * self.pixel_pitch
@@ -205,7 +205,7 @@ class ScalarHuygensPSF(BasePSF):
             num_Airy_disks
             * self._get_working_FNO()  # effective F-number
             * 1.22
-            * (self.wavelengths[0] * 1e-3)  # um --> mm
+            * (self.wavelengths[0].value * 1e-3)  # um --> mm
         )
         return max(extent_geometric, extent_ideal)
 
@@ -252,17 +252,17 @@ class ScalarHuygensPSF(BasePSF):
         Returns:
             float: The normalization factor.
         """
-        if self.fields[0] == (0, 0):
-            data = self.get_data((0, 0), self.wavelengths[0])
+        if self.fields[0].coord == (0, 0):
+            data = self.get_data((0, 0), self.wavelengths[0].value)
         else:
             wf = Wavefront(
                 self.optic,
                 distribution="uniform",
                 num_rays=self.num_rays,
                 fields=[(0, 0)],
-                wavelengths=[self.wavelengths[0]],
+                wavelengths=[self.wavelengths[0].value],
             )
-            data = wf.get_data((0, 0), self.wavelengths[0])
+            data = wf.get_data((0, 0), self.wavelengths[0].value)
 
         pupil_opd_ideal = be.zeros_like(data.opd)  # ideal case has no OPD
         image_x = be.zeros((1, 1))  # single point for normalization
@@ -279,7 +279,7 @@ class ScalarHuygensPSF(BasePSF):
             data.pupil_z,
             be.ones_like(data.intensity),
             pupil_opd_ideal,
-            self.wavelengths[0] * 1e-3,
+            self.wavelengths[0].value * 1e-3,
             data.radius,
         )
 
@@ -288,8 +288,8 @@ class ScalarHuygensPSF(BasePSF):
     def _compute_psf(self):
         """Compute the PSF using the Huygens-Fresnel principle."""
         # Retrieve pupil data from Wavefront instance
-        Hx, Hy = self.fields[0]
-        wavelength_um = self.wavelengths[0]
+        Hx, Hy = self.fields[0].coord
+        wavelength_um = self.wavelengths[0].value
         wavelength_mm = wavelength_um * 1e-3
         data = self.get_data((Hx, Hy), wavelength_um)
 

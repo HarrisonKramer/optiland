@@ -88,12 +88,16 @@ class Wavefront:
         """Retrieves precomputed wavefront data for a field and wavelength.
 
         Args:
-            field (tuple[float, float]): The field coordinates.
-            wl (float): The wavelength.
+            field (tuple[float, float]): The field coordinates, or a FieldPoint.
+            wl (float): The wavelength in µm, or a WavelengthPoint.
 
         Returns:
             WavefrontData: A data container with the computed wavefront results.
         """
+        if hasattr(field, "coord"):
+            field = field.coord
+        if hasattr(wl, "value"):
+            wl = wl.value
         return self.data[(field, wl)]
 
     @staticmethod

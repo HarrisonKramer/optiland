@@ -23,7 +23,7 @@ class TestThroughFocusMTF:
         assert tfm.delta_focus == 0.1  # Default
         assert tfm.num_steps == 5  # Default
         assert len(tfm.fields) == len(optic.fields.fields)  # Default "all"
-        assert tfm.wavelengths == [optic.primary_wavelength]
+        assert [wp.value for wp in tfm.wavelengths] == [optic.primary_wavelength]
 
         # Check results structure (analysis is done in __init__ via parent)
         assert len(tfm.results) == tfm.num_steps
@@ -49,8 +49,8 @@ class TestThroughFocusMTF:
         assert tfm.wavelength == custom_wl
         assert tfm.delta_focus == 0.05
         assert tfm.num_steps == 3
-        assert tfm.fields == custom_fields
-        assert tfm.wavelengths == [custom_wl]
+        assert [fp.coord for fp in tfm.fields] == custom_fields
+        assert [wp.value for wp in tfm.wavelengths] == [custom_wl]
 
         assert len(tfm.results) == 3
         assert len(tfm.results[0]) == len(custom_fields)
@@ -67,7 +67,7 @@ class TestThroughFocusMTF:
             num_steps=3,
         )
         assert tfm.wavelength == wavelength_val
-        assert tfm.wavelengths == [wavelength_val]
+        assert [wp.value for wp in tfm.wavelengths] == [wavelength_val]
 
     def test_init_invalid_num_steps(self, set_test_backend):
         """Test initialization with invalid num_steps values."""

@@ -62,8 +62,8 @@ class VectorialHuygensPSF(ScalarHuygensPSF):
         Raises:
             ValueError: If ``E_exits`` is not populated in the wavefront data.
         """
-        Hx, Hy = self.fields[0]
-        wavelength_um = self.wavelengths[0]
+        Hx, Hy = self.fields[0].coord
+        wavelength_um = self.wavelengths[0].value
         wavelength_mm = wavelength_um * 1e-3
         data = self.get_data((Hx, Hy), wavelength_um)
 
@@ -121,17 +121,17 @@ class VectorialHuygensPSF(ScalarHuygensPSF):
         Raises:
             ValueError: If ``E_exits`` is not populated for the reference field.
         """
-        if self.fields[0] == (0, 0):
-            data = self.get_data((0, 0), self.wavelengths[0])
+        if self.fields[0].coord == (0, 0):
+            data = self.get_data((0, 0), self.wavelengths[0].value)
         else:
             wf = Wavefront(
                 self.optic,
                 distribution="uniform",
                 num_rays=self.num_rays,
                 fields=[(0, 0)],
-                wavelengths=[self.wavelengths[0]],
+                wavelengths=[self.wavelengths[0].value],
             )
-            data = wf.get_data((0, 0), self.wavelengths[0])
+            data = wf.get_data((0, 0), self.wavelengths[0].value)
 
         if data.E_exits is None:
             raise ValueError(
@@ -161,7 +161,7 @@ class VectorialHuygensPSF(ScalarHuygensPSF):
                     data.pupil_z,
                     amplitude,
                     pupil_opd_ideal,
-                    self.wavelengths[0] * 1e-3,
+                    self.wavelengths[0].value * 1e-3,
                     data.radius,
                 )
                 norm = norm + component_norm[0, 0]

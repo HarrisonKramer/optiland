@@ -77,8 +77,8 @@ class TestHuygensPSF:
         )
 
         assert psf_instance.optic == optic
-        assert psf_instance.fields == [field]  # BasePSF stores fields as a list
-        assert psf_instance.wavelengths == [
+        assert [fp.coord for fp in psf_instance.fields] == [field]  # BasePSF stores fields as a list
+        assert [wp.value for wp in psf_instance.wavelengths] == [
             self.WAVELENGTH_GREEN
         ]  # BasePSF stores wavelengths as a list
         assert psf_instance.num_rays == self.NUM_RAYS_LOW

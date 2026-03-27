@@ -164,7 +164,8 @@ class EncircledEnergy(SpotDiagram):
             # convert both to plain numpy for plotting
             r_np = be.to_numpy(r_step)
             ee_np = be.to_numpy(ee)
-            ax.plot(r_np, ee_np, label=f"Hx: {field[0]:.3f}, Hy: {field[1]:.3f}")
+            Hx, Hy = field.coord
+            ax.plot(r_np, ee_np, label=f"Hx: {Hx:.3f}, Hy: {Hy:.3f}")
 
     def _generate_field_data(
         self,
