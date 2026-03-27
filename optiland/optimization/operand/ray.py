@@ -367,14 +367,13 @@ class RayOperand:
         weights = 1.0
 
         if distribution == "gaussian_quad":
-            if Hx == Hy == 0:
-                distribution = GaussianQuadrature(is_symmetric=True)
-                weights = distribution.get_weights(num_rays)
-            else:
-                distribution = GaussianQuadrature(is_symmetric=False)
-                weights = be.repeat(distribution.get_weights(num_rays), 3)
+            distribution = GaussianQuadrature()
 
-            distribution.generate_points(num_rings=num_rays)
+            if Hx == Hy == 0:
+                distribution.generate_points(num_rays, 1)
+            else:
+                distribution.generate_points(num_rays)
+            weights = distribution.weights * 3.0
 
         wf = wavefront.Wavefront(
             optic,
