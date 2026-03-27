@@ -9,7 +9,7 @@ import optiland.backend.utils as utils
 def test_to_numpy_scalar():
     res = utils.to_numpy(5)
     assert isinstance(res, np.ndarray)
-    assert res[0] == 5
+    assert res.item() == 5
 
 
 def test_to_numpy_array():
