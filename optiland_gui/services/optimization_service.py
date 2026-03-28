@@ -381,15 +381,51 @@ class OptimizationService:
             DifferentialEvolution,
             DualAnnealing,
             LeastSquares,
+            OptimizerGeneric,
         )
 
-        return [
-            ("Least Squares", LeastSquares),
-            ("Dual Annealing", DualAnnealing),
-            ("Differential Evolution", DifferentialEvolution),
-            ("SHGO", SHGO),
-            ("Basin Hopping", BasinHopping),
+        catalog = [("Generic (scipy.minimize)", OptimizerGeneric)]
+        scipy_methods = [
+            "Nelder-Mead",
+            "Powell",
+            "CG",
+            "BFGS",
+            "L-BFGS-B",
+            "TNC",
+            "COBYLA",
+            "SLSQP",
+            "trust-constr",
         ]
+        for method in scipy_methods:
+
+            def make_cls(m=method):
+                class ScipyMethod(OptimizerGeneric):
+                    def optimize(
+                        self, maxiter=1000, disp=True, tol=1e-3, callback=None
+                    ):
+                        return super().optimize(
+                            method=m,
+                            maxiter=maxiter,
+                            disp=disp,
+                            tol=tol,
+                            callback=callback,
+                        )
+
+                return ScipyMethod
+
+            catalog.append((method, make_cls()))
+
+        catalog.extend(
+            [
+                ("Least Squares", LeastSquares),
+                ("Dual Annealing", DualAnnealing),
+                ("Differential Evolution", DifferentialEvolution),
+                ("SHGO", SHGO),
+                ("Basin Hopping", BasinHopping),
+            ]
+        )
+
+        return catalog
 
     # ------------------------------------------------------------------
     # Threaded execution

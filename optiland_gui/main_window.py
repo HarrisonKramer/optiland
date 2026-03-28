@@ -24,7 +24,7 @@ from PySide6.QtCore import (
     Qt,
     Slot,
 )
-from PySide6.QtGui import QAction, QResizeEvent
+from PySide6.QtGui import QAction, QKeySequence, QResizeEvent, QShortcut
 from PySide6.QtWidgets import (
     QDialog,
     QFileDialog,
@@ -51,6 +51,14 @@ from .config import (
 )
 from .optiland_connector import OptilandConnector
 from .panel_manager import PanelManager
+from .services.layout_manager import BUILTIN_PRESET_NAMES, LayoutManager
+from .utils import logging_handler as _log_handler
+from .utils.plot_theme import apply_plot_theme
+from .widgets.command_palette import (
+    CommandPaletteWidget,
+    CommandRegistry,
+    PaletteCommand,
+)
 
 # from .optimization_panel import OptimizationPanel # we will support this later on
 from .widgets.custom_title_bar import CustomTitleBar
@@ -59,6 +67,7 @@ from .widgets.sidebar import (
     SIDEBAR_MAX_WIDTH,
     SIDEBAR_MIN_WIDTH,
 )
+from .widgets.toast import ToastManager
 
 try:
     from .resources import resources_rc  # noqa: F401
@@ -189,6 +198,11 @@ class MainWindow(FramelessWindow):
         self.dock_animations = {}
         self.dock_original_sizes = {}
         self.about_dialog = None
+        # These are initialised after the window is shown (needs parent geometry)
+        self.toast_manager: ToastManager | None = None
+        self.command_palette: CommandPaletteWidget | None = None
+        self.command_registry = CommandRegistry.instance()
+        self.layout_manager = LayoutManager(self, self.settings)
 
     def _setup_menus_and_toolbars(self):
         """Creates and populates the main menu bar, custom title bar, and toolbars."""
@@ -247,6 +261,24 @@ class MainWindow(FramelessWindow):
         self.connector.modifiedStateChanged.connect(
             self._update_project_name_in_title_bar
         )
+
+        # Toast manager — must be created after the window exists
+        self.toast_manager = ToastManager(self)
+        # Expose on connector so services can call it
+        self.connector.toast_manager = self.toast_manager
+
+        # Logging handler: route Python WARNING+ to toasts
+        self._gui_log_handler = _log_handler.install(self.toast_manager)
+
+        # Command palette (Ctrl+K)
+        self.command_palette = CommandPaletteWidget(
+            self, self.command_registry, self.settings
+        )
+        palette_shortcut = QShortcut(QKeySequence("Ctrl+K"), self)
+        palette_shortcut.activated.connect(self.command_palette.toggle)
+
+        # Register commands
+        self._register_palette_commands()
 
         self._initial_narrow_check_done = False
         self._update_project_name_in_title_bar()
@@ -349,6 +381,11 @@ class MainWindow(FramelessWindow):
         theme_menu.addActions(am.get_actions("dark_theme", "light_theme"))
         view_menu.addSeparator()
 
+        # Layouts submenu (built-in presets + user presets)
+        self._layouts_menu = view_menu.addMenu("&Layouts")
+        self._populate_layouts_menu()
+        view_menu.addSeparator()
+
         # Add toggle actions for all managed docks
         if hasattr(self, "panel_manager"):
             for dock in self.panel_manager.get_all_docks():
@@ -414,8 +451,11 @@ class MainWindow(FramelessWindow):
 
         self.setStyleSheet(style_str)
 
-        theme_name = "dark" if self.current_theme_path == THEME_DARK_PATH else "light"
+        is_dark = self.current_theme_path == THEME_DARK_PATH
+        theme_name = "dark" if is_dark else "light"
         gui_plot_utils.apply_gui_matplotlib_styles(theme=theme_name)
+        # Also apply the new theme-specific rcParams overrides
+        apply_plot_theme(is_dark)
 
         if hasattr(self, "custom_title_bar_widget"):
             self.custom_title_bar_widget.setStyleSheet(style_str)
@@ -423,7 +463,6 @@ class MainWindow(FramelessWindow):
         dark_theme_action = self.action_manager.get_action("dark_theme")
         light_theme_action = self.action_manager.get_action("light_theme")
         if dark_theme_action and light_theme_action:
-            is_dark = self.current_theme_path == THEME_DARK_PATH
             dark_theme_action.setChecked(is_dark)
             light_theme_action.setChecked(not is_dark)
 
@@ -849,6 +888,158 @@ class MainWindow(FramelessWindow):
                     lambda checked=False, cls=optic_class: self._load_sample_action(cls)
                 )
                 submenu.addAction(action)
+
+    def _populate_layouts_menu(self) -> None:
+        """Rebuild the Layouts menu with built-in and user presets."""
+        if not hasattr(self, "_layouts_menu"):
+            return
+        self._layouts_menu.clear()
+
+        for name in BUILTIN_PRESET_NAMES:
+            action = QAction(name, self)
+            action.triggered.connect(
+                lambda checked=False, n=name: self.layout_manager.apply_builtin(n)
+            )
+            self._layouts_menu.addAction(action)
+
+        self._layouts_menu.addSeparator()
+
+        user_names = self.layout_manager.user_preset_names()
+        _MAX_IN_MENU = 10
+        for name in user_names[:_MAX_IN_MENU]:
+            action = QAction(name, self)
+            action.triggered.connect(
+                lambda checked=False, n=name: self.layout_manager.load_user(n)
+            )
+            self._layouts_menu.addAction(action)
+
+        if len(user_names) > _MAX_IN_MENU:
+            more = QAction("More…", self)
+            more.triggered.connect(self.layout_manager.show_manage_dialog)
+            self._layouts_menu.addAction(more)
+
+        self._layouts_menu.addSeparator()
+        save_action = QAction("Save Current Layout As…", self)
+        save_action.triggered.connect(self._save_layout_as_action)
+        self._layouts_menu.addAction(save_action)
+
+        manage_action = QAction("Manage Layouts…", self)
+        manage_action.triggered.connect(self.layout_manager.show_manage_dialog)
+        self._layouts_menu.addAction(manage_action)
+
+    @Slot()
+    def _save_layout_as_action(self) -> None:
+        """Save the current layout as a named user preset."""
+        name = self.layout_manager.save_current_as()
+        if name:
+            self._populate_layouts_menu()
+            if self.toast_manager:
+                self.toast_manager.notify(f"Layout saved: {name}", "success")
+
+    def _register_palette_commands(self) -> None:
+        """Populate the :class:`CommandRegistry` with app-level commands."""
+        reg = self.command_registry
+        am = self.action_manager
+
+        # --- File actions ---
+        _file_cmds = [
+            ("New", "Create a new optical system", "new", "Ctrl+N", "File"),
+            ("Open", "Open an existing system file", "open", "Ctrl+O", "File"),
+            ("Save", "Save the current system", "save", "Ctrl+S", "File"),
+            ("Save As", "Save to a new file", "save_as", "", "File"),
+        ]
+        for name, desc, action_key, shortcut, cat in _file_cmds:
+            action = am.get_action(action_key)
+            if action:
+                reg.register(
+                    PaletteCommand(
+                        name=name,
+                        description=desc,
+                        callback=action.trigger,
+                        shortcut=shortcut,
+                        category=cat,
+                    )
+                )
+
+        # --- View / theme ---
+        dark_action = am.get_action("dark_theme")
+        light_action = am.get_action("light_theme")
+        if dark_action:
+            reg.register(
+                PaletteCommand(
+                    "Dark Theme",
+                    "Switch to dark mode",
+                    dark_action.trigger,
+                    category="Settings",
+                )
+            )
+        if light_action:
+            reg.register(
+                PaletteCommand(
+                    "Light Theme",
+                    "Switch to light mode",
+                    light_action.trigger,
+                    category="Settings",
+                )
+            )
+
+        reset_action = am.get_action("reset_layout")
+        if reset_action:
+            reg.register(
+                PaletteCommand(
+                    "Reset Layout",
+                    "Reset to default dock layout",
+                    reset_action.trigger,
+                    category="Settings",
+                )
+            )
+
+        # --- Layout presets ---
+        for preset_name in BUILTIN_PRESET_NAMES:
+            reg.register(
+                PaletteCommand(
+                    name=f"Apply {preset_name} Layout",
+                    description=f"Switch to the {preset_name} panel preset",
+                    callback=lambda n=preset_name: self.layout_manager.apply_builtin(n),
+                    keywords=[preset_name.lower(), "layout", "preset"],
+                    category="Layouts",
+                )
+            )
+
+        # --- Analysis types ---
+        if hasattr(self, "panel_manager") and self.panel_manager.analysis_panel:
+            ap = self.panel_manager.analysis_panel
+            for analysis_name in ap._analysis_class_map:
+                reg.register(
+                    PaletteCommand(
+                        name=f"Run {analysis_name}",
+                        description=f"Open Analysis panel and run {analysis_name}",
+                        callback=lambda n=analysis_name: (
+                            self._run_analysis_from_palette(n)
+                        ),
+                        keywords=["analysis", analysis_name.lower()],
+                        category="Analysis",
+                    )
+                )
+
+    def _run_analysis_from_palette(self, analysis_name: str) -> None:
+        """Show the analysis panel and run *analysis_name*."""
+        pm = self.panel_manager
+        if hasattr(pm, "analysis_dock") and pm.analysis_dock:
+            pm.analysis_dock.show()
+            pm.analysis_dock.raise_()
+        if hasattr(pm, "analysis_panel") and pm.analysis_panel:
+            ap = pm.analysis_panel
+            ap.analysisTypeCombo.setCurrentText(analysis_name)
+            ap.run_analysis_slot()
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        """Reposition toasts when the window resizes."""
+        super().resizeEvent(event)
+        if self.toast_manager:
+            self.toast_manager.reposition()
+        if self.command_palette and self.command_palette._visible:
+            self.command_palette._reposition()
 
     def _load_sample_action(self, optic_class: type[Optic]):
         """Instantiates and loads the selected sample class."""

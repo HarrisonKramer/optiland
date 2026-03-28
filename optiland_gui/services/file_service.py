@@ -114,6 +114,16 @@ class FileService:
         self._current_filepath: str | None = None
 
     # ------------------------------------------------------------------
+    # Toast helper
+    # ------------------------------------------------------------------
+
+    def _toast(self, message: str, severity: str, sub: str | None = None) -> None:
+        """Forward *message* to the application's toast manager if available."""
+        tm = getattr(self._connector, "toast_manager", None)
+        if tm is not None:
+            tm.notify(message, severity, sub_message=sub)
+
+    # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
@@ -162,7 +172,9 @@ class FileService:
             )
             self._connector.set_modified(False)
             self._connector.opticLoaded.emit()
+            self._toast(f"Opened \u2014 {os.path.basename(filepath)}", "info")
         except Exception as e:
+            self._toast(f"Load failed: {e}", "error", sub=filepath)
             QMessageBox.critical(
                 None,
                 "Load Error",
@@ -185,7 +197,9 @@ class FileService:
                 json.dump(data, f, indent=4, cls=SpecialFloatEncoder)
             self._current_filepath = filepath
             self._connector.set_modified(False)
+            self._toast(f"Saved \u2014 {os.path.basename(filepath)}", "success")
         except Exception as e:
+            self._toast(f"Save failed: {e}", "error", sub=filepath)
             QMessageBox.critical(
                 None,
                 "Save Error",

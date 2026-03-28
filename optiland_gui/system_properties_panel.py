@@ -16,7 +16,6 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFormLayout,
@@ -585,11 +584,12 @@ class WavelengthsEditor(PropertyEditorBase):
 class PolarizationEditor(PropertyEditorBase):
     """A widget for configuring the polarization state of the optical system.
 
-    Provides a checkbox to enable/disable polarization and four numeric inputs
-    for Ex, Ey, Phase X, and Phase Y.  Phase values are shown in degrees;
-    they are converted to radians before being passed to the core.
+    Provides a combobox to select between Ignore, Unpolarized, or Polarized
+    and four numeric inputs for Ex, Ey, Phase X, and Phase Y.
+    Phase values are shown in degrees; they are converted to radians before
+    being passed to the core.
 
-    When "Enable Polarization" is unchecked all four spin boxes are disabled.
+    When mode is not "Polarized", all four spin boxes are disabled.
     Validation errors are shown via an inline error label instead of a dialog.
     """
 
@@ -599,8 +599,13 @@ class PolarizationEditor(PropertyEditorBase):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
-        self.chkEnabled = QCheckBox("Enable Polarization")
-        main_layout.addWidget(self.chkEnabled)
+        layout_mode = QHBoxLayout()
+        layout_mode.addWidget(QLabel("Mode:"))
+        self.cmbMode = QComboBox()
+        self.cmbMode.addItems(["Ignore", "Unpolarized", "Polarized"])
+        layout_mode.addWidget(self.cmbMode)
+        layout_mode.addStretch()
+        main_layout.addLayout(layout_mode)
 
         form = QFormLayout()
         form.setContentsMargins(0, 0, 0, 0)
@@ -627,7 +632,7 @@ class PolarizationEditor(PropertyEditorBase):
         main_layout.addWidget(self.btnApply)
         main_layout.addStretch()
 
-        self.chkEnabled.toggled.connect(self._on_enabled_toggled)
+        self.cmbMode.currentIndexChanged.connect(self._on_mode_changed)
         self.btnApply.clicked.connect(self.apply_polarization)
 
         self._set_inputs_enabled(False)
@@ -662,10 +667,10 @@ class PolarizationEditor(PropertyEditorBase):
     # Slots
     # ------------------------------------------------------------------
 
-    @Slot(bool)
-    def _on_enabled_toggled(self, checked: bool) -> None:
-        """Enable/disable numeric inputs when the checkbox changes."""
-        self._set_inputs_enabled(checked)
+    @Slot(int)
+    def _on_mode_changed(self, index: int) -> None:
+        """Enable/disable numeric inputs when the combo box changes."""
+        self._set_inputs_enabled(index == 2)
         self.lblError.hide()
 
     @Slot()
@@ -676,22 +681,37 @@ class PolarizationEditor(PropertyEditorBase):
         self.lblError.hide()
 
         if optic is None:
-            self.chkEnabled.setChecked(False)
+            self.cmbMode.setCurrentIndex(0)
             self._set_inputs_enabled(False)
             self.is_loading = False
             return
 
         pol = optic.polarization
-        if hasattr(pol, "is_polarized") and pol.is_polarized:
-            self.chkEnabled.setChecked(True)
-            self._set_inputs_enabled(True)
-            # Ex / Ey may be backend tensors; convert to plain float
-            self.spnEx.setValue(float(pol.Ex))
-            self.spnEy.setValue(float(pol.Ey))
-            self.spnPhaseX.setValue(math.degrees(float(pol.phase_x)))
-            self.spnPhaseY.setValue(math.degrees(float(pol.phase_y)))
+        if pol == "ignore" or pol is None:
+            self.cmbMode.setCurrentIndex(0)
+            self._set_inputs_enabled(False)
+            self.spnEx.setValue(0.0)
+            self.spnEy.setValue(0.0)
+            self.spnPhaseX.setValue(0.0)
+            self.spnPhaseY.setValue(0.0)
+        elif hasattr(pol, "is_polarized"):
+            if pol.is_polarized:
+                self.cmbMode.setCurrentIndex(2)
+                self._set_inputs_enabled(True)
+                # Ex / Ey may be backend tensors; convert to plain float
+                self.spnEx.setValue(float(pol.Ex))
+                self.spnEy.setValue(float(pol.Ey))
+                self.spnPhaseX.setValue(math.degrees(float(pol.phase_x)))
+                self.spnPhaseY.setValue(math.degrees(float(pol.phase_y)))
+            else:
+                self.cmbMode.setCurrentIndex(1)
+                self._set_inputs_enabled(False)
+                self.spnEx.setValue(0.0)
+                self.spnEy.setValue(0.0)
+                self.spnPhaseX.setValue(0.0)
+                self.spnPhaseY.setValue(0.0)
         else:
-            self.chkEnabled.setChecked(False)
+            self.cmbMode.setCurrentIndex(0)
             self._set_inputs_enabled(False)
             self.spnEx.setValue(0.0)
             self.spnEy.setValue(0.0)
@@ -706,8 +726,16 @@ class PolarizationEditor(PropertyEditorBase):
         if self.is_loading:
             return
         self.lblError.hide()
-        is_polarized = self.chkEnabled.isChecked()
-        if is_polarized:
+
+        mode_idx = self.cmbMode.currentIndex()
+        if mode_idx == 0:
+            mode = "ignore"
+        elif mode_idx == 1:
+            mode = "unpolarized"
+        else:
+            mode = "polarized"
+
+        if mode == "polarized":
             Ex = self.spnEx.value()
             Ey = self.spnEy.value()
             phase_x_deg = self.spnPhaseX.value()
@@ -717,7 +745,7 @@ class PolarizationEditor(PropertyEditorBase):
 
         try:
             self.connector.set_polarization_state(
-                is_polarized, Ex, Ey, phase_x_deg, phase_y_deg
+                mode, Ex, Ey, phase_x_deg, phase_y_deg
             )
             # Reload to display the normalized values the core computed
             self.load_data()

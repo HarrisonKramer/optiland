@@ -23,7 +23,7 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QFormLayout,
     QFrame,
+    QGraphicsOpacityEffect,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -595,10 +596,22 @@ class AnalysisPanel(QWidget):
             annotation = int
             if default_value is None:
                 default_value = 128
-        # field (singular) is a required (hx, hy) coordinate — default to origin
-        if param_name == "field" and default_value is None:
+        if param_name == "field" and default_value in [
+            None,
+            inspect.Parameter.empty,
+            "",
+        ]:
             annotation = tuple
             default_value = (0.0, 0.0)
+
+        # wavelength (singular) is required — default to primary
+        if param_name == "wavelength" and default_value in [
+            None,
+            inspect.Parameter.empty,
+            "",
+        ]:
+            annotation = str
+            default_value = "primary"
         # MMDFTPSF requires explicit image_size/pixel_pitch when they are None
         if param_name == "image_size" and default_value is None:
             annotation = int
@@ -1113,8 +1126,25 @@ class AnalysisPanel(QWidget):
             )
             self._setup_plot_toolbar(self.active_mpl_canvas_widget)
             plot_layout.addWidget(self.active_mpl_canvas_widget)
+            self._fade_in_canvas(self.active_mpl_canvas_widget)
         else:
             plot_layout.addWidget(QLabel(f"Cannot embed plot for {analysis_name}"))
+
+    def _fade_in_canvas(self, canvas, duration_ms: int = 250) -> None:
+        """Fade a newly-rendered canvas from transparent to fully opaque.
+
+        Args:
+            canvas: The :class:`FigureCanvas` widget to animate.
+            duration_ms: Animation duration in milliseconds.
+        """
+        effect = QGraphicsOpacityEffect(canvas)
+        canvas.setGraphicsEffect(effect)
+        anim = QPropertyAnimation(effect, b"opacity", canvas)
+        anim.setStartValue(0.0)
+        anim.setEndValue(1.0)
+        anim.setDuration(duration_ms)
+        anim.setEasingCurve(QEasingCurve.OutCubic)
+        anim.start(QPropertyAnimation.DeleteWhenStopped)
 
     def on_plot_double_click(self, event):
         """Handler for mouse events on the plot canvas."""
@@ -1209,19 +1239,29 @@ class AnalysisPanel(QWidget):
         Returns:
             True if the system is valid, False otherwise.
         """
+        tm = getattr(self.connector, "toast_manager", None)
         if not optic or optic.surface_group.num_surfaces < 2:
-            QMessageBox.warning(
-                self,
-                self.ANALYSIS_ERROR_TITLE,
-                "A minimal optical system (at least 2 surfaces) is required.",
-            )
+            if tm:
+                tm.notify(
+                    "A minimal optical system (at least 2 surfaces) is required.",
+                    "warning",
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    self.ANALYSIS_ERROR_TITLE,
+                    "A minimal optical system (at least 2 surfaces) is required.",
+                )
             return False
         if optic.wavelengths.num_wavelengths == 0:
-            QMessageBox.warning(
-                self,
-                self.ANALYSIS_ERROR_TITLE,
-                "The optical system has no defined wavelengths.",
-            )
+            if tm:
+                tm.notify("The optical system has no defined wavelengths.", "warning")
+            else:
+                QMessageBox.warning(
+                    self,
+                    self.ANALYSIS_ERROR_TITLE,
+                    "The optical system has no defined wavelengths.",
+                )
             return False
         return True
 
@@ -1357,11 +1397,16 @@ class AnalysisPanel(QWidget):
             )
 
         except Exception as e:
-            QMessageBox.critical(
-                self,
-                self.ANALYSIS_ERROR_TITLE,
-                f"An error occurred during {analysis_name}:\n{e}",
-            )
+            msg = f"An error occurred during {analysis_name}:\n{e}"
+            tm = getattr(self.connector, "toast_manager", None)
+            if tm:
+                tm.notify(msg, "error")
+            else:
+                QMessageBox.critical(
+                    self,
+                    self.ANALYSIS_ERROR_TITLE,
+                    msg,
+                )
             import traceback
 
             print(f"Analysis Panel Error: {e}\n{traceback.format_exc()}")

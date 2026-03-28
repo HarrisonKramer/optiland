@@ -97,19 +97,11 @@ class AddVariableDialog(QDialog):
         self.cmbType.currentIndexChanged.connect(self._update_coeff_visibility)
 
         # Min / Max
-        self.spnMin = QDoubleSpinBox()
-        self.spnMin.setDecimals(4)
-        self.spnMin.setRange(-1e9, 1e9)
-        self.spnMin.setValue(-1000.0)
-        self.spnMin.setSpecialValueText("None")
-        form.addRow("Min value:", self.spnMin)
+        self.txtMin = QLineEdit("None")
+        form.addRow("Min value:", self.txtMin)
 
-        self.spnMax = QDoubleSpinBox()
-        self.spnMax.setDecimals(4)
-        self.spnMax.setRange(-1e9, 1e9)
-        self.spnMax.setValue(1000.0)
-        self.spnMax.setSpecialValueText("None")
-        form.addRow("Max value:", self.spnMax)
+        self.txtMax = QLineEdit("None")
+        form.addRow("Max value:", self.txtMax)
 
         layout.addLayout(form)
 
@@ -132,11 +124,21 @@ class AddVariableDialog(QDialog):
             A dict suitable for
             :meth:`~optiland_gui.optiland_connector.OptilandConnector.add_optimization_variable`.
         """
+
+        def _parse_val(text):
+            text = text.strip()
+            if text.lower() == "none" or not text:
+                return None
+            try:
+                return float(text)
+            except ValueError:
+                return None
+
         vd: dict = {
             "surface_number": self.spnSurface.value(),
             "type": self.cmbType.currentData(),
-            "min_val": self.spnMin.value(),
-            "max_val": self.spnMax.value(),
+            "min_val": _parse_val(self.txtMin.text()),
+            "max_val": _parse_val(self.txtMax.text()),
         }
         if vd["type"] == "asphere_coeff":
             vd["coeff_number"] = self.spnCoeff.value()
@@ -171,6 +173,13 @@ class AddOperandDialog(QDialog):
         self.cmbCategory.addItems(categories)
         form.addRow("Category:", self.cmbCategory)
 
+        # Extra input_data JSON
+        self.txtInputData = QLineEdit("{}")
+        self.txtInputData.setToolTip(
+            "JSON dict of extra parameters (optic added automatically).\n"
+            'Example: {"surface_number": 1}'
+        )
+
         # Type — filtered by category
         self.cmbType = QComboBox()
         form.addRow("Type:", self.cmbType)
@@ -191,12 +200,6 @@ class AddOperandDialog(QDialog):
         self.spnWeight.setValue(1.0)
         form.addRow("Weight:", self.spnWeight)
 
-        # Extra input_data JSON
-        self.txtInputData = QLineEdit("{}")
-        self.txtInputData.setToolTip(
-            "JSON dict of extra parameters (optic added automatically).\n"
-            'Example: {"surface_number": 1}'
-        )
         form.addRow("Parameters (JSON):", self.txtInputData)
         self.cmbType.currentTextChanged.connect(self._update_default_input_data)
 
@@ -656,11 +659,20 @@ class OptimizationPanel(QWidget):
             self.btnStop.setEnabled(False)
             self.connector.opticChanged.emit()
             self._refresh_variables_table()
+            tm = getattr(self.connector, "toast_manager", None)
+            if tm is not None:
+                first_line = (
+                    summary.splitlines()[0] if summary else "Optimization complete"
+                )
+                tm.notify(first_line, "success")
 
         def on_error(message: str) -> None:
             self.txtLog.append(f"Error: {message}")
             self.btnRun.setEnabled(True)
             self.btnStop.setEnabled(False)
+            tm = getattr(self.connector, "toast_manager", None)
+            if tm is not None:
+                tm.notify(f"Optimization failed: {message}", "error")
 
         self.connector.run_optimization(
             cls, optimizer_kwargs, on_progress, on_finished, on_error

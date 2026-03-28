@@ -81,7 +81,7 @@ class SystemService:
 
     def set_polarization_state(
         self,
-        is_polarized: bool,
+        mode: str,
         Ex: float | None = None,
         Ey: float | None = None,
         phase_x_deg: float | None = None,
@@ -89,32 +89,35 @@ class SystemService:
     ) -> None:
         """Set or clear the polarization state on the active optic.
 
-        When *is_polarized* is ``False`` the optic's polarization is set to
-        ``"ignore"``.  When ``True``, the four field values are required;
+        When *mode* is ``"ignore"`` the optic's polarization is set to
+        ``"ignore"``.  When ``"unpolarized"``, an unpolarized state is created.
+        When ``"polarized"``, the four field values are required;
         phase angles are provided in **degrees** and converted to radians
         before constructing :class:`~optiland.rays.PolarizationState`.
 
         Args:
-            is_polarized: Whether to enable polarization.
-            Ex: Electric field x-component (required when *is_polarized*).
-            Ey: Electric field y-component (required when *is_polarized*).
-            phase_x_deg: Phase of Ex in degrees (required when *is_polarized*).
-            phase_y_deg: Phase of Ey in degrees (required when *is_polarized*).
+            mode: "ignore", "unpolarized", or "polarized".
+            Ex: Electric field x-component (required when "polarized").
+            Ey: Electric field y-component (required when "polarized").
+            phase_x_deg: Phase of Ex in degrees (required when "polarized").
+            phase_y_deg: Phase of Ey in degrees (required when "polarized").
 
         Raises:
-            ValueError: If *is_polarized* is ``True`` but any field value is
-                ``None``, or if :class:`~optiland.rays.PolarizationState`
-                raises during construction.
+            ValueError: If *mode* is ``"polarized"`` but any field value is
+                ``None``, or if :class:`~optiland.rays.PolarizationState` raises.
         """
         optic = self._connector._optic
         if optic is None:
             return
-        if not is_polarized:
+        if mode == "ignore":
             optic.set_polarization("ignore")
-        else:
+        elif mode == "unpolarized":
+            state = PolarizationState(is_polarized=False)
+            optic.set_polarization(state)
+        elif mode == "polarized":
             if None in (Ex, Ey, phase_x_deg, phase_y_deg):
                 raise ValueError(
-                    "All polarization fields are required when polarization is enabled."
+                    "All polarization fields are required when mode is 'polarized'."
                 )
             phase_x = math.radians(phase_x_deg)
             phase_y = math.radians(phase_y_deg)
@@ -126,6 +129,8 @@ class SystemService:
                 phase_y=phase_y,
             )
             optic.set_polarization(state)
+        else:
+            raise ValueError(f"Unknown polarization mode: {mode}")
         self._connector.opticChanged.emit()
 
     def get_field_types(self) -> list[tuple[str, str]]:

@@ -11,8 +11,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QEvent, QSize, Qt, Signal, Slot
-from PySide6.QtGui import QBrush, QColor, QIcon
+from PySide6.QtCore import QEvent, QSize, Qt, QTimer, Signal, Slot
+from PySide6.QtGui import QBrush, QColor, QIcon, QPainter, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFormLayout,
@@ -22,6 +22,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMenu,
     QPushButton,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableWidget,
     QTableWidgetItem,
     QToolButton,
@@ -178,6 +180,32 @@ class SurfaceTypeWidget(QWidget):
             self.type_edit.setText(type_info["display_text"])
 
 
+class _AccentFocusDelegate(QStyledItemDelegate):
+    """Item delegate that draws an accent-coloured border around the focused cell.
+
+    Replaces Qt's default dotted focus rectangle with a clean 1.5 px accent
+    border so the active cell is clearly visible without visual noise.
+    """
+
+    _ACCENT = QColor("#007ACC")
+
+    def paint(
+        self,
+        painter: QPainter,
+        option: QStyleOptionViewItem,
+        index,
+    ) -> None:
+        super().paint(painter, option, index)
+        from PySide6.QtWidgets import QStyle
+
+        if option.state & QStyle.State_HasFocus:
+            painter.save()
+            pen = QPen(self._ACCENT, 1.5)
+            painter.setPen(pen)
+            painter.drawRect(option.rect.adjusted(1, 1, -1, -1))
+            painter.restore()
+
+
 class LensEditor(QWidget):
     """A widget for editing the properties of an optical system's surfaces."""
 
@@ -198,11 +226,26 @@ class LensEditor(QWidget):
         self.tableWidget = QTableWidget()
         self.tableWidget.installEventFilter(self)
         self.tableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+
+        # ScrollPerPixel for smooth scrolling (SPEC §4.6)
+        self.tableWidget.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
+        self.tableWidget.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
+
+        # Accent focus delegate (SPEC §4.1)
+        self._focus_delegate = _AccentFocusDelegate(self.tableWidget)
+        self.tableWidget.setItemDelegate(self._focus_delegate)
+
         self.layout.addWidget(self.tableWidget)
 
         self.buttonLayout = QHBoxLayout()
         self.btnAddSurface = QPushButton("Add Surface")
+        self.btnAddSurface.setToolTip(
+            "Add a new surface after the current selection (Insert)"
+        )
         self.btnRemoveSurface = QPushButton("Remove Surface")
+        self.btnRemoveSurface.setToolTip(
+            "Remove the currently selected surface (Delete)"
+        )
         self.buttonLayout.addWidget(self.btnAddSurface)
         self.buttonLayout.addWidget(self.btnRemoveSurface)
         self.layout.addLayout(self.buttonLayout)
@@ -393,11 +436,36 @@ class LensEditor(QWidget):
         headers = self.connector.get_column_headers(surface_index)
         self.tableWidget.setHorizontalHeaderLabels(headers)
 
+    def _flash_cell(
+        self, row: int, col: int, valid: bool, duration_ms: int = 300
+    ) -> None:
+        """Briefly flash a cell green (valid) or red (invalid) after an edit.
+
+        Args:
+            row: Table row index.
+            col: Table column index.
+            valid: If ``True`` flash green, else red.
+            duration_ms: How long the flash lasts in milliseconds.
+        """
+        item = self.tableWidget.item(row, col)
+        if item is None:
+            return
+        flash_color = QColor(76, 175, 80, 120) if valid else QColor(244, 67, 54, 120)
+        original_bg = item.background()
+        item.setBackground(QBrush(flash_color))
+        QTimer.singleShot(duration_ms, lambda: item.setBackground(original_bg))
+
     @Slot(QTableWidgetItem)
     def on_item_changed_handler(self, item: QTableWidgetItem):
         if not self.tableWidget.signalsBlocked():
             surface_index = self.map_ui_row_to_surface_index(item.row())
-            self.connector.set_surface_data(surface_index, item.column(), item.text())
+            try:
+                self.connector.set_surface_data(
+                    surface_index, item.column(), item.text()
+                )
+                self._flash_cell(item.row(), item.column(), valid=True)
+            except Exception:
+                self._flash_cell(item.row(), item.column(), valid=False)
 
     @Slot()
     def add_surface_handler(self, surface_index_to_add_before=None):

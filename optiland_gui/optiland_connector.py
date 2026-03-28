@@ -484,7 +484,7 @@ class OptilandConnector(QObject):
 
     def set_polarization_state(
         self,
-        is_polarized: bool,
+        mode: str,
         Ex: float | None = None,
         Ey: float | None = None,
         phase_x_deg: float | None = None,
@@ -493,14 +493,14 @@ class OptilandConnector(QObject):
         """Set or clear the polarization state on the active optic.
 
         Args:
-            is_polarized: Whether to enable polarization.
+            mode: "ignore", "unpolarized", or "polarized".
             Ex: Electric field x-component.
             Ey: Electric field y-component.
             phase_x_deg: Phase of Ex in degrees.
             phase_y_deg: Phase of Ey in degrees.
         """
         self._system_service.set_polarization_state(
-            is_polarized, Ex, Ey, phase_x_deg, phase_y_deg
+            mode, Ex, Ey, phase_x_deg, phase_y_deg
         )
 
     def get_geometry_types(self) -> list[str]:
