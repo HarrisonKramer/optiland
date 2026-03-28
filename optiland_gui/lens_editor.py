@@ -208,7 +208,7 @@ class LensEditor(QWidget):
         self.layout.addLayout(self.buttonLayout)
 
     def connect_signals(self):
-        self.btnAddSurface.clicked.connect(self.surfaces.add_handler)
+        self.btnAddSurface.clicked.connect(self.add_surface_handler)
         self.btnRemoveSurface.clicked.connect(self.remove_surface_handler)
         self.tableWidget.itemChanged.connect(self.on_item_changed_handler)
         self.tableWidget.customContextMenuRequested.connect(self.show_context_menu)
@@ -241,7 +241,7 @@ class LensEditor(QWidget):
     def eventFilter(self, source, event):
         if source is self.tableWidget and event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Insert:
-                self.surfaces.add_handler()
+                self.add_surface_handler()
                 return True
             if event.key() == Qt.Key_Delete:
                 self.remove_surface_handler()
@@ -359,8 +359,10 @@ class LensEditor(QWidget):
 
     @Slot()
     def add_surface_handler(self, surface_index_to_add_before=None):
-        if surface_index_to_add_before is not None:
-            self.connector.surfaces.add(index=surface_index_to_add_before)
+        if surface_index_to_add_before is not None and not isinstance(
+            surface_index_to_add_before, bool
+        ):
+            self.connector.add_surface(index=surface_index_to_add_before)
         else:
             ui_row = self.tableWidget.currentRow()
             surface_index = self.map_ui_row_to_surface_index(ui_row)
@@ -369,7 +371,7 @@ class LensEditor(QWidget):
                 if ui_row != -1
                 else self.connector.get_surface_count() - 1
             )
-            self.connector.surfaces.add(index=insert_pos)
+            self.connector.add_surface(index=insert_pos)
 
     @Slot()
     def remove_surface_handler(self, surface_index_to_remove=None):
@@ -451,9 +453,7 @@ class LensEditor(QWidget):
 
         if not is_prop_widget_row:
             add_above = menu.addAction("Add Surface Above")
-            add_above.triggered.connect(
-                lambda: self.surfaces.add_handler(surface_index)
-            )
+            add_above.triggered.connect(lambda: self.add_surface_handler(surface_index))
             remove_action = menu.addAction("Remove Current Surface")
             remove_action.triggered.connect(
                 lambda: self.remove_surface_handler(surface_index)

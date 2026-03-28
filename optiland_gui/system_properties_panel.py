@@ -253,7 +253,7 @@ class FieldsEditor(PropertyEditorBase):
         self._create_control_buttons(main_layout)
 
         self.cmbFieldType.currentTextChanged.connect(self.apply_field_type_change)
-        self.btnAddField.clicked.connect(self.fields.add)
+        self.btnAddField.clicked.connect(self.add_field)
         self.btnRemoveField.clicked.connect(self.remove_field)
         self.btnApplyFields.clicked.connect(self.apply_table_field_changes)
 
@@ -420,7 +420,7 @@ class WavelengthsEditor(PropertyEditorBase):
         self._create_wavelengths_table(main_layout)
         self._create_control_buttons(main_layout)
 
-        self.btnAddWavelength.clicked.connect(self.wavelengths.add)
+        self.btnAddWavelength.clicked.connect(self.add_wavelength)
         self.btnRemoveWavelength.clicked.connect(self.remove_wavelength)
         self.btnSetPrimary.clicked.connect(self.set_primary_wavelength)
         self.btnApplyWavelengths.clicked.connect(self.apply_table_wavelength_changes)
