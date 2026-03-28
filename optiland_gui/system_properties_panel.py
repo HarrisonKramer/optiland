@@ -310,8 +310,8 @@ class FieldsEditor(PropertyEditorBase):
         """Loads field data from the current optical system into the table."""
         self.is_loading = True
         optic = self.connector.get_optic()
-        if optic and optic.field_definition:
-            key = _FIELD_TYPE_MAP.get(type(optic.field_definition))
+        if optic and optic.fields and optic.fields.field_definition:
+            key = _FIELD_TYPE_MAP.get(type(optic.fields.field_definition))
             if key is not None:
                 for i in range(self.cmbFieldType.count()):
                     if self.cmbFieldType.itemData(i) == key:

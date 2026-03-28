@@ -70,13 +70,10 @@ ANALYSIS_REGISTRY: list[tuple[str, str, str]] = [
         "Angle vs Height (Field)",
         "optiland.analysis.FieldIncidentAngleVsHeight",
     ),
+    ("Aberrations", "Field Curvature", "optiland.analysis.FieldCurvature"),
     # ------------------------------------------------------------------ #
     # Distortion                                                           #
     # ------------------------------------------------------------------ #
     ("Distortion", "Distortion", "optiland.analysis.Distortion"),
     ("Distortion", "Grid Distortion", "optiland.analysis.GridDistortion"),
-    # ------------------------------------------------------------------ #
-    # System                                                               #
-    # ------------------------------------------------------------------ #
-    ("System", "Field Curvature", "optiland.analysis.FieldCurvature"),
 ]
