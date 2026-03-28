@@ -34,30 +34,53 @@ def apply_gui_matplotlib_styles(theme="light"):
     matplotlib.rcParams.update(valid_params)
 
 
-def get_analysis_parameters(analysis_class):
-    """Inspects an analysis class's __init__ to find its configurable parameters.
+_SKIP_PARAMS = frozenset({"self", "cls", "optic", "optical_system"})
+_VARIADIC_KINDS = frozenset(
+    {inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD}
+)
 
-    This function uses Python's `inspect` module to determine the parameters of
-    the constructor of a given analysis class. It filters out standard parameters
-    like 'self' and 'optic' to return a dictionary of parameters that can be
-    configured by the user in the GUI.
+
+def _sig_has_only_variadic(sig: inspect.Signature) -> bool:
+    """Return True when every non-self param is *args or **kwargs."""
+    return all(
+        p.kind in _VARIADIC_KINDS
+        for name, p in sig.parameters.items()
+        if name not in _SKIP_PARAMS
+    )
+
+
+def get_analysis_parameters(analysis_class):
+    """Inspect an analysis class's constructor to find its configurable parameters.
+
+    Uses Python's :mod:`inspect` module to determine the parameters of the
+    constructor of a given analysis class.  Standard parameters like ``self``
+    and ``optic`` are filtered out.
+
+    For *factory dispatch* classes (e.g. ``FFTPSF``, ``HuygensPSF``) whose
+    ``__init__`` contains only ``*args`` / ``**kwargs``, the function falls
+    back to inspecting ``__new__``, where the real parameter list lives.
 
     Args:
         analysis_class: The analysis class to inspect.
 
     Returns:
-        dict: A dictionary where keys are parameter names and values are dicts
-              containing the parameter's 'default' value and 'annotation'.
-              Returns an empty dictionary if inspection fails.
+        dict: Keys are parameter names; values are dicts with ``"default"``
+        and ``"annotation"`` entries.  Returns ``{}`` if inspection fails.
     """
     if not analysis_class:
         return {}
 
-    params = {}
+    params: dict = {}
     try:
         sig = inspect.signature(analysis_class.__init__)
+        if _sig_has_only_variadic(sig) and hasattr(analysis_class, "__new__"):
+            # Factory dispatch class — real params live in __new__
+            sig = inspect.signature(analysis_class.__new__)
+
         for param_name, param_obj in sig.parameters.items():
-            if param_name in ["self", "optic", "optical_system"]:
+            if param_name in _SKIP_PARAMS:
+                continue
+            if param_obj.kind in _VARIADIC_KINDS:
                 continue
             params[param_name] = {
                 "default": (

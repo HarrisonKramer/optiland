@@ -539,6 +539,8 @@ class AnalysisPanel(QWidget):
             "coordinates": ["local", "global"],
             "distortion_type": ["f-tan", "f-theta"],
             "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
+            "strategy": ["chief_ray", "centroid", "best_fit"],
+            "zernike_type": ["fringe", "standard", "noll"],
         }
         if param_name in combo_options:
             widget = QComboBox()
@@ -560,6 +562,23 @@ class AnalysisPanel(QWidget):
         )
 
         annotation = param_info.get("annotation")
+        if isinstance(annotation, str):
+            # Forward-reference string — map common patterns to actual types.
+            ann_lower = annotation.lower()
+            if "tuple" in ann_lower:
+                annotation = tuple
+            elif annotation in ("int",):
+                annotation = int
+            elif annotation in ("float",):
+                annotation = float
+            elif annotation in ("bool",):
+                annotation = bool
+            elif annotation in ("str",):
+                annotation = str
+            else:
+                # Unknown string annotation — infer from the default value.
+                annotation = None
+
         if annotation in (inspect.Parameter.empty, None):
             if isinstance(default_value, bool):
                 annotation = bool
@@ -576,6 +595,17 @@ class AnalysisPanel(QWidget):
             annotation = int
             if default_value is None:
                 default_value = 128
+        # field (singular) is a required (hx, hy) coordinate — default to origin
+        if param_name == "field" and default_value is None:
+            annotation = tuple
+            default_value = (0.0, 0.0)
+        # MMDFTPSF requires explicit image_size/pixel_pitch when they are None
+        if param_name == "image_size" and default_value is None:
+            annotation = int
+            default_value = 128
+        if param_name == "pixel_pitch" and default_value is None:
+            annotation = float
+            default_value = 5e-6
 
         return label_text, default_value, annotation
 
@@ -655,7 +685,11 @@ class AnalysisPanel(QWidget):
 
         init_params = gui_plot_utils.get_analysis_parameters(analysis_class)
         for name, info in init_params.items():
-            info["annotation"] = resolved_hints.get(name)
+            # Only overwrite with the resolved hint when it was actually resolved;
+            # otherwise keep the raw annotation (may be a forward-ref string).
+            resolved = resolved_hints.get(name)
+            if resolved is not None:
+                info["annotation"] = resolved
 
         if analysis_class.__name__ in [self.GEOMETRIC_MTF, self.FFT_MTF]:
             if "grid_size" not in init_params:
@@ -1210,8 +1244,19 @@ class AnalysisPanel(QWidget):
         optic = self.connector.get_optic()
         final_args = {"optic": optic, **constructor_args}
 
-        # Filter args to only those accepted by the constructor
-        valid_init_params = inspect.signature(analysis_class.__init__).parameters
+        # Filter args to only those accepted by the constructor.
+        # For factory dispatch classes (e.g. FFTPSF) whose __init__ is
+        # *args/**kwargs, fall back to __new__ for the accepted-param list.
+        init_sig = inspect.signature(analysis_class.__init__)
+        init_params = init_sig.parameters
+        _variadic = frozenset(
+            {inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD}
+        )
+        if all(
+            p.kind in _variadic for name, p in init_params.items() if name != "self"
+        ) and hasattr(analysis_class, "__new__"):
+            init_params = inspect.signature(analysis_class.__new__).parameters
+        valid_init_params = init_params
         filtered_args = {k: v for k, v in final_args.items() if k in valid_init_params}
 
         if (
