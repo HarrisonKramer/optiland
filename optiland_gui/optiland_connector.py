@@ -480,6 +480,27 @@ class OptilandConnector(QObject):
         """
         return self._system_service.get_field_types()
 
+    def set_polarization_state(
+        self,
+        is_polarized: bool,
+        Ex: float | None = None,
+        Ey: float | None = None,
+        phase_x_deg: float | None = None,
+        phase_y_deg: float | None = None,
+    ) -> None:
+        """Set or clear the polarization state on the active optic.
+
+        Args:
+            is_polarized: Whether to enable polarization.
+            Ex: Electric field x-component.
+            Ey: Electric field y-component.
+            phase_x_deg: Phase of Ex in degrees.
+            phase_y_deg: Phase of Ey in degrees.
+        """
+        self._system_service.set_polarization_state(
+            is_polarized, Ex, Ey, phase_x_deg, phase_y_deg
+        )
+
     def get_geometry_types(self) -> list[str]:
         """Return all geometry type keys registered with GeometryFactory.
 

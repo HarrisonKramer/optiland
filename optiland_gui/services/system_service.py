@@ -6,9 +6,11 @@ Properties panel.
 
 from __future__ import annotations
 
+import math
+
 import optiland.aperture  # noqa: F401 — ensures all subclasses are registered
-import optiland.backend as be  # noqa: F401  (available for future use)
 from optiland.aperture import BaseSystemAperture
+from optiland.rays import PolarizationState
 
 
 class SystemService:
@@ -76,6 +78,55 @@ class SystemService:
             ``["EPD", "imageFNO", "objectNA", ...]``).
         """
         return sorted(BaseSystemAperture._registry.keys())
+
+    def set_polarization_state(
+        self,
+        is_polarized: bool,
+        Ex: float | None = None,
+        Ey: float | None = None,
+        phase_x_deg: float | None = None,
+        phase_y_deg: float | None = None,
+    ) -> None:
+        """Set or clear the polarization state on the active optic.
+
+        When *is_polarized* is ``False`` the optic's polarization is set to
+        ``"ignore"``.  When ``True``, the four field values are required;
+        phase angles are provided in **degrees** and converted to radians
+        before constructing :class:`~optiland.rays.PolarizationState`.
+
+        Args:
+            is_polarized: Whether to enable polarization.
+            Ex: Electric field x-component (required when *is_polarized*).
+            Ey: Electric field y-component (required when *is_polarized*).
+            phase_x_deg: Phase of Ex in degrees (required when *is_polarized*).
+            phase_y_deg: Phase of Ey in degrees (required when *is_polarized*).
+
+        Raises:
+            ValueError: If *is_polarized* is ``True`` but any field value is
+                ``None``, or if :class:`~optiland.rays.PolarizationState`
+                raises during construction.
+        """
+        optic = self._connector._optic
+        if optic is None:
+            return
+        if not is_polarized:
+            optic.set_polarization("ignore")
+        else:
+            if None in (Ex, Ey, phase_x_deg, phase_y_deg):
+                raise ValueError(
+                    "All polarization fields are required when polarization is enabled."
+                )
+            phase_x = math.radians(phase_x_deg)
+            phase_y = math.radians(phase_y_deg)
+            state = PolarizationState(
+                is_polarized=True,
+                Ex=Ex,
+                Ey=Ey,
+                phase_x=phase_x,
+                phase_y=phase_y,
+            )
+            optic.set_polarization(state)
+        self._connector.opticChanged.emit()
 
     def get_field_types(self) -> list[tuple[str, str]]:
         """Return all four supported field types.
