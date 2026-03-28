@@ -6,7 +6,9 @@ Properties panel.
 
 from __future__ import annotations
 
+import optiland.aperture  # noqa: F401 — ensures all subclasses are registered
 import optiland.backend as be  # noqa: F401  (available for future use)
+from optiland.aperture import BaseSystemAperture
 
 
 class SystemService:
@@ -61,3 +63,35 @@ class SystemService:
             value_str = f"[{wl_value}]"
             options.append((display_name, value_str))
         return options
+
+    def get_aperture_types(self) -> list[str]:
+        """Return all aperture type keys registered with :class:`BaseSystemAperture`.
+
+        Enumerates the ``_registry`` class attribute that is populated when
+        each :class:`~optiland.aperture.base.BaseSystemAperture` subclass is
+        imported.
+
+        Returns:
+            A sorted list of aperture type identifier strings (e.g.
+            ``["EPD", "imageFNO", "objectNA", ...]``).
+        """
+        return sorted(BaseSystemAperture._registry.keys())
+
+    def get_field_types(self) -> list[tuple[str, str]]:
+        """Return all four supported field types.
+
+        Returns:
+            A list of ``(display_name, type_key)`` tuples for every field
+            type exposed by the GUI:
+
+            - ``("Angle", "angle")``
+            - ``("Object Height", "object_height")``
+            - ``("Paraxial Image Height", "paraxial_image_height")``
+            - ``("Real Image Height", "real_image_height")``
+        """
+        return [
+            ("Angle", "angle"),
+            ("Object Height", "object_height"),
+            ("Paraxial Image Height", "paraxial_image_height"),
+            ("Real Image Height", "real_image_height"),
+        ]

@@ -1,18 +1,25 @@
-"""Analysis runner service stub for the Optiland GUI.
+"""Analysis runner service for the Optiland GUI.
 
-This module provides a stub implementation of ``AnalysisRunner``. Full
-analysis discovery and execution will be implemented in Phase 2/3.
+Handles analysis discovery (via :mod:`optiland_gui.registry`) and provides
+stubs for execution lifecycle methods that will be expanded in Phase 3.
 """
 
 from __future__ import annotations
+
+import importlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AnalysisRunner:
     """Manages analysis discovery, parameter binding, and execution lifecycle.
 
-    This is a stub implementation. Full functionality (registry loading via
-    ``importlib``, threaded execution, result caching) will be added in a
-    later phase.
+    Analysis classes are loaded lazily from
+    :data:`optiland_gui.registry.ANALYSIS_REGISTRY` via
+    :func:`importlib.import_module`.  The resolved
+    ``(category, name, class)`` tuples are cached after the first call to
+    :meth:`get_analysis_registry`.
 
     Args:
         connector: The :class:`~optiland_gui.optiland_connector.OptilandConnector`
@@ -21,14 +28,51 @@ class AnalysisRunner:
 
     def __init__(self, connector: object) -> None:
         self._connector = connector
+        self._registry_cache: list[tuple[str, str, type]] | None = None
 
-    def get_analysis_registry(self) -> list:
-        """Return the list of registered analyses.
+    # ------------------------------------------------------------------
+    # Registry
+    # ------------------------------------------------------------------
+
+    def get_analysis_registry(self) -> list[tuple[str, str, type]]:
+        """Return the resolved analysis registry.
+
+        Each entry is a ``(category, display_name, cls)`` tuple where *cls*
+        is the live Python class loaded via :func:`importlib.import_module`.
+        Entries whose class path cannot be imported are silently omitted and
+        a warning is logged.
+
+        The result is cached after the first call.
 
         Returns:
-            An empty list in the stub implementation.
+            A list of ``(category, display_name, cls)`` tuples.
         """
-        return []
+        if self._registry_cache is not None:
+            return self._registry_cache
+
+        from optiland_gui.registry import ANALYSIS_REGISTRY
+
+        resolved: list[tuple[str, str, type]] = []
+        for category, name, class_path in ANALYSIS_REGISTRY:
+            try:
+                module_path, class_name = class_path.rsplit(".", 1)
+                module = importlib.import_module(module_path)
+                cls = getattr(module, class_name)
+                resolved.append((category, name, cls))
+            except (ImportError, AttributeError) as exc:
+                logger.warning(
+                    "AnalysisRunner: could not load '%s' (%s): %s",
+                    name,
+                    class_path,
+                    exc,
+                )
+
+        self._registry_cache = resolved
+        return self._registry_cache
+
+    # ------------------------------------------------------------------
+    # Execution lifecycle (stubs — implemented fully in Phase 3)
+    # ------------------------------------------------------------------
 
     def run(
         self,
@@ -39,7 +83,8 @@ class AnalysisRunner:
         """Execute a named analysis with the given parameters.
 
         Args:
-            analysis_name: The display name or class path of the analysis.
+            analysis_name: The display name of the analysis as it appears in
+                the registry.
             params: A dict of parameter name → value pairs to pass to the
                 analysis class constructor.
             optic: The :class:`~optiland.optic.Optic` instance to analyse.
@@ -52,6 +97,6 @@ class AnalysisRunner:
         """Return the result of the most recent analysis run.
 
         Returns:
-            ``None`` in the stub implementation.
+            ``None`` until Phase 3 threading is wired up.
         """
         return None

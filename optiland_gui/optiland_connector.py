@@ -431,3 +431,27 @@ class OptilandConnector(QObject):
             A list of ``(display_name, value_str)`` tuples.
         """
         return self._system_service.get_wavelength_options()
+
+    def get_aperture_types(self) -> list[str]:
+        """Return all aperture type keys registered with BaseSystemAperture.
+
+        Returns:
+            A sorted list of aperture type identifier strings.
+        """
+        return self._system_service.get_aperture_types()
+
+    def get_field_types(self) -> list[tuple[str, str]]:
+        """Return all four supported field types.
+
+        Returns:
+            A list of ``(display_name, type_key)`` tuples.
+        """
+        return self._system_service.get_field_types()
+
+    def get_geometry_types(self) -> list[str]:
+        """Return all geometry type keys registered with GeometryFactory.
+
+        Returns:
+            A sorted list of geometry type identifier strings.
+        """
+        return self._surface_service.get_geometry_types()

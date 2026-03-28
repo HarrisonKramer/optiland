@@ -165,6 +165,8 @@ class AnalysisPanel(QWidget):
         self.active_mpl_toolbar_widget = None
         self.motion_notify_cid = None
         self.current_settings_widgets = {}
+        # Mapping of display name → class, built from the registry at init.
+        self._analysis_class_map: dict[str, type] = {}
 
     def _setup_main_layout(self):
         """Sets up the main QVBoxLayout for the panel."""
@@ -177,8 +179,9 @@ class AnalysisPanel(QWidget):
         top_bar_layout = QHBoxLayout()
         top_bar_layout.addWidget(QLabel("Analysis Type:"))
         self.analysisTypeCombo = QComboBox()
-        self.analysisTypeCombo.addItems(list(self.ANALYSIS_MAP.keys()))
         self.analysisTypeCombo.setObjectName("AnalysisTypeCombo")
+        self._build_analysis_class_map()
+        self._populate_analysis_combo()
         top_bar_layout.addWidget(self.analysisTypeCombo)
         top_bar_layout.addSpacerItem(
             QSpacerItem(
@@ -202,6 +205,55 @@ class AnalysisPanel(QWidget):
         top_bar_layout.addWidget(self.btnRunAll)
         top_bar_layout.addWidget(self.btnStop)
         self.main_layout.addLayout(top_bar_layout)
+
+    def _build_analysis_class_map(self) -> None:
+        """Build ``_analysis_class_map`` from the analysis registry.
+
+        Calls ``AnalysisRunner.get_analysis_registry`` via the connector and
+        populates ``self._analysis_class_map`` with
+        ``{display_name: cls}`` entries.  Falls back to ``ANALYSIS_MAP`` if
+        the registry returns nothing (e.g. during unit tests with a stub
+        connector).
+        """
+        registry = self.connector._analysis_runner.get_analysis_registry()
+        if registry:
+            self._analysis_class_map = {name: cls for _, name, cls in registry}
+        else:
+            self._analysis_class_map = dict(self.ANALYSIS_MAP)
+
+    def _populate_analysis_combo(self) -> None:
+        """Populate ``analysisTypeCombo`` with grouped entries from the registry.
+
+        Category names are inserted as bold, disabled header items.
+        Selectable analysis entries follow each category header.  If no
+        registry entries are available the combo falls back to a flat list
+        from ``ANALYSIS_MAP``.
+        """
+        self.analysisTypeCombo.clear()
+        registry = self.connector._analysis_runner.get_analysis_registry()
+        if not registry:
+            self.analysisTypeCombo.addItems(list(self.ANALYSIS_MAP.keys()))
+            return
+
+        model = self.analysisTypeCombo.model()
+        current_category: str | None = None
+        for category, name, _cls in registry:
+            if category != current_category:
+                self.analysisTypeCombo.addItem(category)
+                header_idx = self.analysisTypeCombo.count() - 1
+                header_item = model.item(header_idx)
+                header_item.setEnabled(False)
+                font = header_item.font()
+                font.setBold(True)
+                header_item.setFont(font)
+                current_category = category
+            self.analysisTypeCombo.addItem(name)
+
+        # Select the first selectable item
+        for i in range(self.analysisTypeCombo.count()):
+            if self.analysisTypeCombo.model().item(i).isEnabled():
+                self.analysisTypeCombo.setCurrentIndex(i)
+                break
 
     def _setup_main_content_area(self):
         """Sets up the central area containing the plot and settings panels."""
@@ -635,7 +687,7 @@ class AnalysisPanel(QWidget):
             self.settings_form_layout.removeRow(0)
         self.current_settings_widgets.clear()
 
-        analysis_class = self.ANALYSIS_MAP.get(analysis_name)
+        analysis_class = self._analysis_class_map.get(analysis_name)
         if not analysis_class:
             self.settings_form_layout.addRow(QLabel("No settings available."))
             return
@@ -715,13 +767,16 @@ class AnalysisPanel(QWidget):
     def on_analysis_type_changed(self, analysis_name: str):
         """Handles the change of the selected analysis type.
 
-        This slot is connected to the `currentTextChanged` signal of the
-        analysis type combo box. It updates the settings UI to reflect the
-        parameters of the newly selected analysis.
+        This slot is connected to the ``currentTextChanged`` signal of the
+        analysis type combo box.  Category header items are non-selectable,
+        but if one is somehow reached this slot returns early without
+        updating the UI.
 
         Args:
             analysis_name: The new analysis name selected in the combo box.
         """
+        if analysis_name not in self._analysis_class_map:
+            return  # category header or unrecognised item — skip
         self._update_settings_ui(analysis_name)
         if self.current_plot_page_index == -1 or not self.analysis_results_pages:
             self.plotTitleLabel.setText(analysis_name)
@@ -1186,7 +1241,7 @@ class AnalysisPanel(QWidget):
         }
 
         # Special case for sizing the plot figure for certain analyses
-        if analysis_name == "Through-Focus Spot Diagram":
+        if analysis_name in ("Through-Focus Spot", "Through-Focus Spot Diagram"):
             num_f = optic.fields.num_fields
             num_s = final_args.get("num_steps", 5)
             page_data["figsize"] = (max(1, num_s) * 3, max(1, num_f) * 3)
@@ -1275,7 +1330,7 @@ class AnalysisPanel(QWidget):
         analysis_name = page_data.get("name")
         self.logArea.setText(f"Rerunning {analysis_name} with new settings...")
         new_page_data = self._execute_analysis(
-            self.ANALYSIS_MAP[analysis_name], analysis_name
+            self._analysis_class_map.get(analysis_name), analysis_name
         )
         if new_page_data:
             self.analysis_results_pages[self.current_plot_page_index] = new_page_data
@@ -1295,7 +1350,7 @@ class AnalysisPanel(QWidget):
     @Slot()
     def run_analysis_slot(self):
         analysis_name = self.analysisTypeCombo.currentText()
-        analysis_class = self.ANALYSIS_MAP.get(analysis_name)
+        analysis_class = self._analysis_class_map.get(analysis_name)
         if not analysis_class:
             return
         self.logArea.setText(f"Running {analysis_name}...")

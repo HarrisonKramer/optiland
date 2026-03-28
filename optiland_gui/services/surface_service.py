@@ -15,7 +15,10 @@ from optiland.materials import IdealMaterial
 from optiland.materials import Material as OptilandMaterial
 from optiland.physical_apertures import RadialAperture
 from optiland.physical_apertures.radial import configure_aperture
-from optiland.surfaces.factories.geometry_factory import GeometryFactory
+from optiland.surfaces.factories.geometry_factory import (
+    GeometryFactory,
+    config_registry,
+)
 
 
 class SurfaceService:
@@ -121,13 +124,28 @@ class SurfaceService:
         optic = self._connector._optic
         return optic.surface_group.num_surfaces if optic and optic.surface_group else 0
 
+    def get_geometry_types(self) -> list[str]:
+        """Return all geometry type keys registered with :class:`GeometryFactory`.
+
+        Queries ``config_registry`` from the geometry factory module so that
+        newly-added geometry types are discovered automatically without
+        updating any hard-coded list.
+
+        Returns:
+            A sorted list of geometry type identifier strings.
+        """
+        return sorted(config_registry.keys())
+
     def get_available_surface_types(self) -> list[str]:
         """Return the list of surface type strings the GUI supports.
+
+        Delegates to :meth:`get_geometry_types` so the dropdown is always
+        in sync with what :class:`GeometryFactory` can create.
 
         Returns:
             A list of surface type identifier strings.
         """
-        return self.AVAILABLE_SURFACE_TYPES
+        return self.get_geometry_types()
 
     def get_surface_type_info(self, row: int) -> dict:
         """Return display metadata for a surface row.
