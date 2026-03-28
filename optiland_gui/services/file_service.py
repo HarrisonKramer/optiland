@@ -14,7 +14,12 @@ import os
 from PySide6.QtWidgets import QMessageBox
 
 import optiland.backend as be
-from optiland.fileio import load_zemax_file
+from optiland.fileio import (
+    load_codev_file,
+    load_zemax_file,
+    save_codev_file,
+    save_zemax_file,
+)
 from optiland.optic import Optic
 
 
@@ -213,6 +218,106 @@ class FileService:
                 f"Failed to load system from sample object:\n{e}",
             )
             self.new_system()
+
+    def import_zemax(self, filepath: str) -> None:
+        """Import a Zemax ``.zmx`` file, replacing the current system.
+
+        Clears the undo/redo stack. The current file path is set to ``None``
+        because the imported system has no associated JSON file.
+
+        Args:
+            filepath: Path to the ``.zmx`` file to import.
+        """
+        try:
+            self._connector._undo_redo_manager.clear_stacks()
+            self._connector._optic = load_zemax_file(filepath)
+            self._current_filepath = None
+            self._connector._initialize_optic_structure(
+                self._connector._optic, is_specific_new_system=False
+            )
+            self._connector.set_modified(True)
+            self._connector.opticLoaded.emit()
+            self._connector.opticChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(
+                None,
+                "Import Error",
+                f"Failed to import Zemax file from {filepath}:\n{e}",
+            )
+
+    def import_codev(self, filepath: str) -> None:
+        """Import a CODE V ``.seq`` file, replacing the current system.
+
+        Clears the undo/redo stack. The current file path is set to ``None``
+        because the imported system has no associated JSON file.
+
+        Args:
+            filepath: Path to the ``.seq`` file to import.
+        """
+        try:
+            self._connector._undo_redo_manager.clear_stacks()
+            self._connector._optic = load_codev_file(filepath)
+            self._current_filepath = None
+            self._connector._initialize_optic_structure(
+                self._connector._optic, is_specific_new_system=False
+            )
+            self._connector.set_modified(True)
+            self._connector.opticLoaded.emit()
+            self._connector.opticChanged.emit()
+        except Exception as e:
+            QMessageBox.critical(
+                None,
+                "Import Error",
+                f"Failed to import CODE V file from {filepath}:\n{e}",
+            )
+
+    def export_zemax(self, filepath: str) -> None:
+        """Export the current system to a Zemax ``.zmx`` file.
+
+        This is a non-destructive export: it does not update
+        :attr:`_current_filepath` or modify the modified flag.
+
+        Args:
+            filepath: Destination path for the ``.zmx`` file.
+        """
+        try:
+            optic = self._connector._optic
+            if optic is None:
+                QMessageBox.warning(
+                    None, "Export Error", "No optical system loaded to export."
+                )
+                return
+            save_zemax_file(optic, filepath)
+        except Exception as e:
+            QMessageBox.critical(
+                None,
+                "Export Error",
+                f"Failed to export Zemax file to {filepath}:\n{e}",
+            )
+
+    def export_codev(self, filepath: str) -> None:
+        """Export the current system to a CODE V ``.seq`` file.
+
+        This is a non-destructive export: it does not update
+        :attr:`_current_filepath` or modify the modified flag.
+
+        Args:
+            filepath: Destination path for the ``.seq`` file.
+        """
+        try:
+            optic = self._connector._optic
+            if optic is None:
+                QMessageBox.warning(
+                    None, "Export Error", "No optical system loaded to export."
+                )
+                return
+            save_codev_file(optic, filepath)
+        except Exception as e:
+            QMessageBox.critical(
+                None,
+                "Export Error",
+                f"Failed to export CODE V file to {filepath}:\n{e}",
+            )
 
     def get_current_filepath(self) -> str | None:
         """Return the path of the last successfully saved/loaded JSON file.

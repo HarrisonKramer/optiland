@@ -73,6 +73,26 @@ class ActionManager:
             QKeySequence.SaveAs,
             self.main_window.save_system_as_action,
         )
+        self._create_action(
+            "import_zemax",
+            "From &Zemax (.zmx)...",
+            triggered=self.main_window.import_zemax_action,
+        )
+        self._create_action(
+            "import_codev",
+            "From &CODE V (.seq)...",
+            triggered=self.main_window.import_codev_action,
+        )
+        self._create_action(
+            "export_zemax",
+            "To &Zemax (.zmx)...",
+            triggered=self.main_window.export_zemax_action,
+        )
+        self._create_action(
+            "export_codev",
+            "To &CODE V (.seq)...",
+            triggered=self.main_window.export_codev_action,
+        )
         self._create_action("exit", "E&xit", "Ctrl+Q", self.main_window.close)
 
     def _create_edit_actions(self):

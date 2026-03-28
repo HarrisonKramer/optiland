@@ -332,6 +332,11 @@ class MainWindow(FramelessWindow):
         file_menu = menu_bar.addMenu("&File")
         file_menu.addActions(am.get_actions("new", "open", "save", "save_as"))
         file_menu.addSeparator()
+        import_menu = file_menu.addMenu("&Import")
+        import_menu.addActions(am.get_actions("import_zemax", "import_codev"))
+        export_menu = file_menu.addMenu("&Export")
+        export_menu.addActions(am.get_actions("export_zemax", "export_codev"))
+        file_menu.addSeparator()
         file_menu.addAction(am.get_action("exit"))
 
         edit_menu = menu_bar.addMenu("&Edit")
@@ -601,6 +606,83 @@ class MainWindow(FramelessWindow):
             self.connector.save_optic_to_file(filepath)
             self._update_project_name_in_title_bar()
             print(f"Main Window: Save System As action triggered - {filepath}")
+
+    def _confirm_discard_changes(self) -> bool:
+        """Prompt the user to confirm discarding unsaved changes.
+
+        Returns:
+            ``True`` if the user confirms (or there are no unsaved changes),
+            ``False`` if the user cancels.
+        """
+        if not self.connector.is_modified():
+            return True
+        reply = QMessageBox.question(
+            self,
+            "Unsaved Changes",
+            "The current system has unsaved changes. "
+            "Importing will replace it. Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Cancel,
+        )
+        return reply == QMessageBox.StandardButton.Yes
+
+    @Slot()
+    def import_zemax_action(self):
+        """Show a file dialog and import a Zemax .zmx file."""
+        if not self._confirm_discard_changes():
+            return
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Zemax File",
+            "",
+            "Zemax Files (*.zmx);;All Files (*)",
+        )
+        if filepath:
+            self.connector.import_zemax(filepath)
+            self._update_project_name_in_title_bar()
+
+    @Slot()
+    def import_codev_action(self):
+        """Show a file dialog and import a CODE V .seq file."""
+        if not self._confirm_discard_changes():
+            return
+        filepath, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import CODE V File",
+            "",
+            "CODE V Files (*.seq);;All Files (*)",
+        )
+        if filepath:
+            self.connector.import_codev(filepath)
+            self._update_project_name_in_title_bar()
+
+    @Slot()
+    def export_zemax_action(self):
+        """Show a file dialog and export the current system as a Zemax .zmx file."""
+        filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export to Zemax",
+            "",
+            "Zemax Files (*.zmx);;All Files (*)",
+        )
+        if filepath:
+            if not filepath.lower().endswith(".zmx"):
+                filepath += ".zmx"
+            self.connector.export_zemax(filepath)
+
+    @Slot()
+    def export_codev_action(self):
+        """Show a file dialog and export the current system as a CODE V .seq file."""
+        filepath, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export to CODE V",
+            "",
+            "CODE V Files (*.seq);;All Files (*)",
+        )
+        if filepath:
+            if not filepath.lower().endswith(".seq"):
+                filepath += ".seq"
+            self.connector.export_codev(filepath)
 
     @Slot()
     def about_action(self):

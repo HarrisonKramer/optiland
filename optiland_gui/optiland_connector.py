@@ -310,6 +310,38 @@ class OptilandConnector(QObject):
         """
         return self._file_service.get_current_filepath()
 
+    def import_zemax(self, filepath: str) -> None:
+        """Import a Zemax ``.zmx`` file, replacing the current system.
+
+        Args:
+            filepath: Path to the ``.zmx`` file.
+        """
+        self._file_service.import_zemax(filepath)
+
+    def import_codev(self, filepath: str) -> None:
+        """Import a CODE V ``.seq`` file, replacing the current system.
+
+        Args:
+            filepath: Path to the ``.seq`` file.
+        """
+        self._file_service.import_codev(filepath)
+
+    def export_zemax(self, filepath: str) -> None:
+        """Export the current system to a Zemax ``.zmx`` file.
+
+        Args:
+            filepath: Destination path for the ``.zmx`` file.
+        """
+        self._file_service.export_zemax(filepath)
+
+    def export_codev(self, filepath: str) -> None:
+        """Export the current system to a CODE V ``.seq`` file.
+
+        Args:
+            filepath: Destination path for the ``.seq`` file.
+        """
+        self._file_service.export_codev(filepath)
+
     # ------------------------------------------------------------------
     # SurfaceService delegation
     # ------------------------------------------------------------------
