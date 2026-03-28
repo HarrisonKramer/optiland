@@ -60,8 +60,6 @@ class SidebarWidget(QWidget):
         super().__init__(parent)
         self._wip_buttons = [
             "dash",
-            "analysis",
-            "optimization",
             "materials",
             "tolerancing",
         ]
