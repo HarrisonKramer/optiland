@@ -374,7 +374,7 @@ class SurfaceService:
         optic = self._connector._optic
         row = optic.surface_group.surfaces.index(surface)
         if row < self.get_surface_count() - 1:
-            optic._updater.set_thickness(float(value), row)
+            optic.updater.set_thickness(float(value), row)
 
     def _set_semi_diameter_data(self, surface: object, value: str) -> None:
         """Set the semi-diameter aperture on *surface*.
@@ -407,7 +407,7 @@ class SurfaceService:
         else:
             optic = self._connector._optic
             row = optic.surface_group.surfaces.index(surface)
-            optic._updater.set_radius(val, row)
+            optic.updater.set_radius(val, row)
 
     def _set_dynamic_conic_data(self, surface: object, value: str) -> None:
         """Set the conic-column value on *surface*, respecting surface type.
@@ -426,7 +426,7 @@ class SurfaceService:
         elif hasattr(surface.geometry, "k"):
             optic = self._connector._optic
             row = optic.surface_group.surfaces.index(surface)
-            optic._updater.set_conic(val, row)
+            optic.updater.set_conic(val, row)
 
     # ------------------------------------------------------------------
     # Public write API
@@ -570,7 +570,7 @@ class SurfaceService:
 
         old_state = self._connector._capture_optic_state()
         try:
-            self._connector._optic.surface_group.remove_surface(lde_row_index)
+            self._connector._optic.surface_group.remove(lde_row_index)
             self._connector._optic.update()
             self._connector._undo_redo_manager.add_state(old_state)
             self._connector.set_modified(True)
