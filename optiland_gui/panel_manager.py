@@ -18,6 +18,7 @@ from PySide6.QtWidgets import QDockWidget, QMainWindow, QWidget
 
 from .analysis_panel import AnalysisPanel
 from .lens_editor import LensEditor
+from .optimization_panel import OptimizationPanel
 from .system_properties_panel import SystemPropertiesPanel
 from .viewer_panel import ViewerPanel
 from .widgets.custom_dock_widget import CustomDockWidget
@@ -72,6 +73,11 @@ class PanelManager:
             self.analysis_panel, "AnalysisPanelDock", "Analysis"
         )
 
+        self.optimization_panel = OptimizationPanel(self.connector)
+        self.optimization_dock = self._create_dock(
+            self.optimization_panel, "OptimizationDock", "Optimization"
+        )
+
         # Terminal
         initial_theme = "dark"  # TODO: Get this from settings or main_window
         self.python_terminal = PythonTerminalWidget(
@@ -92,6 +98,7 @@ class PanelManager:
             self.lens_editor_dock,
             self.system_properties_dock,
             self.analysis_dock,
+            self.optimization_dock,
             self.terminal_dock,
         ]
 
@@ -147,6 +154,7 @@ class PanelManager:
         self.main_window.tabifyDockWidget(
             self.analysis_dock, self.system_properties_dock
         )
+        self.main_window.tabifyDockWidget(self.analysis_dock, self.optimization_dock)
 
         # Ensure panels are raised
         for dock in reversed(self.all_docks):
@@ -166,6 +174,7 @@ class PanelManager:
         """Shows and raises the corresponding dock when a sidebar button is clicked."""
         dock_map = {
             "analysis": self.analysis_dock,
+            "optimization": self.optimization_dock,
             "scripts": self.terminal_dock,
             "design": self.lens_editor_dock,
         }
@@ -181,3 +190,4 @@ class PanelManager:
         self.analysis_panel.update_theme(theme_name)
         self.viewer_panel.update_theme(theme_name)
         self.python_terminal.set_theme(theme_name)
+        self.optimization_panel.update_theme(theme_name)

@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QEvent, QSize, Qt, Signal, Slot
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QBrush, QColor, QIcon
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFormLayout,
@@ -215,6 +215,9 @@ class LensEditor(QWidget):
         self.tableWidget.itemSelectionChanged.connect(self.update_headers_on_selection)
         self.connector.opticLoaded.connect(self.full_refresh_from_optic)
         self.connector.opticChanged.connect(self.full_refresh_from_optic)
+        self.connector.optimizationVariablesChanged.connect(
+            self.full_refresh_from_optic
+        )
 
     def setup_table(self):
         self.tableWidget.blockSignals(True)
@@ -246,7 +249,29 @@ class LensEditor(QWidget):
             if event.key() == Qt.Key_Delete:
                 self.remove_surface_handler()
                 return True
+            if event.key() == Qt.Key_V and event.modifiers() == (
+                Qt.ControlModifier | Qt.ShiftModifier
+            ):
+                self._request_add_optimization_variable()
+                return True
         return super().eventFilter(source, event)
+
+    def _request_add_optimization_variable(self) -> None:
+        """Emit requestAddOptimizationVariable for the currently focused cell."""
+        ui_row = self.tableWidget.currentRow()
+        ui_col = self.tableWidget.currentColumn()
+        if ui_row < 0:
+            return
+        surface_index = self.map_ui_row_to_surface_index(ui_row)
+        _col_var_type = {
+            self.connector.COL_RADIUS: "radius",
+            self.connector.COL_THICKNESS: "thickness",
+            self.connector.COL_CONIC: "conic",
+        }
+        suggested_type = _col_var_type.get(ui_col, "radius")
+        self.connector.requestAddOptimizationVariable.emit(
+            surface_index, suggested_type
+        )
 
     def map_ui_row_to_surface_index(self, ui_row):
         if self.open_prop_source_row != -1 and ui_row > self.open_prop_source_row:
@@ -300,6 +325,23 @@ class LensEditor(QWidget):
 
             if (is_obj_or_img and is_non_editable_header) or is_last_thickness:
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+
+            # Highlight cells that are registered optimization variables
+            _col_var_type = {
+                self.connector.COL_RADIUS: "radius",
+                self.connector.COL_THICKNESS: "thickness",
+                self.connector.COL_CONIC: "conic",
+            }
+            if col_idx in _col_var_type:
+                vtype = _col_var_type[col_idx]
+                for vd in self.connector.get_optimization_variables():
+                    if vd.get("surface_number") == row and vd.get("type") == vtype:
+                        item.setBackground(QBrush(QColor(100, 150, 255, 80)))
+                        item.setToolTip(
+                            f"Variable: min={vd.get('min_val')}, "
+                            f"max={vd.get('max_val')}"
+                        )
+                        break
 
             self.tableWidget.setItem(row, col_idx, item)
 
@@ -474,5 +516,24 @@ class LensEditor(QWidget):
                     add_above.setEnabled(False)
                 remove_action.setEnabled(False)
                 props_action.setEnabled(False)
+
+            menu.addSeparator()
+            ui_col = self.tableWidget.columnAt(pos.x())
+            _col_var_type = {
+                self.connector.COL_RADIUS: "radius",
+                self.connector.COL_THICKNESS: "thickness",
+                self.connector.COL_CONIC: "conic",
+            }
+            suggested_type = _col_var_type.get(ui_col, "radius")
+            add_var_action = menu.addAction(
+                "Add as Optimization Variable...  Ctrl+Shift+V"
+            )
+            add_var_action.triggered.connect(
+                lambda _=False, si=surface_index, st=suggested_type: (
+                    self.connector.requestAddOptimizationVariable.emit(si, st)
+                )
+            )
+            if is_obj_or_img:
+                add_var_action.setEnabled(False)
 
         menu.exec(self.tableWidget.viewport().mapToGlobal(pos))

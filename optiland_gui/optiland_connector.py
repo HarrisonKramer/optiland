@@ -50,6 +50,8 @@ class OptilandConnector(QObject):
     surfaceCountChanged = Signal()
     undoStackAvailabilityChanged = Signal(bool)
     redoStackAvailabilityChanged = Signal(bool)
+    optimizationVariablesChanged = Signal()
+    requestAddOptimizationVariable = Signal(int, str)  # surface_index, suggested_type
 
     # ------------------------------------------------------------------
     # Class-level constants (used by LensEditor and other panels)
@@ -508,3 +510,136 @@ class OptilandConnector(QObject):
             A sorted list of geometry type identifier strings.
         """
         return self._surface_service.get_geometry_types()
+
+    # ------------------------------------------------------------------
+    # OptimizationService delegation
+    # ------------------------------------------------------------------
+
+    def add_optimization_variable(self, var_dict: dict) -> None:
+        """Append a variable descriptor and emit variablesChanged.
+
+        Args:
+            var_dict: Variable descriptor dict (surface_number, type, etc.).
+        """
+        self._optimization_service.add_variable(var_dict)
+        self.optimizationVariablesChanged.emit()
+
+    def remove_optimization_variable(self, index: int) -> None:
+        """Remove a variable by index and emit variablesChanged.
+
+        Args:
+            index: Zero-based index of the variable to remove.
+        """
+        self._optimization_service.remove_variable(index)
+        self.optimizationVariablesChanged.emit()
+
+    def get_optimization_variables(self) -> list[dict]:
+        """Return the current list of optimization variable descriptors.
+
+        Returns:
+            A shallow copy of the variable list.
+        """
+        return self._optimization_service.get_variables()
+
+    def get_variable_current_value(self, var_dict: dict) -> float | None:
+        """Return the live optic value for a variable descriptor.
+
+        Args:
+            var_dict: Variable descriptor dict.
+
+        Returns:
+            The current float value, or ``None`` if unavailable.
+        """
+        return self._optimization_service.get_variable_current_value(var_dict)
+
+    def add_optimization_operand(self, op_dict: dict) -> None:
+        """Append an operand descriptor.
+
+        Args:
+            op_dict: Operand descriptor dict (type, category, etc.).
+        """
+        self._optimization_service.add_operand(op_dict)
+
+    def remove_optimization_operand(self, index: int) -> None:
+        """Remove an operand by index.
+
+        Args:
+            index: Zero-based index.
+        """
+        self._optimization_service.remove_operand(index)
+
+    def get_optimization_operands(self) -> list[dict]:
+        """Return the current list of optimization operand descriptors.
+
+        Returns:
+            A shallow copy of the operand list.
+        """
+        return self._optimization_service.get_operands()
+
+    def get_optimizer_catalog(self) -> list[tuple[str, type]]:
+        """Return available optimizer classes as (display_name, cls) tuples.
+
+        Returns:
+            A list of ``(name, class)`` pairs.
+        """
+        return self._optimization_service.get_optimizer_catalog()
+
+    def get_operand_categories(self) -> dict[str, list[str]]:
+        """Return operand types grouped by category.
+
+        Returns:
+            A dict mapping category name to list of operand type keys.
+        """
+        return self._optimization_service.OPERAND_CATEGORIES
+
+    def get_common_variable_types(self) -> list[tuple[str, str]]:
+        """Return common variable types as (display_name, type_key) tuples.
+
+        Returns:
+            A list of ``(display_name, type_key)`` pairs.
+        """
+        return self._optimization_service.COMMON_VARIABLE_TYPES
+
+    def get_default_operand_input_data_str(self, op_type: str) -> str:
+        """Return the default JSON input_data string for an operand type.
+
+        Args:
+            op_type: Operand type key.
+
+        Returns:
+            JSON string (optic excluded).
+        """
+        return self._optimization_service.get_default_input_data_str(op_type)
+
+    def run_optimization(
+        self,
+        optimizer_cls: type,
+        optimizer_kwargs: dict,
+        on_progress: object | None = None,
+        on_finished: object | None = None,
+        on_error: object | None = None,
+    ) -> None:
+        """Start the optimizer in a background thread.
+
+        Args:
+            optimizer_cls: Optimizer class.
+            optimizer_kwargs: Keyword args for ``optimizer.optimize()``.
+            on_progress: Optional ``(n: int) -> None`` callback.
+            on_finished: Optional ``(summary: str) -> None`` callback.
+            on_error: Optional ``(message: str) -> None`` callback.
+        """
+        self._optimization_service.run(
+            optimizer_cls, optimizer_kwargs, on_progress, on_finished, on_error
+        )
+
+    def stop_optimization(self) -> None:
+        """Request cancellation of the current optimisation run."""
+        self._optimization_service.stop()
+
+    def is_optimization_running(self) -> bool:
+        """Return ``True`` if an optimisation thread is active.
+
+        Returns:
+            ``True`` while running, ``False`` otherwise.
+        """
+        return self._optimization_service.is_running
