@@ -152,7 +152,7 @@ Understanding Operands
 Operands represent individual components of the merit function. To find the inputs required for a specific operand:
 
 - Refer to the operand registry in the Operand module, or the API documentation.
-- Use operand-specific documentation for parameter details. For example, the RMS spot size requires a field as an input, while the focal length does not. All operands require a target value, weight, and an `Optic` instance.
+- Use operand-specific documentation for parameter details. For example, the RMS spot size requires a field as an input, while the focal length does not. All operands require a target value, weight, and an `Optic` instance. Note that the ``weight`` of an operand dictates its contribution relative to other operands in the merit function. For operands evaluated across the pupil or across a spectrum (e.g., standard RMS Spot Size), the merit function also automatically accounts for the intrinsic ``weight`` assigned to the ``Field`` and ``Wavelength`` objects defined in the ``Optic``.
 
 .. raw:: html
 

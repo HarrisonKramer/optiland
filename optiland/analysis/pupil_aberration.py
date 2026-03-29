@@ -50,11 +50,10 @@ class PupilAberration(BaseAnalysis):
         wavelengths: str | list = "all",
         num_points: int = 256,
     ):
+        from optiland.utils import resolve_fields
+
         _optic_ref = optic
-        if fields == "all":
-            self.fields = _optic_ref.fields.get_field_coords()
-        else:
-            self.fields = fields
+        self.fields = resolve_fields(_optic_ref, fields)
 
         if num_points % 2 == 0:
             self.num_points = num_points + 1  # force to be odd so a point lies at P=0
@@ -126,9 +125,11 @@ class PupilAberration(BaseAnalysis):
         axs = np.atleast_2d(axs)
         Px, Py = self.data["Px"], self.data["Py"]
 
-        for k, field in enumerate(self.fields):
+        for k, fp in enumerate(self.fields):
+            field = fp.coord
             ax_y, ax_x = axs[k, 0], axs[k, 1]
-            for wavelength in self.wavelengths:
+            for wp in self.wavelengths:
+                wavelength = wp.value
                 ex = self.data[f"{field}"][f"{wavelength}"]["x"]
                 ey = self.data[f"{field}"][f"{wavelength}"]["y"]
                 ax_y.plot(
@@ -199,12 +200,14 @@ class PupilAberration(BaseAnalysis):
         self.optic.paraxial.trace(0, data["Py"], self.optic.primary_wavelength)
         parax_ref = self.optic.surfaces.y[stop_idx, :]
 
-        for field in self.fields:
+        for fp in self.fields:
+            field = fp.coord
             Hx = field[0]
             Hy = field[1]
 
             data[f"{field}"] = {}
-            for wavelength in self.wavelengths:
+            for wp in self.wavelengths:
+                wavelength = wp.value
                 data[f"{field}"][f"{wavelength}"] = {}
 
                 # Trace along the x-axis

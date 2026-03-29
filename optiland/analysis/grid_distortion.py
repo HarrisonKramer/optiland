@@ -141,7 +141,7 @@ class GridDistortion(BaseAnalysis):
 
         """
         # Trace chief ray to retrieve central (x, y) position
-        current_wavelength = self.wavelengths[0]
+        current_wavelength = self.wavelengths[0].value
         self.optic.trace_generic(
             Hx=0,
             Hy=0,
@@ -153,7 +153,7 @@ class GridDistortion(BaseAnalysis):
         y_chief = self.optic.surfaces.y[-1, 0]
 
         # Trace single reference ray
-        current_wavelength = self.wavelengths[0]
+        current_wavelength = self.wavelengths[0].value
         self.optic.trace_generic(
             Hx=0,
             Hy=1e-10,  # small field

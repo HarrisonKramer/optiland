@@ -41,13 +41,26 @@ class Wavelength:
             is_primary (bool): Indicates whether the wavelength is a primary
                 wavelength.
             unit (str): The unit of the wavelength value. Defaults to 'um'.
-            weight (float): The weight of the wavelength. Defaults to 1.0.
+            weight (float): Non-negative relative importance scalar. A weight
+                of 0.0 excludes the wavelength from optimization and weighted
+                analysis. Defaults to 1.0.
         """
         self._value = value
         self.is_primary = is_primary
-        self.weight = weight
         self._unit = unit.lower()
         self._value_in_um = self._convert_to_um()
+        self.weight = weight  # uses the validated setter
+
+    @property
+    def weight(self) -> float:
+        """float: Non-negative relative importance scalar for this wavelength."""
+        return self._weight
+
+    @weight.setter
+    def weight(self, value: float) -> None:
+        if value < 0:
+            raise ValueError(f"Wavelength weight must be non-negative, got {value}.")
+        self._weight = float(value)
 
     @property
     def value(self) -> float:

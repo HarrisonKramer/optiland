@@ -77,14 +77,14 @@ class ThroughFocusAnalysis(ABC):
             )
 
     def _resolve_fields(self, fields):
-        return self.optic.fields.get_field_coords() if fields == "all" else fields
+        from optiland.utils import resolve_fields as _resolve_fields
+
+        return _resolve_fields(self.optic, fields)
 
     def _resolve_wavelengths(self, wavelengths):
-        return (
-            self.optic.wavelengths.get_wavelengths()
-            if wavelengths == "all"
-            else wavelengths
-        )
+        from optiland.utils import resolve_wavelengths as _resolve_wavelengths
+
+        return _resolve_wavelengths(self.optic, wavelengths)
 
     def _generate_focus_positions(self):
         """Generates a list of focal positions based on the delta focus and number of

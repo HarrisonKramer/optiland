@@ -100,7 +100,7 @@ class SpotDiagram(BaseAnalysis):
             ValueError: If `coordinates` is not 'global' or 'local'.
             ValueError: If `reference` is not a valid SpotReferenceType.
         """
-        self.fields = resolve_fields(optic, fields)
+        self.fields = resolve_fields(optic, fields)  # list[FieldPoint]
 
         if coordinates not in ["global", "local"]:
             raise ValueError("Coordinates must be 'global' or 'local'.")
@@ -112,10 +112,9 @@ class SpotDiagram(BaseAnalysis):
 
         super().__init__(optic, wavelengths)
         primary_wl_value = self.optic.primary_wavelength
-        if primary_wl_value in self.wavelengths:
-            self._analysis_ref_wavelength_index = self.wavelengths.index(
-                primary_wl_value
-            )
+        wl_values = [wp.value for wp in self.wavelengths]
+        if primary_wl_value in wl_values:
+            self._analysis_ref_wavelength_index = wl_values.index(primary_wl_value)
         else:
             self._analysis_ref_wavelength_index = 0
 
@@ -154,7 +153,7 @@ class SpotDiagram(BaseAnalysis):
                 axs[i],
                 field_data,
                 self.wavelengths,
-                self.fields[i],
+                self.fields[i].coord,
                 axis_lim,
                 i,
                 self.optic.image_surface,
@@ -260,10 +259,10 @@ class SpotDiagram(BaseAnalysis):
         """
         cosines = [
             be.array([ray.L, ray.M, ray.N]).ravel()
-            for H_x, H_y in self.fields
+            for fp in self.fields
             for ray in [
                 self.optic.trace_generic(
-                    Hx=H_x, Hy=H_y, Px=0, Py=0, wavelength=wavelength
+                    Hx=fp.coord[0], Hy=fp.coord[1], Px=0, Py=0, wavelength=wavelength
                 )
             ]
         ]
@@ -281,10 +280,10 @@ class SpotDiagram(BaseAnalysis):
         """
         centers = [
             [ray.x.item(), ray.y.item()]
-            for H_x, H_y in self.fields
+            for fp in self.fields
             for ray in [
                 self.optic.trace_generic(
-                    Hx=H_x, Hy=H_y, Px=0, Py=0, wavelength=wavelength
+                    Hx=fp.coord[0], Hy=fp.coord[1], Px=0, Py=0, wavelength=wavelength
                 )
             ]
         ]
@@ -302,7 +301,8 @@ class SpotDiagram(BaseAnalysis):
         chief_cosines = self.generate_chief_rays_cosines(wavelength)
         airy_rad_x_list, airy_rad_y_list = [], []
 
-        for i, (H_x, H_y) in enumerate(self.fields):
+        for i, fp in enumerate(self.fields):
+            H_x, H_y = fp.coord
             north, south, east, west = self.generate_marginal_rays_cosines(
                 H_x, H_y, wavelength
             )
@@ -382,12 +382,13 @@ class SpotDiagram(BaseAnalysis):
         Returns:
             A list of (x, y) center tuples, one per field.
         """
-        ref_wl = self.wavelengths[self._analysis_ref_wavelength_index]
+        ref_wl = self.wavelengths[self._analysis_ref_wavelength_index].value
+        fields_coords = [fp.coord for fp in self.fields]
         return self._reference_strategy.get_centers(
             data,
             self._analysis_ref_wavelength_index,
             self.optic,
-            self.fields,
+            fields_coords,
             ref_wl,
             self.coordinates,
         )
@@ -425,15 +426,15 @@ class SpotDiagram(BaseAnalysis):
         return [
             [
                 self._generate_field_data(
-                    field,
-                    wl,
+                    fp.coord,
+                    wp.value,
                     self.num_rings,
                     self.distribution,
                     self.coordinates,
                 )
-                for wl in self.wavelengths
+                for wp in self.wavelengths
             ]
-            for field in self.fields
+            for fp in self.fields
         ]
 
     def _generate_field_data(

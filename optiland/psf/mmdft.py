@@ -238,7 +238,7 @@ class MMDFTPSF(BasePSF):
         # Assume clear aperture is defined as (num_rays - 1) - done in FFTPSF
         clear_size = self.num_rays - 1
         pad_size = (
-            self.wavelengths[0]
+            self.wavelengths[0].value
             * self._get_working_FNO()
             * clear_size
             / self.pixel_pitch

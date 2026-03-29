@@ -141,7 +141,19 @@ class FieldGroup:
             for x, y in zip(self.x_fields, self.y_fields, strict=False)
         ]
 
-    def add(self, y: float, x: float = 0.0, vx: float = 0.0, vy: float = 0.0):
+    @property
+    def weights(self) -> tuple[float, ...]:
+        """tuple[float, ...]: Weights for all fields as a tuple."""
+        return tuple(field.weight for field in self.fields)
+
+    def add(
+        self,
+        y: float,
+        x: float = 0.0,
+        vx: float = 0.0,
+        vy: float = 0.0,
+        weight: float = 1.0,
+    ):
         """Add a field to the list of fields.
 
         Args:
@@ -152,9 +164,13 @@ class FieldGroup:
                 factor. Defaults to 0.0.
             vy: The y-component of the field's vignetting
                 factor. Defaults to 0.0.
+            weight: Non-negative relative importance scalar (default 1.0). A
+                weight of 0.0 means this field is excluded from optimization
+                and weighted analysis but is still present in standalone
+                analysis outputs. Negative values raise ValueError.
 
         """
-        new_field = Field(x, y, vx, vy)
+        new_field = Field(x, y, vx, vy, weight)
         self.fields.append(new_field)
 
     def set_type(self, field_type: str) -> None:
@@ -239,6 +255,7 @@ class FieldGroup:
                 x=field_dict.get("x", 0.0),
                 vx=field_dict.get("vx", 0.0),
                 vy=field_dict.get("vy", 0.0),
+                weight=field_dict.get("weight", 1.0),
             )
         field_group.set_telecentric(data["telecentric"])
 
