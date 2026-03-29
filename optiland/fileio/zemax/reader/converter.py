@@ -1,49 +1,81 @@
-"""Converters between data formats.
+"""Zemax to Optic Converter
 
-This module contains classes that convert data between different formats,
-including Zemax and Optiland (.json) files.
+Converts a ZemaxDataModel into an Optiland Optic object. This module also
+provides the ``load_zemax_file`` entry point for the reader path.
 
 Kramer Harrison, 2024
 """
 
 from __future__ import annotations
 
+from typing import Any
+
 import optiland.backend as be
 from optiland.coordinate_system import CoordinateSystem
+from optiland.fileio.base import BaseOpticReader
+from optiland.fileio.zemax.model import ZemaxDataModel
+from optiland.fileio.zemax.reader.parser import ZemaxDataParser
+from optiland.fileio.zemax.reader.source import ZemaxFileSourceHandler
 from optiland.optic import Optic
 
 
-class ZemaxToOpticConverter:
-    """Converts Zemax data into an Optic object.
+class ZemaxToOpticConverter(BaseOpticReader):
+    """Converts a ZemaxDataModel into an Optic object.
+
+    Also implements BaseOpticReader so that the full pipeline (source
+    resolution → parsing → conversion) can be triggered via ``read()``.
 
     Args:
-        zemax_data (dict): The Zemax data to be converted. This is typically
-            the data extracted by `ZemaxFileReader`.
+        zemax_data: A plain dict (legacy) or ZemaxDataModel containing the
+            Zemax optical system data.
 
     Attributes:
-        data (dict): The Zemax data to be converted.
-        optic (Optic): The Optic object based on the Zemax data.
-        current_cs (CoordinateSystem): Running, cumulative coordinate system
-            that tracks the decentres / tilts defined by any
-            preceding coordinate_break surface in the Zemax file.
-
-    Methods:
-        convert(): Converts the configuration of the file handler into an
-            Optic object.
-
+        data: The Zemax data as a plain dict.
+        optic: The Optic instance built by :py:meth:`convert`.
+        current_cs: Running cumulative CoordinateSystem used when processing
+            coordinate-break surfaces.
     """
 
-    def __init__(self, zemax_data: dict):
-        self.data = zemax_data
-        self.optic = None
+    def __init__(self, zemax_data: dict[str, Any] | ZemaxDataModel):
+        if isinstance(zemax_data, ZemaxDataModel):
+            self.data = zemax_data.to_dict()
+        else:
+            self.data = zemax_data
+        self.optic: Optic | None = None
         self.current_cs = CoordinateSystem()
 
-    def convert(self):
-        """Converts the configuration of the file handler into an Optic object.
+    # ------------------------------------------------------------------
+    # BaseOpticReader
+    # ------------------------------------------------------------------
+
+    def read(self, source: str) -> Optic:
+        """Read a Zemax file and return a fully-configured Optic.
+
+        Args:
+            source: Local file path or URL to a .zmx file.
 
         Returns:
-            Optic: The configured `Optic` object.
+            A configured Optic instance.
+        """
+        src_handler = ZemaxFileSourceHandler(source)
+        filename = src_handler.get_local_file()
+        try:
+            data_model = ZemaxDataParser(filename).parse()
+            self.data = data_model.to_dict()
+            self.current_cs = CoordinateSystem()
+            return self.convert()
+        finally:
+            src_handler.cleanup()
 
+    # ------------------------------------------------------------------
+    # Conversion
+    # ------------------------------------------------------------------
+
+    def convert(self) -> Optic:
+        """Convert the stored Zemax data dict into an Optic object.
+
+        Returns:
+            The fully-configured Optic instance.
         """
         self.optic = Optic(self.data.get("name"))
         self._configure_surfaces()
@@ -52,8 +84,12 @@ class ZemaxToOpticConverter:
         self._configure_wavelengths()
         return self.optic
 
-    def _configure_surfaces(self):
-        """Configures the surfaces for the optic."""
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    def _configure_surfaces(self) -> None:
+        """Configure all surfaces on the optic."""
         has_cb = any(
             sd.get("type") == "coordinate_break"
             for sd in self.data["surfaces"].values()
@@ -64,43 +100,45 @@ class ZemaxToOpticConverter:
                 self._configure_surface(idx, surf_data)
             return
 
-        # in case there are "Coordinate Break" surfaces
+        # Coordinate-break path: accumulate a running CoordinateSystem and
+        # apply it as the geometry CS for each non-CB surface.
         surf_idx = 0
-
         for idx in sorted(self.data["surfaces"].keys(), key=int):
             surf = self.data["surfaces"][idx]
 
-            # CB: we update the CS only, no added surface
             if surf.get("type") == "coordinate_break":
+                # Consume CB: update cumulative CS only
                 dx = float(surf.get("param_0", 0.0))
                 dy = float(surf.get("param_1", 0.0))
-                dz = float(surf.get("thickness", 0.0))  # CB 'thickness'
+                dz = float(surf.get("thickness", 0.0))
                 rx = be.deg2rad(surf.get("param_2", 0.0))
                 ry = be.deg2rad(surf.get("param_3", 0.0))
                 rz = be.deg2rad(surf.get("param_4", 0.0))
-                # there is another param: order. implement later
 
-                # chain a new cs
-                # first apply rotations and translations
-                cs_rot_decs = CoordinateSystem(
-                    x=dx, y=dy, z=0.0, rx=rx, ry=ry, rz=rz, reference_cs=self.current_cs
+                # Chain: first apply rotations/decenters, then thickness (Z)
+                cs_rot = CoordinateSystem(
+                    x=dx,
+                    y=dy,
+                    z=0.0,
+                    rx=rx,
+                    ry=ry,
+                    rz=rz,
+                    reference_cs=self.current_cs,
                 )
-                # then apply the coordinate break's thickness as a translation
-                # along the Z-axis of the new cs.
                 self.current_cs = CoordinateSystem(
-                    x=0.0, y=0.0, z=dz, reference_cs=cs_rot_decs
+                    x=0.0,
+                    y=0.0,
+                    z=dz,
+                    reference_cs=cs_rot,
                 )
-
                 continue
 
-            # now, the usual surfaces from the file
-            # transform into global CS, then append to optic
+            # Resolve effective global position and orientation
             translation, _ = self.current_cs.get_effective_transform()
             rx_, ry_, rz_ = self.current_cs.get_effective_rotation_euler()
             coeffs = self._configure_surface_coefficients(surf)
 
-            # Prepare surface parameters
-            surface_params = {
+            surface_params: dict[str, Any] = {
                 "index": surf_idx,
                 "surface_type": surf["type"],
                 "conic": surf.get("conic"),
@@ -113,29 +151,22 @@ class ZemaxToOpticConverter:
                 surface_params["aperture"] = surf["aperture"]
 
             if surf["type"] == "toroidal":
-                # Zemax CURV (data["radius"]) is the Y-Radius
                 surface_params["radius_y"] = surf["radius"]
                 surface_params["toroidal_coeffs_poly_y"] = coeffs
-
-                # Zemax PARM 1 (data["param_1"]) is the X-Radius
                 radius_x = surf.get("param_1", 0.0)
                 if radius_x == 0.0:
                     radius_x = be.inf
                 surface_params["radius_x"] = radius_x
             else:
-                # For all other surfaces, use the standard radius.
                 surface_params["radius"] = surf["radius"]
 
-            # Handle thickness and coordinate system parameters
             thickness = surf.get("thickness", 0.0)
             if be.isinf(float(thickness)):
-                # For surfaces at infinity, set thickness and orientation
                 surface_params["thickness"] = thickness
                 surface_params.update(
                     {"rx": float(rx_), "ry": float(ry_), "rz": float(rz_)}
                 )
             else:
-                # For normally positioned surfaces, set position and orientation
                 surface_params.update(
                     {
                         "x": float(translation[0]),
@@ -148,29 +179,27 @@ class ZemaxToOpticConverter:
                 )
 
             self.optic.surfaces.add(**surface_params)
-            surf_idx = surf_idx + 1
+            surf_idx += 1
 
-            # we need to advance the cs by the surface thickness
-            # if it is finite
             dt = surf.get("thickness", 0.0)
             if not be.isinf(dt):
                 self.current_cs = CoordinateSystem(
-                    x=0.0, y=0.0, z=dt, reference_cs=self.current_cs
+                    x=0.0,
+                    y=0.0,
+                    z=dt,
+                    reference_cs=self.current_cs,
                 )
 
-    def _configure_surface(self, index: int, data: dict):
-        """Configures a single surface for the optic.
+    def _configure_surface(self, index: int, data: dict[str, Any]) -> None:
+        """Configure a single surface without coordinate-break logic.
 
         Args:
-            index (int): The index of the surface to configure.
-            data (dict): The data for the surface.
+            index: The surface index.
+            data: The raw surface dict from the parser.
         """
         coefficients = self._configure_surface_coefficients(data)
 
-        # Prepare surface parameters, starting with common ones
-        # Use correct coefficients key for toroidal surfaces
-        # shared surface parameters
-        surface_params = {
+        surface_params: dict[str, Any] = {
             "index": index,
             "surface_type": data["type"],
             "conic": data.get("conic"),
@@ -182,17 +211,14 @@ class ZemaxToOpticConverter:
         if data.get("aperture") is not None:
             surface_params["aperture"] = data["aperture"]
 
-        # only the coefficient key differs for toroidal surfaces
         if data["type"] == "toroidal":
             surface_params["toroidal_coeffs_poly_y"] = coefficients
         else:
             surface_params["coefficients"] = coefficients
 
         if data["type"] == "coordinate_break":
-            # map the zmx PARM values to the actual decenters and rotations
             surface_params["dx"] = data.get("param_0", 0.0)
             surface_params["dy"] = data.get("param_1", 0.0)
-            # convert degrees to radians
             surface_params["rx"] = be.deg2rad(be.array(data.get("param_2", 0.0)))
             surface_params["ry"] = be.deg2rad(be.array(data.get("param_3", 0.0)))
             surface_params["rz"] = be.deg2rad(be.array(data.get("param_4", 0.0)))
@@ -205,61 +231,53 @@ class ZemaxToOpticConverter:
             surface_params["radius_y"] = data["radius"]
             surface_params["radius_x"] = radius_x
         else:
-            # For all other surfaces, use the standard radius.
             surface_params["radius"] = data["radius"]
 
         self.optic.surfaces.add(**surface_params)
 
-    def _configure_surface_coefficients(self, data: dict):
-        """Configures the aspheric coefficients for a surface.
-
-        Returns None for standard or coordinate_break surfaces.
+    def _configure_surface_coefficients(
+        self, data: dict[str, Any]
+    ) -> list[float] | None:
+        """Extract aspheric coefficients from a raw surface dict.
 
         Args:
-            data (dict): The surface data dictionary.
+            data: The surface data dict.
 
         Returns:
-            list[float] or None: A list of coefficient values, or None.
+            A list of coefficient values, or None for surface types without
+            coefficients.
 
         Raises:
-            ValueError: If the surface type is unsupported for coefficients.
+            ValueError: If the surface type is not recognised.
         """
         surf_type = data["type"]
-        if surf_type in ["standard", "coordinate_break"]:
+        if surf_type in ("standard", "coordinate_break"):
             return None
 
-        if surf_type in ["even_asphere", "odd_asphere", "toroidal"]:
-            coefficients = []
-            # For toroidal surfaces, coeffs start from param_2
-            start_index = 2 if surf_type == "toroidal" else 0
-            for k in range(start_index, 8):
-                coefficients.append(data.get(f"param_{k}", 0.0))
-            return coefficients
+        if surf_type in ("even_asphere", "odd_asphere", "toroidal"):
+            start = 2 if surf_type == "toroidal" else 0
+            return [data.get(f"param_{k}", 0.0) for k in range(start, start + 8)]
+
         raise ValueError(f"Unsupported Zemax surface type: {surf_type}")
 
-    def _configure_aperture(self):
-        """Configures the aperture for the optic."""
+    def _configure_aperture(self) -> None:
+        """Configure the system aperture on the optic."""
         aperture_data = self.data["aperture"]
 
-        # Handle floating stop aperture type
         if aperture_data.get("floating_stop"):
-            # Find the stop surface and get its diameter
             stop_diameter = None
             for surf_data in self.data["surfaces"].values():
                 if surf_data.get("is_stop") and "diameter" in surf_data:
                     stop_diameter = surf_data["diameter"]
                     break
-
             if stop_diameter is None:
                 raise ValueError(
                     "Floating stop aperture specified but no stop diameter found"
                 )
-
             self.optic.set_aperture(
                 aperture_type="float_by_stop_size", value=stop_diameter
             )
         else:
-            # Get the first non-floating_stop aperture type
             for key, value in aperture_data.items():
                 if key != "floating_stop":
                     self.optic.set_aperture(aperture_type=key, value=value)
@@ -267,8 +285,8 @@ class ZemaxToOpticConverter:
             else:
                 raise ValueError("No valid aperture type found in aperture_data.")
 
-    def _configure_fields(self):
-        """Configure the fields for the optic."""
+    def _configure_fields(self) -> None:
+        """Configure the field group on the optic."""
         self.optic.fields.set_type(field_type=self.data["fields"]["type"])
 
         field_x = self.data["fields"]["x"]
@@ -284,8 +302,6 @@ class ZemaxToOpticConverter:
         try:
             dx = self.data["fields"]["vignette_decenter_x"]
             dy = self.data["fields"]["vignette_decenter_y"]
-
-            # TODO: Implement decentering.
             if any(dx) or any(dy):
                 print("Warning: Vignette decentering is not supported.")
         except KeyError:
@@ -301,8 +317,8 @@ class ZemaxToOpticConverter:
                 weight=weights[k],
             )
 
-    def _configure_wavelengths(self):
-        """Configure the wavelengths for the optic."""
+    def _configure_wavelengths(self) -> None:
+        """Configure the wavelength group on the optic."""
         primary_idx = self.data["wavelengths"]["primary_index"]
         wl_data = self.data["wavelengths"]["data"]
         wl_weights = self.data["wavelengths"].get("weights", [1.0] * len(wl_data))

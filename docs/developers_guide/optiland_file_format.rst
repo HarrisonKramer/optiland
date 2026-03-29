@@ -21,7 +21,7 @@ Key Features
   - Aperture
   - Surface groups, including all surfaces and their respective properties
   - Pickups and solves
-- **Interoperability**: Optiland files can be generated from Zemax `.zmx` files, enabling easy migration of designs into Optiland.
+- **Interoperability**: Optiland files can be generated from, as well as written to, Zemax `.zmx` and CODE V `.seq` files, enabling easy migration of designs into Optiland.
 - **Extensible**: Additional properties or components can be serialized without altering the core structure, allowing the format to evolve alongside Optiland.
 
 Core Functionality
@@ -61,14 +61,17 @@ Example Workflow
 
    optic = load_optiland_file("example_design.json")
 
-Interoperability with Zemax
----------------------------
+Interoperability with Zemax and CODE V
+-----------------------------------
 
-Optiland can generate its file format from Zemax .zmx files. This feature simplifies transitioning optical
-designs from Zemax to Optiland, preserving the integrity of system properties. Not all Zemax features are supported in
-the Optiland file format, including some geometry and field types, e.g., real image height fields. However, the core optical properties are maintained
-during the conversion process. If you experience any unexpected issues during the conversion process, please kindly report
-them as issues on the Optiland GitHub repository.
+Optiland can generate its file format from Zemax `.zmx` and CODE V `.seq` files. This feature simplifies transitioning optical
+designs from these platforms to Optiland, preserving the integrity of system properties. 
+
+.. IMPORTANT::
+   Not all Zemax or CODE V features are supported in the Optiland file format (e.g., specific geometry types or complex 
+   field definitions). However, core optical properties are maintained during conversion. If you experience any 
+   unexpected issues during the conversion process, please kindly report them by opening a new issue on the 
+   `Optiland GitHub repository <https://github.com/HarrisonKramer/optiland>`_.
 
 Future Extensions
 -----------------
