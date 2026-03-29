@@ -205,6 +205,11 @@ class AddOperandDialog(QDialog):
 
         layout.addLayout(form)
 
+        self._error_label = QLabel("")
+        self._error_label.setStyleSheet("color: #e57373;")
+        self._error_label.setVisible(False)
+        layout.addWidget(self._error_label)
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self
         )
@@ -228,6 +233,19 @@ class AddOperandDialog(QDialog):
         """Pre-fill the Parameters field with a sensible default."""
         default = self._connector.get_default_operand_input_data_str(op_type)
         self.txtInputData.setText(default)
+
+    def accept(self) -> None:
+        """Validate input_data before accepting the dialog."""
+        op_type = self.cmbType.currentText()
+        error = self._connector.validate_operand_input_data(
+            op_type, self.txtInputData.text()
+        )
+        if error:
+            self._error_label.setText(error)
+            self._error_label.setVisible(True)
+            return
+        self._error_label.setVisible(False)
+        super().accept()
 
     def get_operand_dict(self) -> dict:
         """Return the operand descriptor dict from the current form values.
@@ -396,8 +414,19 @@ class OptimizationPanel(QWidget):
 
         form_top = QFormLayout()
         self.cmbAlgorithm = QComboBox()
-        for name, cls in self.connector.get_optimizer_catalog():
-            self.cmbAlgorithm.addItem(name, userData=cls)
+        model = self.cmbAlgorithm.model()
+        for group_name, entries in self.connector.get_optimizer_groups().items():
+            # Non-selectable group header
+            self.cmbAlgorithm.addItem(group_name)
+            header_idx = self.cmbAlgorithm.count() - 1
+            header_item = model.item(header_idx)
+            if header_item:
+                header_item.setEnabled(False)
+                font = header_item.font()
+                font.setBold(True)
+                header_item.setFont(font)
+            for name, cls, _bounds_mode in entries:
+                self.cmbAlgorithm.addItem(f"  {name}", userData=cls)
         form_top.addRow("Algorithm:", self.cmbAlgorithm)
         layout.addLayout(form_top)
 
@@ -639,6 +668,31 @@ class OptimizationPanel(QWidget):
             self.btnRun.setEnabled(True)
             self.btnStop.setEnabled(False)
             return
+
+        # Validate bounds requirements for the selected optimizer
+        bounds_err = self.connector.validate_bounds_for_optimizer(cls)
+        if bounds_err:
+            self.txtLog.append(f"Error: {bounds_err}")
+            tm = getattr(self.connector, "toast_manager", None)
+            if tm is not None:
+                tm.notify(bounds_err, "error")
+            self.btnRun.setEnabled(True)
+            self.btnStop.setEnabled(False)
+            return
+
+        # Validate operand input_data before starting
+        for od in self.connector.get_optimization_operands():
+            err = self.connector.validate_operand_input_data(
+                od.get("type", ""), od.get("input_data_str", "{}")
+            )
+            if err:
+                self.txtLog.append(f"Error: {err}")
+                tm = getattr(self.connector, "toast_manager", None)
+                if tm is not None:
+                    tm.notify(err, "error")
+                self.btnRun.setEnabled(True)
+                self.btnStop.setEnabled(False)
+                return
 
         optimizer_kwargs = self._collect_optimizer_kwargs()
         freq = self.spnFrequency.value()

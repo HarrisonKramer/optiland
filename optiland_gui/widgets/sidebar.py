@@ -16,7 +16,6 @@ from PySide6.QtGui import QIcon, QResizeEvent
 from PySide6.QtWidgets import (
     QButtonGroup,
     QLabel,
-    QMessageBox,
     QSizePolicy,
     QToolButton,
     QVBoxLayout,
@@ -49,6 +48,7 @@ class SidebarWidget(QWidget):
     """
 
     menuSelected = Signal(str)
+    showWipMessage = Signal(str)
 
     def __init__(self, parent=None):
         """
@@ -148,11 +148,9 @@ class SidebarWidget(QWidget):
         )
 
         if button_name in self._wip_buttons:
-            QMessageBox.information(
-                self,
-                "Work in Progress",
-                "This feature is currently under development.\nStay tuned for "
-                "updates to the GUI!",
+            self.showWipMessage.emit(
+                "This feature is currently under development. "
+                "Stay tuned for updates to the GUI!"
             )
             checked_button.setChecked(False)
             if self._last_checked_button:

@@ -168,7 +168,14 @@ class PanelManager:
     def connect_signals(self):
         """Connect signals for the managed panels."""
         self.sidebar_content_widget.menuSelected.connect(self.on_sidebar_menu_selected)
+        self.sidebar_content_widget.showWipMessage.connect(self._on_sidebar_wip_message)
         self.python_terminal.commandExecuted.connect(self.connector.opticChanged.emit)
+
+    def _on_sidebar_wip_message(self, message: str) -> None:
+        """Forward WIP messages from the sidebar to the toast manager."""
+        tm = getattr(self.main_window, "toast_manager", None)
+        if tm is not None:
+            tm.notify(message, "info")
 
     def on_sidebar_menu_selected(self, button_name: str):
         """Shows and raises the corresponding dock when a sidebar button is clicked."""

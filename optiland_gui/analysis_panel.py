@@ -15,6 +15,7 @@ import contextlib
 import copy
 import inspect
 import json
+from enum import Enum
 from typing import TYPE_CHECKING, Literal, get_args, get_origin, get_type_hints
 
 import matplotlib.pyplot as plt
@@ -541,16 +542,26 @@ class AnalysisPanel(QWidget):
             "distortion_type": ["f-tan", "f-theta"],
             "cmap": ["inferno", "viridis", "plasma", "magma", "gray", "jet"],
             "strategy": ["chief_ray", "centroid", "best_fit"],
+            "reference": ["chief_ray", "centroid"],
             "zernike_type": ["fringe", "standard", "noll"],
         }
         if param_name in combo_options:
             widget = QComboBox()
             widget.addItems(combo_options[param_name])
-            widget.setCurrentText(
-                str(default_value) if default_value else widget.itemText(0)
-            )
+
+            # If default_value is an Enum, use its value or name for matching
+            if isinstance(default_value, Enum):
+                match_val = str(default_value.value)
+            else:
+                match_val = str(default_value)
+
+            widget.setCurrentText(match_val if default_value else widget.itemText(0))
         else:
-            widget = QLineEdit(str(default_value) if default_value is not None else "")
+            if isinstance(default_value, Enum):
+                text = str(default_value.value)
+            else:
+                text = str(default_value) if default_value is not None else ""
+            widget = QLineEdit(text)
         return widget
 
     def _prepare_param_details(self, param_name, param_info, default_override=None):
@@ -1299,14 +1310,21 @@ class AnalysisPanel(QWidget):
         valid_init_params = init_params
         filtered_args = {k: v for k, v in final_args.items() if k in valid_init_params}
 
+        # Inject defaults for required args that may be absent when the
+        # settings panel has never been opened (e.g. field/wavelength for
+        # wavefront and PSF analyses).
+        _required_defaults = {"field": (0.0, 0.0), "wavelength": "primary"}
+        for _key, _default in _required_defaults.items():
+            if _key not in filtered_args and _key in valid_init_params:
+                filtered_args[_key] = _default
+
         if (
-            analysis_name in ["self.GEOMETRIC_MTF", "self.FFT_MTF"]
+            analysis_name in [self.GEOMETRIC_MTF, self.FFT_MTF]
             and "max_freq" in final_args
             and "max_freq" not in filtered_args
         ):
             filtered_args["max_freq"] = final_args["max_freq"]
 
-        print(f"LOG: Executing {analysis_name} with args: {filtered_args}")
         instance = analysis_class(**filtered_args)
 
         # Check if the analysis can be plotted directly on a Matplotlib figure
@@ -1487,9 +1505,12 @@ class AnalysisPanel(QWidget):
                     f"Settings for {current_analysis_name} saved to {filepath}"
                 )
             except Exception as e:
-                QMessageBox.critical(
-                    self, "Save Error", f"Could not save settings:\n{e}"
-                )
+                msg = f"Could not save settings:\n{e}"
+                tm = getattr(self.connector, "toast_manager", None)
+                if tm:
+                    tm.notify(msg, "error")
+                else:
+                    QMessageBox.critical(self, "Save Error", msg)
 
     def on_scroll_zoom(self, event):
         gui_plot_utils.handle_matplotlib_scroll_zoom(event)
@@ -1536,6 +1557,9 @@ class AnalysisPanel(QWidget):
                 )
 
             except Exception as e:
-                QMessageBox.critical(
-                    self, "Load Error", f"Could not load or apply settings:\n{e}"
-                )
+                msg = f"Could not load or apply settings:\n{e}"
+                tm = getattr(self.connector, "toast_manager", None)
+                if tm:
+                    tm.notify(msg, "error")
+                else:
+                    QMessageBox.critical(self, "Load Error", msg)

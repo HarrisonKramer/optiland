@@ -611,6 +611,41 @@ class OptilandConnector(QObject):
         """
         return self._optimization_service.get_default_input_data_str(op_type)
 
+    def validate_operand_input_data(
+        self, op_type: str, input_data_str: str
+    ) -> str | None:
+        """Validate that *input_data_str* contains required keys for *op_type*.
+
+        Args:
+            op_type: Operand type key.
+            input_data_str: JSON string of extra parameters.
+
+        Returns:
+            An error message string if validation fails, or ``None`` if valid.
+        """
+        return self._optimization_service.validate_operand_input_data(
+            op_type, input_data_str
+        )
+
+    def get_optimizer_groups(self) -> dict:
+        """Return optimisers organised into Local/Global groups.
+
+        Returns:
+            Dict mapping group name → list of (display_name, cls, bounds_mode).
+        """
+        return self._optimization_service.get_optimizer_groups()
+
+    def validate_bounds_for_optimizer(self, optimizer_cls: type) -> str | None:
+        """Check that variable bounds match the optimizer's requirements.
+
+        Args:
+            optimizer_cls: The optimizer class to validate against.
+
+        Returns:
+            An error message string if validation fails, or ``None`` if valid.
+        """
+        return self._optimization_service.validate_bounds_for_optimizer(optimizer_cls)
+
     def run_optimization(
         self,
         optimizer_cls: type,

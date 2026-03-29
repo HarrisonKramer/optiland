@@ -16,7 +16,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QByteArray, QSettings
-from PySide6.QtWidgets import QInputDialog, QMessageBox
+from PySide6.QtWidgets import QInputDialog
 
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QMainWindow
@@ -44,6 +44,12 @@ class LayoutManager:
     def __init__(self, main_window: QMainWindow, settings: QSettings) -> None:
         self._win = main_window
         self._settings = settings
+
+    def _toast(self, message: str, severity: str) -> None:
+        """Forward *message* to the application's toast manager if available."""
+        tm = getattr(self._win, "toast_manager", None)
+        if tm is not None:
+            tm.notify(message, severity)
 
     # ------------------------------------------------------------------
     # Built-in preset application
@@ -144,11 +150,7 @@ class LayoutManager:
         state_key = f"{_SETTINGS_PREFIX}{name}/state"
         geo_key = f"{_SETTINGS_PREFIX}{name}/geometry"
         if not self._settings.contains(state_key):
-            QMessageBox.information(
-                self._win,
-                "Layout Not Found",
-                f'No saved layout named "{name}".',
-            )
+            self._toast(f'No saved layout named "{name}".', "info")
             return False
         state = self._settings.value(state_key)
         geometry = self._settings.value(geo_key)
@@ -184,6 +186,7 @@ class LayoutManager:
             QDialogButtonBox,
             QLabel,
             QListWidget,
+            QMessageBox,
             QPushButton,
             QVBoxLayout,
         )

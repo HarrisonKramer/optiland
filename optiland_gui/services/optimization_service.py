@@ -169,6 +169,23 @@ class OptimizationService:
         ("Decenter", "decenter"),
     ]
 
+    # Required extra keys (beyond 'optic') per operand type.
+    _REQUIRED_KEYS: dict[str, list[str]] = {
+        "clearance": ["surface_number"],
+        "edge_thickness": ["surface_number"],
+        "real_x_intercept": ["surface_number"],
+        "real_y_intercept": ["surface_number"],
+        "real_z_intercept": ["surface_number"],
+        "real_x_intercept_lcs": ["surface_number"],
+        "real_y_intercept_lcs": ["surface_number"],
+        "real_z_intercept_lcs": ["surface_number"],
+        "real_L": ["surface_number"],
+        "real_M": ["surface_number"],
+        "real_N": ["surface_number"],
+        "AOI": ["surface_number"],
+        "seidel": ["seidel_number", "surface_number"],
+    }
+
     # Default extra input_data (JSON string, optic excluded) per operand type.
     _DEFAULT_INPUT_DATA: dict[str, str] = {
         "clearance": '{"surface_number": 1}',
@@ -299,6 +316,30 @@ class OptimizationService:
         """
         return self._DEFAULT_INPUT_DATA.get(op_type, "{}")
 
+    def validate_operand_input_data(
+        self, op_type: str, input_data_str: str
+    ) -> str | None:
+        """Check that *input_data_str* contains all required keys for *op_type*.
+
+        Args:
+            op_type: The operand type key.
+            input_data_str: JSON string of extra parameters (optic excluded).
+
+        Returns:
+            An error message string if validation fails, or ``None`` if valid.
+        """
+        required = self._REQUIRED_KEYS.get(op_type, [])
+        if not required:
+            return None
+        try:
+            data = json.loads(input_data_str or "{}")
+        except json.JSONDecodeError:
+            return f"Invalid JSON in parameters for '{op_type}'"
+        missing = [k for k in required if k not in data]
+        if missing:
+            return f"'{op_type}' requires parameter(s): {', '.join(missing)}"
+        return None
+
     # ------------------------------------------------------------------
     # Problem construction
     # ------------------------------------------------------------------
@@ -361,6 +402,9 @@ class OptimizationService:
                     od.get("type"),
                     exc,
                 )
+                tm = getattr(self._connector, "toast_manager", None)
+                if tm:
+                    tm.notify(f"Operand '{od.get('type')}' skipped: {exc}", "warning")
 
         return problem
 
@@ -368,12 +412,38 @@ class OptimizationService:
     # Optimizer catalog
     # ------------------------------------------------------------------
 
+    # bounds_mode values: "none" | "required" | "rejected"
+    # "required" = all variables must have bounds set
+    # "rejected" = no variables may have bounds set
+    # "none"     = bounds are optional / ignored
+    _BOUNDS_REQUIREMENTS: dict[str, str] = {}  # populated by get_optimizer_groups()
+
     @staticmethod
-    def get_optimizer_catalog() -> list[tuple[str, type]]:
-        """Return available optimizer classes as ``(display_name, cls)`` tuples.
+    def _build_scipy_method_cls(method: str, base_cls: type) -> type:
+        """Create a ScipyMethod subclass locked to *method*."""
+
+        class ScipyMethod(base_cls):  # type: ignore[valid-type]
+            def optimize(self, maxiter=1000, disp=True, tol=1e-3, callback=None):
+                return super().optimize(
+                    method=method,
+                    maxiter=maxiter,
+                    disp=disp,
+                    tol=tol,
+                    callback=callback,
+                )
+
+        ScipyMethod.__name__ = f"ScipyMethod_{method.replace('-', '_')}"
+        return ScipyMethod
+
+    @staticmethod
+    def get_optimizer_groups() -> dict[str, list[tuple[str, type, str]]]:
+        """Return optimisers organised into ``"Local"`` and ``"Global"`` groups.
+
+        Each entry is a ``(display_name, cls, bounds_mode)`` tuple where
+        ``bounds_mode`` is one of ``"none"``, ``"required"``, or ``"rejected"``.
 
         Returns:
-            A list of ``(name, class)`` pairs for the standard SciPy optimisers.
+            Ordered dict mapping group name → list of (name, class, bounds_mode).
         """
         from optiland.optimization.optimizer.scipy import (
             SHGO,
@@ -384,7 +454,6 @@ class OptimizationService:
             OptimizerGeneric,
         )
 
-        catalog = [("Generic (scipy.minimize)", OptimizerGeneric)]
         scipy_methods = [
             "Nelder-Mead",
             "Powell",
@@ -396,36 +465,77 @@ class OptimizationService:
             "SLSQP",
             "trust-constr",
         ]
+
+        local: list[tuple[str, type, str]] = [
+            ("Generic (scipy.minimize)", OptimizerGeneric, "none"),
+        ]
+        _make = OptimizationService._build_scipy_method_cls
         for method in scipy_methods:
+            local.append((method, _make(method, OptimizerGeneric), "none"))
+        local.append(("Least Squares", LeastSquares, "none"))
 
-            def make_cls(m=method):
-                class ScipyMethod(OptimizerGeneric):
-                    def optimize(
-                        self, maxiter=1000, disp=True, tol=1e-3, callback=None
-                    ):
-                        return super().optimize(
-                            method=m,
-                            maxiter=maxiter,
-                            disp=disp,
-                            tol=tol,
-                            callback=callback,
-                        )
+        global_: list[tuple[str, type, str]] = [
+            ("Dual Annealing [bounds req.]", DualAnnealing, "required"),
+            ("Differential Evolution [bounds req.]", DifferentialEvolution, "required"),
+            ("SHGO [bounds req.]", SHGO, "required"),
+            ("Basin Hopping [no bounds]", BasinHopping, "rejected"),
+        ]
 
-                return ScipyMethod
+        return {"Local": local, "Global": global_}
 
-            catalog.append((method, make_cls()))
+    @staticmethod
+    def get_optimizer_catalog() -> list[tuple[str, type]]:
+        """Return all optimisers as a flat ``(display_name, cls)`` list.
 
-        catalog.extend(
-            [
-                ("Least Squares", LeastSquares),
-                ("Dual Annealing", DualAnnealing),
-                ("Differential Evolution", DifferentialEvolution),
-                ("SHGO", SHGO),
-                ("Basin Hopping", BasinHopping),
-            ]
+        Returns:
+            A list of ``(name, class)`` pairs for all available optimisers.
+        """
+        catalog: list[tuple[str, type]] = []
+        for entries in OptimizationService.get_optimizer_groups().values():
+            for name, cls, _ in entries:
+                catalog.append((name, cls))
+        return catalog
+
+    def validate_bounds_for_optimizer(self, optimizer_cls: type) -> str | None:
+        """Check that variable bounds match *optimizer_cls* requirements.
+
+        Args:
+            optimizer_cls: The optimizer class to validate against.
+
+        Returns:
+            An error message string if validation fails, or ``None`` if valid.
+        """
+        # Look up bounds_mode from the groups catalog
+        bounds_mode = "none"
+        for entries in self.get_optimizer_groups().values():
+            for _name, cls, mode in entries:
+                if cls is optimizer_cls:
+                    bounds_mode = mode
+                    break
+
+        if bounds_mode == "none":
+            return None
+
+        has_all_bounds = all(
+            v.get("min_val") is not None and v.get("max_val") is not None
+            for v in self._variables
+        )
+        has_any_bounds = any(
+            v.get("min_val") is not None or v.get("max_val") is not None
+            for v in self._variables
         )
 
-        return catalog
+        if bounds_mode == "required" and not has_all_bounds:
+            return (
+                f"{optimizer_cls.__name__} requires bounds on all variables. "
+                "Set Min/Max for each variable."
+            )
+        if bounds_mode == "rejected" and has_any_bounds:
+            return (
+                f"{optimizer_cls.__name__} does not accept bounds. "
+                "Remove Min/Max from all variables."
+            )
+        return None
 
     # ------------------------------------------------------------------
     # Threaded execution

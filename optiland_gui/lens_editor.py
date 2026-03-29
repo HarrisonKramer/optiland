@@ -167,6 +167,36 @@ class SurfaceTypeWidget(QWidget):
         self.type_button.setVisible(is_editable)
         self.type_edit.setReadOnly(not is_editable)
 
+        # Badge label shown when non-standard variable types are registered
+        self._var_badge = QLabel("V")
+        self._var_badge.setObjectName("VariableBadge")
+        self._var_badge.setFixedSize(16, 16)
+        self._var_badge.setAlignment(Qt.AlignCenter)
+        self._var_badge.setStyleSheet(
+            "QLabel#VariableBadge {"
+            "  background-color: #6488ea;"
+            "  color: #ffffff;"
+            "  border-radius: 3px;"
+            "  font-size: 9px;"
+            "  font-weight: bold;"
+            "}"
+        )
+        self._var_badge.setVisible(False)
+        self.layout.insertWidget(0, self._var_badge)
+
+    def setHasVariables(self, types: list[str]) -> None:
+        """Show or hide the variable badge for non-standard variable types.
+
+        Args:
+            types: List of non-standard variable type strings registered for
+                this surface (e.g. ``["asphere_coeff", "index"]``).
+        """
+        if types:
+            self._var_badge.setToolTip("Optimization variables: " + ", ".join(types))
+            self._var_badge.setVisible(True)
+        else:
+            self._var_badge.setVisible(False)
+
     def type_selected(self, new_type):
         self.type_edit.setText(new_type.title())
         self.surfaceTypeChanged.emit(new_type)
@@ -350,6 +380,16 @@ class LensEditor(QWidget):
                 lambda r=row: self.toggle_properties_widget(r)
             )
             self.tableWidget.setCellWidget(row, col_idx, widget)
+
+            # Badge for non-standard variable types (asphere_coeff, index, …)
+            _standard_types = {"radius", "thickness", "conic"}
+            extra_var_types = [
+                vd["type"]
+                for vd in self.connector.get_optimization_variables()
+                if vd.get("surface_number") == row
+                and vd.get("type") not in _standard_types
+            ]
+            widget.setHasVariables(extra_var_types)
         else:
             item_data = self.connector.get_surface_data(row, col_idx)
             item = QTableWidgetItem(str(item_data) if item_data is not None else "")

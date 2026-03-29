@@ -780,11 +780,10 @@ class MainWindow(FramelessWindow):
         dock_toolbar_state = self.saveState()
         self.settings.setValue(f"Layouts/Config{target_slot}Geometry", window_geometry)
         self.settings.setValue(f"Layouts/Config{target_slot}State", dock_toolbar_state)
-        QMessageBox.information(
-            self,
-            "Layout Saved",
-            f"The current window layout was saved to configuration - {target_slot}",
-        )
+        if self.toast_manager:
+            self.toast_manager.notify(
+                f"Layout saved to configuration — {target_slot}", "success"
+            )
         self.next_save_slot_index = 2 if target_slot == 1 else 1
         self.settings.setValue("Layouts/NextSaveSlot", self.next_save_slot_index)
         load_layout_1 = self.action_manager.get_action("load_layout_1")
@@ -818,23 +817,21 @@ class MainWindow(FramelessWindow):
                         "Warning: Failed to restore dock/toolbar state from "
                         "slot {slot_number}."
                     )
-                QMessageBox.information(
-                    self,
-                    "Layout Loaded",
-                    f"Layout from configuration - {slot_number} has been loaded.",
-                )
+                if self.toast_manager:
+                    self.toast_manager.notify(
+                        f"Layout from configuration — {slot_number} loaded.", "success"
+                    )
             else:
-                QMessageBox.warning(
-                    self,
-                    "Load Error",
-                    f"Invalid layout data found in configuration - {slot_number}.",
-                )
+                if self.toast_manager:
+                    self.toast_manager.notify(
+                        f"Invalid layout data in configuration — {slot_number}.",
+                        "warning",
+                    )
         else:
-            QMessageBox.information(
-                self,
-                "Load Layout",
-                f"No layout saved in configuration - {slot_number}.",
-            )
+            if self.toast_manager:
+                self.toast_manager.notify(
+                    f"No layout saved in configuration — {slot_number}.", "info"
+                )
 
     @Slot()
     def load_layout_1_slot(self):
@@ -855,11 +852,10 @@ class MainWindow(FramelessWindow):
     @Slot()
     def show_settings_wip(self):
         """Shows a 'Work in Progress' message for the settings panel."""
-        QMessageBox.information(
-            self,
-            "Work in Progress",
-            "The settings panel is currently under development.",
-        )
+        if self.toast_manager:
+            self.toast_manager.notify(
+                "The settings panel is currently under development.", "info"
+            )
 
     # logic to load samples from the samples folder in optiland
     def _populate_gallery_menu(self, menu_bar: QMenuBar):
@@ -1049,8 +1045,8 @@ class MainWindow(FramelessWindow):
             print(f"Loaded sample: {optic_class.__name__}")
 
         except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Sample Load Error",
-                f"Could not load sample '{optic_class.__name__}':\n{e}",
-            )
+            msg = f"Could not load sample '{optic_class.__name__}': {e}"
+            if self.toast_manager:
+                self.toast_manager.notify(msg, "error")
+            else:
+                QMessageBox.critical(self, "Sample Load Error", msg)

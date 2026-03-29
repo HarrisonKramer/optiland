@@ -11,8 +11,6 @@ from __future__ import annotations
 import json
 import os
 
-from PySide6.QtWidgets import QMessageBox
-
 import optiland.backend as be
 from optiland.fileio import (
     load_codev_file,
@@ -175,11 +173,6 @@ class FileService:
             self._toast(f"Opened \u2014 {os.path.basename(filepath)}", "info")
         except Exception as e:
             self._toast(f"Load failed: {e}", "error", sub=filepath)
-            QMessageBox.critical(
-                None,
-                "Load Error",
-                f"Failed to load system from {filepath}:\n{e}",
-            )
             self.new_system()
 
     def save(self, filepath: str) -> None:
@@ -200,11 +193,6 @@ class FileService:
             self._toast(f"Saved \u2014 {os.path.basename(filepath)}", "success")
         except Exception as e:
             self._toast(f"Save failed: {e}", "error", sub=filepath)
-            QMessageBox.critical(
-                None,
-                "Save Error",
-                f"Could not save system to {filepath}:\n{e}",
-            )
 
     def load_from_object(self, optic_instance: Optic) -> None:
         """Load an optical system from an already-instantiated Optic object.
@@ -226,11 +214,7 @@ class FileService:
             self._connector.opticLoaded.emit()
             self._connector.opticChanged.emit()
         except Exception as e:
-            QMessageBox.critical(
-                None,
-                "Load Error",
-                f"Failed to load system from sample object:\n{e}",
-            )
+            self._toast(f"Failed to load system from sample object: {e}", "error")
             self.new_system()
 
     def import_zemax(self, filepath: str) -> None:
@@ -253,11 +237,7 @@ class FileService:
             self._connector.opticLoaded.emit()
             self._connector.opticChanged.emit()
         except Exception as e:
-            QMessageBox.critical(
-                None,
-                "Import Error",
-                f"Failed to import Zemax file from {filepath}:\n{e}",
-            )
+            self._toast(f"Failed to import Zemax file from {filepath}: {e}", "error")
 
     def import_codev(self, filepath: str) -> None:
         """Import a CODE V ``.seq`` file, replacing the current system.
@@ -279,11 +259,7 @@ class FileService:
             self._connector.opticLoaded.emit()
             self._connector.opticChanged.emit()
         except Exception as e:
-            QMessageBox.critical(
-                None,
-                "Import Error",
-                f"Failed to import CODE V file from {filepath}:\n{e}",
-            )
+            self._toast(f"Failed to import CODE V file from {filepath}: {e}", "error")
 
     def export_zemax(self, filepath: str) -> None:
         """Export the current system to a Zemax ``.zmx`` file.
@@ -297,17 +273,11 @@ class FileService:
         try:
             optic = self._connector._optic
             if optic is None:
-                QMessageBox.warning(
-                    None, "Export Error", "No optical system loaded to export."
-                )
+                self._toast("No optical system loaded to export.", "warning")
                 return
             save_zemax_file(optic, filepath)
         except Exception as e:
-            QMessageBox.critical(
-                None,
-                "Export Error",
-                f"Failed to export Zemax file to {filepath}:\n{e}",
-            )
+            self._toast(f"Failed to export Zemax file to {filepath}: {e}", "error")
 
     def export_codev(self, filepath: str) -> None:
         """Export the current system to a CODE V ``.seq`` file.
@@ -321,17 +291,11 @@ class FileService:
         try:
             optic = self._connector._optic
             if optic is None:
-                QMessageBox.warning(
-                    None, "Export Error", "No optical system loaded to export."
-                )
+                self._toast("No optical system loaded to export.", "warning")
                 return
             save_codev_file(optic, filepath)
         except Exception as e:
-            QMessageBox.critical(
-                None,
-                "Export Error",
-                f"Failed to export CODE V file to {filepath}:\n{e}",
-            )
+            self._toast(f"Failed to export CODE V file to {filepath}: {e}", "error")
 
     def get_current_filepath(self) -> str | None:
         """Return the path of the last successfully saved/loaded JSON file.
