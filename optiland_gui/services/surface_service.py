@@ -174,7 +174,7 @@ class SurfaceService:
         has_extra_params = bool(self.get_surface_geometry_params(row))
         return {
             "display_text": display_text,
-            "is_changeable": not surface.is_stop,
+            "is_changeable": True,
             "has_extra_params": has_extra_params,
         }
 
@@ -361,11 +361,7 @@ class SurfaceService:
                 except ValueError:
                     surface.material_post = OptilandMaterial(name=str(value).strip())
 
-        optic = self._connector._optic
-        row = optic.surfaces.surfaces.index(surface)
-        if row + 1 < self.get_surface_count():
-            next_surface = optic.surfaces.surfaces[row + 1]
-            next_surface.material_pre = surface.material_post
+        self._connector._optic.updater.update()
 
     def _set_thickness_data(self, surface: object, value: str) -> None:
         """Set the thickness behind *surface*.
@@ -582,6 +578,27 @@ class SurfaceService:
             self._connector.set_modified(True)
             self._connector.opticChanged.emit()
         except Exception:
+            self._connector._restore_optic_state(old_state)
+
+    def set_stop_surface(self, row: int) -> None:
+        """Set the surface at *row* as the aperture stop.
+
+        Args:
+            row: LDE row index of the surface to set as stop.
+        """
+        if not (0 < row < self.get_surface_count() - 1):
+            logger.warning("SurfaceService: Stop must be an intermediate surface.")
+            return
+
+        old_state = self._connector._capture_optic_state()
+        try:
+            self._connector._optic.surfaces.stop_index = row
+            self._connector._optic.updater.update()
+            self._connector._undo_redo_manager.add_state(old_state)
+            self._connector.set_modified(True)
+            self._connector.opticChanged.emit()
+        except Exception as exc:
+            logger.warning("SurfaceService: Error setting stop surface: %s", exc)
             self._connector._restore_optic_state(old_state)
 
     # ------------------------------------------------------------------

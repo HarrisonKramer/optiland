@@ -492,20 +492,27 @@ class LensEditor(QWidget):
             return
         flash_color = QColor(76, 175, 80, 120) if valid else QColor(244, 67, 54, 120)
         original_bg = item.background()
-        item.setBackground(QBrush(flash_color))
-        QTimer.singleShot(duration_ms, lambda: item.setBackground(original_bg))
+
+        def set_bg(color):
+            self.tableWidget.blockSignals(True)
+            item.setBackground(QBrush(color))
+            self.tableWidget.blockSignals(False)
+
+        set_bg(flash_color)
+        QTimer.singleShot(duration_ms, lambda: set_bg(original_bg))
 
     @Slot(QTableWidgetItem)
     def on_item_changed_handler(self, item: QTableWidgetItem):
         if not self.tableWidget.signalsBlocked():
-            surface_index = self.map_ui_row_to_surface_index(item.row())
+            row = item.row()
+            col = item.column()
+            text = item.text()
+            surface_index = self.map_ui_row_to_surface_index(row)
             try:
-                self.connector.set_surface_data(
-                    surface_index, item.column(), item.text()
-                )
-                self._flash_cell(item.row(), item.column(), valid=True)
+                self.connector.set_surface_data(surface_index, col, text)
+                self._flash_cell(row, col, valid=True)
             except Exception:
-                self._flash_cell(item.row(), item.column(), valid=False)
+                self._flash_cell(row, col, valid=False)
 
     @Slot()
     def add_surface_handler(self, surface_index_to_add_before=None):
@@ -619,11 +626,19 @@ class LensEditor(QWidget):
             is_obj_or_img = (surface_index == 0) or (
                 surface_index == self.connector.get_surface_count() - 1
             )
+
+            menu.addSeparator()
+            make_stop_action = menu.addAction("Make Stop Surface")
+            make_stop_action.triggered.connect(
+                lambda _=False, si=surface_index: self.connector.set_stop_surface(si)
+            )
+
             if is_obj_or_img:
                 if surface_index == 0:
                     add_above.setEnabled(False)
                 remove_action.setEnabled(False)
                 props_action.setEnabled(False)
+                make_stop_action.setEnabled(False)
 
             menu.addSeparator()
             ui_col = self.tableWidget.columnAt(pos.x())

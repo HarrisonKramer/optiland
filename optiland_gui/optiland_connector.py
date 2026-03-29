@@ -426,6 +426,14 @@ class OptilandConnector(QObject):
         """
         self._surface_service.remove_surface(lde_row_index)
 
+    def set_stop_surface(self, row: int) -> None:
+        """Set the surface at *row* as the aperture stop.
+
+        Args:
+            row: LDE row index of the surface to set as stop.
+        """
+        self._surface_service.set_stop_surface(row)
+
     def get_surface_geometry_params(self, row: int) -> dict:
         """Return the extra geometry parameters for the surface properties box.
 
