@@ -1,10 +1,11 @@
 """Entry point for launching the Optiland GUI application.
 
-This script initializes the QApplication and the MainWindow, starting the
-event loop to run the graphical user interface for Optiland.
+This module initializes the :class:`~PySide6.QtWidgets.QApplication` and the
+:class:`~optiland_gui.main_window.MainWindow`, starting the event loop to run
+the graphical user interface for Optiland.
 
-Author: Manuel Fragata Mendes, 2025
-Refactored by: Jules, 2025
+Authors:
+    Manuel Fragata Mendes, 2025
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from PySide6.QtWidgets import QApplication, QSplashScreen
 from .main_window import MainWindow
 
 
-def main():
+def main() -> None:
     """Application entry point."""
     app = QApplication(sys.argv)
     QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
@@ -41,12 +42,12 @@ def main():
     splash.show()
     app.processEvents()
 
-    # Initialize the main window while splash is visible. The time taken here
-    # is the actual loading time the user experiences.
+    # Initialize the main window while splash is visible.  The time taken
+    # here is the actual loading time the user experiences.
     window = MainWindow()
     window.show()
 
-    # Close the splash screen once the main window is ready
+    # Close the splash screen once the main window is ready.
     splash.finish(window)
 
     sys.exit(app.exec())

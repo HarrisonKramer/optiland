@@ -8,6 +8,7 @@ extracting/applying extra geometry parameters from the surface properties box.
 from __future__ import annotations
 
 import ast
+import logging
 
 import optiland.backend as be
 from optiland.geometries.biconic import BiconicGeometry
@@ -19,6 +20,8 @@ from optiland.surfaces.factories.geometry_factory import (
     GeometryFactory,
     config_registry,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SurfaceService:
@@ -419,7 +422,7 @@ class SurfaceService:
         val = float(value)
         if surface.surface_type == "paraxial":
             return
-        elif surface.surface_type == "toroidal":
+        if surface.surface_type == "toroidal":
             surface.geometry.k_yz = be.array(val)
         elif surface.surface_type == "biconic":
             surface.geometry.ky = be.array(val)
@@ -464,10 +467,13 @@ class SurfaceService:
             c._undo_redo_manager.add_state(old_state)
             c.set_modified(True)
             c.opticChanged.emit()
-        except Exception as e:
-            print(
-                f"SurfaceService: Error setting data at ({row},{col_idx}) "
-                f"to '{value_str}': {e}"
+        except Exception as exc:
+            logger.warning(
+                "SurfaceService: Error setting data at (%d, %d) to '%s': %s",
+                row,
+                col_idx,
+                value_str,
+                exc,
             )
             self._connector._restore_optic_state(old_state)
 
@@ -526,8 +532,8 @@ class SurfaceService:
             self._connector.set_modified(True)
             self._connector.opticChanged.emit()
 
-        except Exception as e:
-            print(f"SurfaceService: Error setting surface type: {e}")
+        except Exception as exc:
+            logger.warning("SurfaceService: Error setting surface type: %s", exc)
             self._connector._restore_optic_state(old_state)
 
     def add_surface(self, index: int = -1) -> None:
@@ -565,7 +571,7 @@ class SurfaceService:
             lde_row_index: LDE row index of the surface to remove.
         """
         if not (0 < lde_row_index < self.get_surface_count() - 1):
-            print("SurfaceService: Cannot remove Object or Image surface.")
+            logger.warning("SurfaceService: Cannot remove Object or Image surface.")
             return
 
         old_state = self._connector._capture_optic_state()
@@ -778,6 +784,6 @@ class SurfaceService:
             self._connector.set_modified(True)
             self._connector.opticChanged.emit()
 
-        except Exception as e:
-            print(f"SurfaceService: Error setting geometry params: {e}")
+        except Exception as exc:
+            logger.warning("SurfaceService: Error setting geometry params: %s", exc)
             self._connector._restore_optic_state(old_state)

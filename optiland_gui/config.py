@@ -1,10 +1,7 @@
-"""
-Configuration constants for the Optiland GUI.
+"""Configuration constants for the Optiland GUI.
 
-This module holds shared constants, such as file paths and application settings,
+This module holds shared constants (file paths and application settings)
 to avoid circular import issues between other modules.
-
-Author: Jules, 2025
 """
 
 from __future__ import annotations

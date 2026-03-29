@@ -70,46 +70,6 @@ class TestFileServiceNoQMessageBox:
         assert severity == "error"
 
 
-class TestLayoutManagerNoQMessageBox:
-    def test_load_user_nonexistent_calls_toast(self, qapp):
-        from PySide6.QtCore import QSettings
-
-        from optiland_gui.services.layout_manager import LayoutManager
-
-        win = MagicMock()
-        win.toast_manager = MagicMock()
-        settings = QSettings()
-        mgr = LayoutManager(win, settings)
-
-        result = mgr.load_user("__nonexistent_preset_xyz__")
-
-        assert result is False
-        win.toast_manager.notify.assert_called()
-        severity = win.toast_manager.notify.call_args[0][1]
-        assert severity == "info"
-
-    def test_no_qmessagebox_import_at_module_level(self):
-        from optiland_gui.services import layout_manager
-
-        src = inspect.getsource(layout_manager)
-        # QMessageBox must only appear inside the local import in show_manage_dialog,
-        # NOT as a top-level import statement.
-        import ast
-
-        tree = ast.parse(src)
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import | ast.ImportFrom):
-                # Skip imports inside function bodies (they are nested)
-                pass
-        # Simpler check: no top-level "from PySide6.QtWidgets import ... QMessageBox"
-        lines = src.splitlines()
-        top_level_import_lines = [
-            ln
-            for ln in lines
-            if "QMessageBox" in ln and ln.startswith("from ")
-        ]
-        assert not top_level_import_lines
-
 
 class TestSidebarNoQMessageBox:
     def test_no_qmessagebox_in_sidebar_source(self):

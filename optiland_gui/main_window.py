@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import contextlib
 import inspect
+import logging
 import os
 from collections import defaultdict
 
@@ -27,6 +28,7 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QAction, QKeySequence, QResizeEvent, QShortcut
 from PySide6.QtWidgets import (
     QDialog,
+    QDockWidget,
     QFileDialog,
     QLabel,
     QMenuBar,
@@ -51,7 +53,6 @@ from .config import (
 )
 from .optiland_connector import OptilandConnector
 from .panel_manager import PanelManager
-from .services.layout_manager import BUILTIN_PRESET_NAMES, LayoutManager
 from .utils import logging_handler as _log_handler
 from .utils.plot_theme import apply_plot_theme
 from .widgets.command_palette import (
@@ -59,8 +60,6 @@ from .widgets.command_palette import (
     CommandRegistry,
     PaletteCommand,
 )
-
-# from .optimization_panel import OptimizationPanel # we will support this later on
 from .widgets.custom_title_bar import CustomTitleBar
 from .widgets.frameless_window import FramelessWindow
 from .widgets.sidebar import (
@@ -72,7 +71,13 @@ from .widgets.toast import ToastManager
 try:
     from .resources import resources_rc  # noqa: F401
 except ImportError as e:
-    print(f"Warning (main_window.py): Could not import resources_rc.py: {e}")
+    import logging as _import_logging
+
+    _import_logging.getLogger(__name__).warning(
+        "Could not import resources_rc.py: %s", e
+    )
+
+logger = logging.getLogger(__name__)
 
 
 class MainWindow(FramelessWindow):
@@ -202,7 +207,6 @@ class MainWindow(FramelessWindow):
         self.toast_manager: ToastManager | None = None
         self.command_palette: CommandPaletteWidget | None = None
         self.command_registry = CommandRegistry.instance()
-        self.layout_manager = LayoutManager(self, self.settings)
 
     def _setup_menus_and_toolbars(self):
         """Creates and populates the main menu bar, custom title bar, and toolbars."""
@@ -381,9 +385,6 @@ class MainWindow(FramelessWindow):
         theme_menu.addActions(am.get_actions("dark_theme", "light_theme"))
         view_menu.addSeparator()
 
-        # Layouts submenu (built-in presets + user presets)
-        self._layouts_menu = view_menu.addMenu("&Layouts")
-        self._populate_layouts_menu()
         view_menu.addSeparator()
 
         # Add toggle actions for all managed docks
@@ -418,13 +419,15 @@ class MainWindow(FramelessWindow):
         toolbar.addSeparator()
         toolbar.addActions(am.get_actions("dock_all", "reset_layout"))
 
-    def _handle_maximize_restore(self):
+    def _handle_maximize_restore(self) -> None:
+        """Toggle between maximized and normal window states."""
         if self.isMaximized():
             self.showNormal()
         else:
             self.showMaximized()
 
-    def changeEvent(self, event: QEvent):
+    def changeEvent(self, event: QEvent) -> None:
+        """Update the maximize button state when the window state changes."""
         super().changeEvent(event)
         if event.type() == QEvent.Type.WindowStateChange and (
             hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget
@@ -433,7 +436,8 @@ class MainWindow(FramelessWindow):
                 self.isMaximized()
             )
 
-    def load_stylesheets(self):
+    def load_stylesheets(self) -> None:
+        """Load and apply the current theme and sidebar stylesheets."""
         style_str = ""
         try:
             with open(self.current_theme_path) as f_theme:
@@ -466,9 +470,9 @@ class MainWindow(FramelessWindow):
             dark_theme_action.setChecked(is_dark)
             light_theme_action.setChecked(not is_dark)
 
-    def _update_project_name_in_title_bar(self):
+    def _update_project_name_in_title_bar(self) -> None:
+        """Update the project name displayed in the custom title bar."""
         if hasattr(self, "custom_title_bar_widget") and self.custom_title_bar_widget:
-            # New logic starts here
             display_name = "UnnamedProject.json"
             current_file = self.connector.get_current_filepath()
             is_modified = self.connector.is_modified()
@@ -531,7 +535,15 @@ class MainWindow(FramelessWindow):
             animation.start(QPropertyAnimation.DeleteWhenStopped)
             self.dock_animations[dock_widget] = animation
 
-    def animate_dock_toggle(self, dock_widget, show_state_after_toggle):
+    def animate_dock_toggle(
+        self, dock_widget: QDockWidget, show_state_after_toggle: bool
+    ) -> None:
+        """Toggle a dock widget visibility with a slide/fade animation.
+
+        Args:
+            dock_widget: The dock widget to show or hide.
+            show_state_after_toggle: ``True`` to show, ``False`` to hide.
+        """
         animation_duration = 150
         easing_curve = QEasingCurve.InOutQuad
         is_left_or_right_dock = self.dockWidgetArea(dock_widget) in [
@@ -584,7 +596,12 @@ class MainWindow(FramelessWindow):
             )
 
     @Slot(str)
-    def switch_theme(self, theme_path):
+    def switch_theme(self, theme_path: str) -> None:
+        """Switch the application theme to *theme_path*.
+
+        Args:
+            theme_path: Path to the QSS theme file to apply.
+        """
         if theme_path != self.current_theme_path:
             self.current_theme_path = theme_path
             self.load_stylesheets()
@@ -596,17 +613,20 @@ class MainWindow(FramelessWindow):
                 self.custom_title_bar_widget.update_theme_icons(theme_name)
 
     @Slot()
-    def refresh_all_gui_panels(self):
+    def refresh_all_gui_panels(self) -> None:
+        """Re-emit :attr:`opticChanged` to refresh all connected panels."""
         self.connector.opticChanged.emit()
 
     @Slot()
-    def new_system_action(self):
+    def new_system_action(self) -> None:
+        """Slot for the *New System* action."""
         self.connector.new_system()
         self._update_project_name_in_title_bar()
-        print("Main Window: New System action triggered")
+        logger.debug("New System action triggered")
 
     @Slot()
-    def open_system_action(self):
+    def open_system_action(self) -> None:
+        """Slot for the *Open System* action — shows a file chooser dialog."""
         filepath, _ = QFileDialog.getOpenFileName(
             self,
             "Open Optiland System",
@@ -616,21 +636,23 @@ class MainWindow(FramelessWindow):
         if filepath:
             self.connector.load_optic_from_file(filepath)
             self._update_project_name_in_title_bar()
-            print(f"Main Window: Open System action triggered - {filepath}")
+            logger.debug("Open System action triggered: %s", filepath)
 
     @Slot()
-    def save_system_action(self):
+    def save_system_action(self) -> None:
+        """Slot for the *Save System* action — saves to the current file path."""
         current_path = self.connector.get_current_filepath()
         if current_path:
             self.connector.save_optic_to_file(current_path)
             self._update_project_name_in_title_bar()
-            print(f"Main Window: Save System action triggered - {current_path}")
+            logger.debug("Save System action triggered: %s", current_path)
         else:
             self.save_system_as_action()
 
     @Slot()
-    def save_system_as_action(self):
-        filepath, _ = QFileDialog.getSaveFileName(
+    def save_system_as_action(self) -> None:
+        """Slot for *Save System As* — prompts for a file path."""
+        filepath, selected_filter = QFileDialog.getSaveFileName(
             self,
             "Save Optiland System As...",
             "",
@@ -639,12 +661,12 @@ class MainWindow(FramelessWindow):
         if filepath:
             if (
                 not filepath.lower().endswith(".json")
-                and "(*.json)" in _.split(";;")[0]
+                and "(*.json)" in selected_filter.split(";;")[0]
             ):
                 filepath += ".json"
             self.connector.save_optic_to_file(filepath)
             self._update_project_name_in_title_bar()
-            print(f"Main Window: Save System As action triggered - {filepath}")
+            logger.debug("Save System As action triggered: %s", filepath)
 
     def _confirm_discard_changes(self) -> bool:
         """Prompt the user to confirm discarding unsaved changes.
@@ -762,11 +784,9 @@ class MainWindow(FramelessWindow):
         self.about_dialog.exec()
 
     @Slot()
-    def reset_windows_action(self):
-        print(
-            "Main Window: Reset Windows action triggered - resetting to "
-            "revised default layout."
-        )
+    def reset_windows_action(self) -> None:
+        """Reset the dock layout to the application default."""
+        logger.debug("Reset Windows action triggered.")
         self._apply_revised_default_dock_layout()
         if hasattr(self, "panel_manager"):
             for dock in self.panel_manager.get_all_docks():
@@ -793,9 +813,10 @@ class MainWindow(FramelessWindow):
         load_layout_2 = self.action_manager.get_action("load_layout_2")
         if load_layout_2:
             load_layout_2.setEnabled(self.settings.contains("Layouts/Config2Geometry"))
-        print(
-            f"Layout saved to slot {target_slot}. Next save will be to slot "
-            "{self.next_save_slot_index}."
+        logger.debug(
+            "Layout saved to slot %d. Next save will be slot %d.",
+            target_slot,
+            self.next_save_slot_index,
         )
 
     def _load_layout_from_slot(self, slot_number):
@@ -808,14 +829,14 @@ class MainWindow(FramelessWindow):
                 dock_toolbar_state, QByteArray
             ):
                 if not self.restoreGeometry(window_geometry):
-                    print(
-                        "Warning: Failed to restore window geometry from "
-                        "slot {slot_number}."
+                    logger.warning(
+                        "Failed to restore window geometry from slot %d.",
+                        slot_number,
                     )
                 if not self.restoreState(dock_toolbar_state):
-                    print(
-                        "Warning: Failed to restore dock/toolbar state from "
-                        "slot {slot_number}."
+                    logger.warning(
+                        "Failed to restore dock/toolbar state from slot %d.",
+                        slot_number,
                     )
                 if self.toast_manager:
                     self.toast_manager.notify(
@@ -834,17 +855,20 @@ class MainWindow(FramelessWindow):
                 )
 
     @Slot()
-    def load_layout_1_slot(self):
-        print("Loading layout from slot 1...")
+    def load_layout_1_slot(self) -> None:
+        """Load the window layout saved in slot 1."""
+        logger.debug("Loading layout from slot 1.")
         self._load_layout_from_slot(1)
 
     @Slot()
-    def load_layout_2_slot(self):
-        print("Loading layout from slot 2...")
+    def load_layout_2_slot(self) -> None:
+        """Load the window layout saved in slot 2."""
+        logger.debug("Loading layout from slot 2.")
         self._load_layout_from_slot(2)
 
-    def closeEvent(self, event: QEvent):
-        print("Main Window: Closing application.")
+    def closeEvent(self, event: QEvent) -> None:
+        """Shut down the Jupyter kernel and accept the close event."""
+        logger.debug("Closing application.")
         if hasattr(self, "panel_manager") and self.panel_manager.python_terminal:
             self.panel_manager.python_terminal.shutdown_kernel()
         event.accept()
@@ -857,9 +881,8 @@ class MainWindow(FramelessWindow):
                 "The settings panel is currently under development.", "info"
             )
 
-    # logic to load samples from the samples folder in optiland
-    def _populate_gallery_menu(self, menu_bar: QMenuBar):
-        """Creates the 'Gallery' menu by inspecting the samples package."""
+    def _populate_gallery_menu(self, menu_bar: QMenuBar) -> None:
+        """Create the 'Gallery' menu by inspecting the samples package."""
         gallery_menu = menu_bar.addMenu("&Gallery")
         samples_menu = gallery_menu.addMenu("&Samples")
 
@@ -884,53 +907,6 @@ class MainWindow(FramelessWindow):
                     lambda checked=False, cls=optic_class: self._load_sample_action(cls)
                 )
                 submenu.addAction(action)
-
-    def _populate_layouts_menu(self) -> None:
-        """Rebuild the Layouts menu with built-in and user presets."""
-        if not hasattr(self, "_layouts_menu"):
-            return
-        self._layouts_menu.clear()
-
-        for name in BUILTIN_PRESET_NAMES:
-            action = QAction(name, self)
-            action.triggered.connect(
-                lambda checked=False, n=name: self.layout_manager.apply_builtin(n)
-            )
-            self._layouts_menu.addAction(action)
-
-        self._layouts_menu.addSeparator()
-
-        user_names = self.layout_manager.user_preset_names()
-        _MAX_IN_MENU = 10
-        for name in user_names[:_MAX_IN_MENU]:
-            action = QAction(name, self)
-            action.triggered.connect(
-                lambda checked=False, n=name: self.layout_manager.load_user(n)
-            )
-            self._layouts_menu.addAction(action)
-
-        if len(user_names) > _MAX_IN_MENU:
-            more = QAction("More…", self)
-            more.triggered.connect(self.layout_manager.show_manage_dialog)
-            self._layouts_menu.addAction(more)
-
-        self._layouts_menu.addSeparator()
-        save_action = QAction("Save Current Layout As…", self)
-        save_action.triggered.connect(self._save_layout_as_action)
-        self._layouts_menu.addAction(save_action)
-
-        manage_action = QAction("Manage Layouts…", self)
-        manage_action.triggered.connect(self.layout_manager.show_manage_dialog)
-        self._layouts_menu.addAction(manage_action)
-
-    @Slot()
-    def _save_layout_as_action(self) -> None:
-        """Save the current layout as a named user preset."""
-        name = self.layout_manager.save_current_as()
-        if name:
-            self._populate_layouts_menu()
-            if self.toast_manager:
-                self.toast_manager.notify(f"Layout saved: {name}", "success")
 
     def _register_palette_commands(self) -> None:
         """Populate the :class:`CommandRegistry` with app-level commands."""
@@ -990,18 +966,6 @@ class MainWindow(FramelessWindow):
                 )
             )
 
-        # --- Layout presets ---
-        for preset_name in BUILTIN_PRESET_NAMES:
-            reg.register(
-                PaletteCommand(
-                    name=f"Apply {preset_name} Layout",
-                    description=f"Switch to the {preset_name} panel preset",
-                    callback=lambda n=preset_name: self.layout_manager.apply_builtin(n),
-                    keywords=[preset_name.lower(), "layout", "preset"],
-                    category="Layouts",
-                )
-            )
-
         # --- Analysis types ---
         if hasattr(self, "panel_manager") and self.panel_manager.analysis_panel:
             ap = self.panel_manager.analysis_panel
@@ -1037,8 +1001,12 @@ class MainWindow(FramelessWindow):
         if self.command_palette and self.command_palette._visible:
             self.command_palette._reposition()
 
-    def _load_sample_action(self, optic_class: type[Optic]):
-        """Instantiates and loads the selected sample class."""
+    def _load_sample_action(self, optic_class: type[Optic]) -> None:
+        """Instantiate and load the selected sample class.
+
+        Args:
+            optic_class: The sample :class:`~optiland.optic.Optic` subclass to load.
+        """
         try:
             optic_instance = optic_class()
             self.connector.load_optic_from_object(optic_instance)

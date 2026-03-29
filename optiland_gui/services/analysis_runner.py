@@ -1,7 +1,7 @@
 """Analysis runner service for the Optiland GUI.
 
-Handles analysis discovery (via :mod:`optiland_gui.registry`) and provides
-stubs for execution lifecycle methods that will be expanded in Phase 3.
+Handles analysis class discovery via :mod:`optiland_gui.registry` and provides
+execution lifecycle stubs that forward to the :class:`AnalysisPanel`.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class AnalysisRunner:
-    """Manages analysis discovery, parameter binding, and execution lifecycle.
+    """Manages analysis discovery and the execution lifecycle.
 
     Analysis classes are loaded lazily from
     :data:`optiland_gui.registry.ANALYSIS_REGISTRY` via
@@ -71,7 +71,7 @@ class AnalysisRunner:
         return self._registry_cache
 
     # ------------------------------------------------------------------
-    # Execution lifecycle (stubs — implemented fully in Phase 3)
+    # Execution lifecycle stubs
     # ------------------------------------------------------------------
 
     def run(
@@ -93,10 +93,10 @@ class AnalysisRunner:
     def stop(self) -> None:
         """Request cancellation of an in-progress analysis run."""
 
-    def get_result(self) -> object:
+    def get_result(self) -> object | None:
         """Return the result of the most recent analysis run.
 
         Returns:
-            ``None`` until Phase 3 threading is wired up.
+            ``None`` until background analysis execution is fully wired up.
         """
         return None

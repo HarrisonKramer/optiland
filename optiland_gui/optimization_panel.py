@@ -380,12 +380,23 @@ class AddOperandDialog(QDialog):
         if w_type == "int":
             w = QSpinBox()
             w.setRange(info.get("min", 0), info.get("max", 9999))
-            w.setValue(info.get("default", 1))
+
+            default = info.get("default", 1)
+            if "surface" in name.lower():
+                optic = self._connector.get_optic()
+                if optic:
+                    # Default to image surface (last surface)
+                    default = max(0, optic.surface_group.num_surfaces - 1)
+
+            w.setValue(default)
             return w
 
         if w_type == "float":
             w = QDoubleSpinBox()
-            w.setRange(info.get("min", -1e9), info.get("max", 1e9))
+            if name in ["Hx", "Hy", "Px", "Py"]:
+                w.setRange(-1.0, 1.0)
+            else:
+                w.setRange(info.get("min", -1e9), info.get("max", 1e9))
             w.setDecimals(info.get("decimals", 4))
             w.setValue(info.get("default", 0.0))
             return w
@@ -412,12 +423,18 @@ class AddOperandDialog(QDialog):
             h_layout.setContentsMargins(0, 0, 0, 0)
 
             w1 = QDoubleSpinBox()
-            w1.setRange(-1e9, 1e9)
+            w2 = QDoubleSpinBox()
+
+            if "coords" in name.lower():
+                w1.setRange(-1.0, 1.0)
+                w2.setRange(-1.0, 1.0)
+            else:
+                w1.setRange(-1e9, 1e9)
+                w2.setRange(-1e9, 1e9)
+
             w1.setDecimals(4)
             w1.setValue(info.get("default", [0.0, 0.0])[0])
 
-            w2 = QDoubleSpinBox()
-            w2.setRange(-1e9, 1e9)
             w2.setDecimals(4)
             w2.setValue(info.get("default", [0.0, 0.0])[1])
 

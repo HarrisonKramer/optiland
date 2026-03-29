@@ -24,8 +24,15 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Slot
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import (
+    QEasingCurve,
+    QPropertyAnimation,
+    QRegularExpression,
+    Qt,
+    QTimer,
+    Slot,
+)
+from PySide6.QtGui import QIcon, QRegularExpressionValidator
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -508,8 +515,8 @@ class AnalysisPanel(QWidget):
                 "num_rings": (1, 1024),
                 "num_fields": (1, 1024),
                 "num_steps": (1, 51),
-                "surface_idx": (-100, 100),
-                "detector_surface": (-100, 100),
+                "surface_idx": (-100, 1000),
+                "detector_surface": (-100, 1000),
                 "grid_size": (32, 8192),
             }
             min_v, max_v = ranges.get(param_name, (-1000000, 1000000))
@@ -520,7 +527,23 @@ class AnalysisPanel(QWidget):
         else:  # float
             widget = QDoubleSpinBox()
             widget.setDecimals(4)
-            widget.setRange(-1e9, 1e9)
+
+            # Normalized coordinate ranges
+            norm_params = [
+                "hx",
+                "hy",
+                "px",
+                "py",
+                "field_x",
+                "field_y",
+                "pupil_x",
+                "pupil_y",
+            ]
+            if param_name.lower() in norm_params:
+                widget.setRange(-1.0, 1.0)
+            else:
+                widget.setRange(-1e9, 1e11)
+
             widget.setSingleStep(0.01 if "delta_focus" in param_name else 0.1)
             widget.setValue(float(default_value) if default_value is not None else 0.0)
         return widget
@@ -605,9 +628,9 @@ class AnalysisPanel(QWidget):
             annotation = str
         if param_name == "grid_size":
             annotation = int
-            if default_value is None:
+            if default_value in [None, inspect.Parameter.empty]:
                 default_value = 128
-        if param_name == "field" and default_value in [
+        if param_name in ["field", "pupil"] and default_value in [
             None,
             inspect.Parameter.empty,
             "",
@@ -624,10 +647,16 @@ class AnalysisPanel(QWidget):
             annotation = str
             default_value = "primary"
         # MMDFTPSF requires explicit image_size/pixel_pitch when they are None
-        if param_name == "image_size" and default_value is None:
+        if param_name == "image_size" and default_value in [
+            None,
+            inspect.Parameter.empty,
+        ]:
             annotation = int
             default_value = 128
-        if param_name == "pixel_pitch" and default_value is None:
+        if param_name == "pixel_pitch" and default_value in [
+            None,
+            inspect.Parameter.empty,
+        ]:
             annotation = float
             default_value = 5e-6
 
@@ -668,9 +697,14 @@ class AnalysisPanel(QWidget):
         return widget
 
     def _create_tuple_line_edit(self, default_value):
-        """Creates a QLineEdit for a tuple parameter."""
+        """Creates a QLineEdit for a tuple parameter with validation."""
         widget = QLineEdit(", ".join(map(str, default_value)) if default_value else "")
-        widget.setPlaceholderText("e.g., 0, 0.5 or 128,128")
+        widget.setPlaceholderText("e.g., 0, 0.5 or 128, 128")
+
+        # Regex for one or more numbers separated by commas/spaces
+        regex = QRegularExpression(r"^[-+]?[\d\.]+\s*(,\s*[-+]?[\d\.]+\s*)*$")
+        validator = QRegularExpressionValidator(regex, widget)
+        widget.setValidator(validator)
         return widget
 
     def _add_setting_widget(
@@ -1254,6 +1288,37 @@ class AnalysisPanel(QWidget):
 
         return text
 
+    def _validate_all_inputs(self):
+        """Validates all input widgets in the current settings panel.
+
+        Returns:
+            Tuple[bool, str]: (Is valid, Error message)
+        """
+        for param_name, widget in self.current_settings_widgets.items():
+            if isinstance(widget, QLineEdit) and param_name in [
+                "field",
+                "pupil",
+                "res",
+                "px_size",
+            ]:
+                # Check tuple logic (field, pupil, res, etc.)
+                val = self._get_value_from_lineedit(widget, param_name)
+                if val is None:
+                    return (
+                        False,
+                        f"Invalid '{param_name}'. Expected 'x, y' format.",
+                    )
+
+                # Range check for normalized coords
+                if param_name in ["field", "pupil"]:
+                    for v in val:
+                        if not (-1.0001 <= v <= 1.0001):
+                            return (
+                                False,
+                                f"'{param_name}' coord {v} outside [-1, 1].",
+                            )
+        return True, ""
+
     def _parse_cross_section(self, text):
         """Parses a cross-section string (e.g., 'cross-x, 128')."""
         parts = [p.strip() for p in text.split(",")]
@@ -1427,6 +1492,16 @@ class AnalysisPanel(QWidget):
         """
         optic = self.connector.get_optic()
         if not self._validate_system_for_analysis(optic):
+            return None
+
+        # Validate UI inputs (ranges, tuples, etc)
+        valid, error_msg = self._validate_all_inputs()
+        if not valid:
+            tm = getattr(self.connector, "toast_manager", None)
+            if tm:
+                tm.notify(error_msg, "error")
+            else:
+                QMessageBox.warning(self, "Invalid Input", error_msg)
             return None
 
         try:
