@@ -431,7 +431,7 @@ class LensEditor(QWidget):
     def _process_table_row(self, row_index):
         """Populates a single row in the lens data editor table."""
         self.tableWidget.setVerticalHeaderItem(
-            row_index, QTableWidgetItem(str(row_index + 1))
+            row_index, QTableWidgetItem(str(row_index))
         )
         for col_idx, header in enumerate(self.connector.get_column_headers()):
             self._process_table_cell(row_index, col_idx, header)

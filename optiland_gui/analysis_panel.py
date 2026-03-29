@@ -882,6 +882,7 @@ class AnalysisPanel(QWidget):
         """Creates and shows the right-click menu for a page button."""
         menu = QMenu()
         clone_action = menu.addAction("Clone Analysis")
+        remove_action = menu.addAction("Remove Analysis")
         undock_action = menu.addAction("Undock (WIP)")
         undock_action.setEnabled(False)
 
@@ -889,6 +890,8 @@ class AnalysisPanel(QWidget):
 
         if action == clone_action:
             self._clone_analysis_page(page_index)
+        elif action == remove_action:
+            self._remove_analysis_page(page_index)
 
     def _clone_analysis_page(self, page_index):
         """Clones an existing analysis page."""
@@ -912,6 +915,26 @@ class AnalysisPanel(QWidget):
         self.switch_plot_page(len(self.analysis_results_pages) - 1)
         self.logArea.append("Analysis cloned successfully.")
 
+    def _remove_analysis_page(self, page_index):
+        """Removes an analysis page from the analysis results."""
+        if 0 <= page_index < len(self.analysis_results_pages):
+            self.analysis_results_pages.pop(page_index)
+
+            # If the current page was removed, switch to the nearest available page
+            if self.current_plot_page_index == page_index:
+                if not self.analysis_results_pages:
+                    self.current_plot_page_index = -1
+                elif self.current_plot_page_index >= len(self.analysis_results_pages):
+                    self.current_plot_page_index = len(self.analysis_results_pages) - 1
+            # If a later page was removed, current_plot_page_index stays the same
+            # If an earlier page was removed, shift current_plot_page_index back 1
+            elif self.current_plot_page_index > page_index:
+                self.current_plot_page_index -= 1
+
+            self.update_pagination_ui()
+            self.display_plot_page(self.current_plot_page_index)
+            self.logArea.append("Analysis removed.")
+
     def resizeEvent(self, event):
         """Restarts a timer every time the window is resized."""
         super().resizeEvent(event)
@@ -934,9 +957,10 @@ class AnalysisPanel(QWidget):
             self.current_plot_page_index = page_index
             self.update_pagination_ui()
             self.display_plot_page(page_index)
+            page_data = self.analysis_results_pages[page_index]
             self.logArea.append(
                 f"Switched to page {page_index + 1}: "
-                "{page_data.get('name', 'Analysis')}"
+                f"{page_data.get('name', 'Analysis')}"
             )
         else:
             self.current_plot_page_index = -1

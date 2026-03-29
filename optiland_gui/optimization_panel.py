@@ -93,7 +93,7 @@ class AddVariableDialog(QDialog):
 
         # Surface number (always required for variables)
         self.spnSurface = QSpinBox(self)
-        self.spnSurface.setRange(1, 9999)
+        self.spnSurface.setRange(0, 9999)
         self.spnSurface.setValue(self._suggested_surface)
         self.top_form.addRow("Surface #:", self.spnSurface)
 
@@ -811,11 +811,11 @@ class OptimizationPanel(QWidget):
     @Slot()
     def _on_add_variable(self) -> None:
         """Open the Add Variable dialog from the panel button."""
-        self.open_add_variable_dialog(surface_index=1, suggested_type="radius")
+        self.open_add_variable_dialog(surface_index=0, suggested_type="radius")
 
     @Slot(int, str)
     def open_add_variable_dialog(
-        self, surface_index: int = 1, suggested_type: str = "radius"
+        self, surface_index: int = 0, suggested_type: str = "radius"
     ) -> None:
         """Open the AddVariableDialog pre-filled with the given values.
 
@@ -856,6 +856,7 @@ class OptimizationPanel(QWidget):
         variables = self.connector.get_optimization_variables()
         self.tblVariables.setRowCount(len(variables))
         for i, vd in enumerate(variables):
+            self.tblVariables.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
             cur_val = self.connector.get_variable_current_value(vd)
             cur_str = f"{cur_val:.4f}" if cur_val is not None else "N/A"
             coeff_str = (
@@ -922,6 +923,7 @@ class OptimizationPanel(QWidget):
         operands = self.connector.get_optimization_operands()
         self.tblOperands.setRowCount(len(operands))
         for i, od in enumerate(operands):
+            self.tblOperands.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
             cur_val = self.connector.get_operand_current_value(od)
             cur_str = f"{cur_val:.6f}" if cur_val is not None else "N/A"
             target_str = f"{od['target']:.6f}" if od.get("target") is not None else "—"

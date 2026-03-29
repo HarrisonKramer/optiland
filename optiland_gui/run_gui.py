@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import sys
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QLocale, QSize, Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QApplication, QSplashScreen
 
@@ -21,6 +21,7 @@ from .main_window import MainWindow
 def main():
     """Application entry point."""
     app = QApplication(sys.argv)
+    QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
     original_pixmap = QPixmap(":/images/logo.png")
     desired_size = QSize(700, 400)

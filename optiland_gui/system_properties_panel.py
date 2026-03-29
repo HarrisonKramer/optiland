@@ -322,6 +322,7 @@ class FieldsEditor(PropertyEditorBase):
             num_fields = optic.fields.num_fields
             self.tableFields.setRowCount(num_fields)
             for i, field_obj in enumerate(optic.fields.fields):
+                self.tableFields.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
                 self.tableFields.setItem(i, 0, QTableWidgetItem(str(field_obj.x)))
                 self.tableFields.setItem(i, 1, QTableWidgetItem(str(field_obj.y)))
                 self.tableFields.setItem(i, 2, QTableWidgetItem(str(field_obj.vx)))
@@ -483,6 +484,7 @@ class WavelengthsEditor(PropertyEditorBase):
             num_wl = optic.wavelengths.num_wavelengths
             self.tableWavelengths.setRowCount(num_wl)
             for i, wl_obj in enumerate(optic.wavelengths.wavelengths):
+                self.tableWavelengths.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
                 self.tableWavelengths.setItem(
                     i, 0, QTableWidgetItem(f"{wl_obj.value:.4f}")
                 )
