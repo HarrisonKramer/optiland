@@ -330,7 +330,7 @@ SURF 3
         zmx_path = tmp_path / "test_fwgn.zmx"
         zmx_path.write_text(zmx_content, encoding="utf-8")
 
-        from optiland.fileio.zemax_handler import load_zemax_file
+        from optiland.fileio import load_zemax_file
         optic = load_zemax_file(str(zmx_path))
 
         assert optic.fields.fields[0].weight == pytest.approx(3.0)
@@ -374,7 +374,7 @@ SURF 3
         zmx_path = tmp_path / "test_wavm.zmx"
         zmx_path.write_text(zmx_content, encoding="utf-8")
 
-        from optiland.fileio.zemax_handler import load_zemax_file
+        from optiland.fileio import load_zemax_file
         optic = load_zemax_file(str(zmx_path))
 
         # First WAVM line (0.55) should have weight=2.0

@@ -37,7 +37,9 @@ class ZemaxDataModel:
     name: str | None = None
     aperture: dict[str, Any] = field(default_factory=dict)
     fields: dict[str, Any] = field(default_factory=dict)
-    wavelengths: dict[str, Any] = field(default_factory=lambda: {"data": []})
+    wavelengths: dict[str, Any] = field(
+        default_factory=lambda: {"data": [], "weights": []}
+    )
     surfaces: dict[int, dict[str, Any]] = field(default_factory=dict)
     glass_catalogs: list[str] | None = None
     mode: str = "Sequential"

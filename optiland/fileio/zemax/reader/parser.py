@@ -294,18 +294,40 @@ class ZemaxDataParser:
 
     def _finalize_fields(self) -> None:
         """Deduplicate and sort fields by y-coordinate."""
-        if "x" in self.data_model.fields and "y" in self.data_model.fields:
-            unique_fields = set(
-                zip(
-                    self.data_model.fields["x"],
-                    self.data_model.fields["y"],
-                    strict=False,
-                )
-            )
-            sorted_fields = sorted(unique_fields, key=lambda f: f[1])
-            xs, ys = zip(*sorted_fields, strict=False)
-            self.data_model.fields["x"] = xs
-            self.data_model.fields["y"] = ys
+        fields = self.data_model.fields
+        if "x" not in fields or "y" not in fields:
+            return
+
+        keys = ["x", "y"]
+        for extra in [
+            "weights",
+            "vignette_decenter_x",
+            "vignette_decenter_y",
+            "vignette_compress_x",
+            "vignette_compress_y",
+            "vignette_tangent_angle",
+        ]:
+            if extra in fields:
+                keys.append(extra)
+
+        zipped = list(zip(*(fields[k] for k in keys), strict=False))
+
+        seen = set()
+        unique = []
+        for item in zipped:
+            xy = item[:2]
+            if xy not in seen:
+                seen.add(xy)
+                unique.append(item)
+
+        sorted_items = sorted(unique, key=lambda it: it[1])
+
+        if not sorted_items:
+            return
+
+        unzipped = list(zip(*sorted_items, strict=False))
+        for i, k in enumerate(keys):
+            fields[k] = list(unzipped[i])
 
     def _finalize_surface(self) -> None:
         """Flush the last in-progress surface into the model."""
