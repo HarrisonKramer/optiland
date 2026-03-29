@@ -701,7 +701,7 @@ QHeaderView::section:hover {
 /* Dock widget grip affordance — 2×3 dot pattern on the title bar */
 QDockWidget::title {
     padding-left: 20px;
-    background-image: url("data:image/png;base64,");  /* placeholder; real grip via subcontrol */
+    /* background-image: url("data:image/png;base64,"); */ /* placeholder; real grip via subcontrol */
 }
 
 /* Global focus indicator — accent border instead of dotted rectangle */

@@ -10,18 +10,26 @@ Authors:
 
 from __future__ import annotations
 
+import ctypes
 import sys
 
 from PySide6.QtCore import QLocale, QSize, Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import QApplication, QSplashScreen
 
+from .config import APPLICATION_NAME, OPTILAND_ICON_PATH, ORGANIZATION_NAME
 from .main_window import MainWindow
+from .resources import resources_rc  # noqa: F401
 
 
 def main() -> None:
     """Application entry point."""
+    if sys.platform == "win32":
+        myappid = f"{ORGANIZATION_NAME}.{APPLICATION_NAME}.1.0"
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(OPTILAND_ICON_PATH))
     QLocale.setDefault(QLocale(QLocale.Language.English, QLocale.Country.UnitedStates))
 
     original_pixmap = QPixmap(":/images/logo.png")

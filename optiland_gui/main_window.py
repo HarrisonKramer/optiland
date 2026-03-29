@@ -25,7 +25,7 @@ from PySide6.QtCore import (
     Qt,
     Slot,
 )
-from PySide6.QtGui import QAction, QKeySequence, QResizeEvent, QShortcut
+from PySide6.QtGui import QAction, QIcon, QKeySequence, QResizeEvent, QShortcut
 from PySide6.QtWidgets import (
     QDialog,
     QDockWidget,
@@ -47,6 +47,7 @@ from . import gui_plot_utils
 from .action_manager import ActionManager
 from .config import (
     APPLICATION_NAME,
+    OPTILAND_ICON_PATH,
     ORGANIZATION_NAME,
     SIDEBAR_QSS_PATH,
     THEME_DARK_PATH,
@@ -185,6 +186,7 @@ class MainWindow(FramelessWindow):
     def _configure_window(self):
         """Sets up the main window's flags, title, and geometry."""
         self.setWindowTitle("Optiland GUI")
+        self.setWindowIcon(QIcon(OPTILAND_ICON_PATH))
         self.setGeometry(100, 100, 1600, 900)
 
     def _init_core_components(self):

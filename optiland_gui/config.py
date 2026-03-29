@@ -16,6 +16,9 @@ STYLES_DIR = os.path.join(RESOURCES_DIR, "styles")
 THEME_DARK_PATH = os.path.join(STYLES_DIR, "dark_theme.qss")
 THEME_LIGHT_PATH = os.path.join(STYLES_DIR, "light_theme.qss")
 SIDEBAR_QSS_PATH = os.path.join(STYLES_DIR, "sidebar.qss")
+ICONS_DIR = os.path.join(RESOURCES_DIR, "icons")
+OPTILAND_ICON_PATH = ":/icons/optiland_icon.png"
+
 
 # --- Application Info ---
 ORGANIZATION_NAME = "OptilandProject"
