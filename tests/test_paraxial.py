@@ -922,29 +922,29 @@ def test_thick_mirror(n1, n2, n3, r1, r2, rm, d1, d2):
     thick_mirror = ThickMirror(thick_lens, mirror, d2)
     lens = Optic()
 
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n1)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=1, radius=r1, thickness=d1, is_stop=True, material=IdealMaterial(n2)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=2, radius=r2, thickness=d2, is_stop=False, material=IdealMaterial(n3)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=3, radius=rm, thickness=-d2, is_stop=False, material="mirror"
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=4, radius=r2, thickness=-d1, is_stop=False, material=IdealMaterial(n2)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=5, radius=r1, thickness=0.0, is_stop=False, material=IdealMaterial(n1)
     )
-    lens.add_surface(index=lens.surface_group.num_surfaces, material=IdealMaterial(n1))
+    lens.surfaces.add(index=lens.surfaces.num_surfaces, material=IdealMaterial(n1))
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
-    lens.add_field(0.0)
-    lens.set_field_type("angle")
-    lens.add_wavelength(value=0.55, is_primary=True)
+    lens.fields.add(0.0)
+    lens.fields.set_type("angle")
+    lens.wavelengths.add(value=0.55, is_primary=True)
 
     # Adjust sign to account for sign convention in source:
     assert -n1 / thick_mirror.P == pytest.approx(lens.paraxial.f2())
@@ -959,10 +959,10 @@ def test_mirrored_lens(n1, n2, f, d, set_test_backend):
     the same results as an unfolded lens system, with the exception of sign swaps"""
     cl = CompoundLens(n1, n2, n1, f, f, 2 * d)
     lens = Optic()
-    lens.add_surface(
+    lens.surfaces.add(
         index=0, radius=be.inf, thickness=be.inf, material=IdealMaterial(n1)
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=1,
         surface_type="paraxial",
         f=f,
@@ -970,7 +970,7 @@ def test_mirrored_lens(n1, n2, f, d, set_test_backend):
         material=IdealMaterial(n2),
         is_stop=True,
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=2,
         surface_type="paraxial",
         material="mirror",
@@ -978,7 +978,7 @@ def test_mirrored_lens(n1, n2, f, d, set_test_backend):
         thickness=-d,
         is_stop=False,
     )
-    lens.add_surface(
+    lens.surfaces.add(
         index=3,
         surface_type="paraxial",
         f=-f,
@@ -987,10 +987,10 @@ def test_mirrored_lens(n1, n2, f, d, set_test_backend):
         is_stop=False,
     )
 
-    lens.add_surface(index=4, material=IdealMaterial(n1))
-    lens.add_wavelength(value=0.55, is_primary=True)
-    lens.add_field(y=0)
-    lens.set_field_type(field_type="angle")
+    lens.surfaces.add(index=4, material=IdealMaterial(n1))
+    lens.wavelengths.add(value=0.55, is_primary=True)
+    lens.fields.add(y=0)
+    lens.fields.set_type(field_type="angle")
     lens.set_aperture(aperture_type="float_by_stop_size", value=5)
     px = lens.paraxial
     assert_allclose(
@@ -1251,24 +1251,22 @@ def test_equivalence(paraxial_surfaces, real_surfaces, set_test_backend):
     paraxial_lens = Optic()
 
     for surface_args in paraxial_surfaces:
-        paraxial_lens.add_surface(
-            index=paraxial_lens.surface_group.num_surfaces, **surface_args
+        paraxial_lens.surfaces.add(
+            index=paraxial_lens.surfaces.num_surfaces, **surface_args
         )
 
-    paraxial_lens.add_wavelength(value=0.55, is_primary=True)
-    paraxial_lens.add_field(y=0)
-    paraxial_lens.set_field_type(field_type="angle")
+    paraxial_lens.wavelengths.add(value=0.55, is_primary=True)
+    paraxial_lens.fields.add(y=0)
+    paraxial_lens.fields.set_type(field_type="angle")
     paraxial_lens.set_aperture(aperture_type="float_by_stop_size", value=5)
 
     real_lens = Optic()
     for surface_args in real_surfaces:
-        real_lens.add_surface(
-            index=real_lens.surface_group.num_surfaces, **surface_args
-        )
+        real_lens.surfaces.add(index=real_lens.surfaces.num_surfaces, **surface_args)
 
-    real_lens.add_wavelength(value=0.55, is_primary=True)
-    real_lens.add_field(y=0)
-    real_lens.set_field_type(field_type="angle")
+    real_lens.wavelengths.add(value=0.55, is_primary=True)
+    real_lens.fields.add(y=0)
+    real_lens.fields.set_type(field_type="angle")
     real_lens.set_aperture(aperture_type="float_by_stop_size", value=5)
 
     assert_allclose(
