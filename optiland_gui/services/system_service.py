@@ -110,10 +110,10 @@ class SystemService:
         if optic is None:
             return
         if mode == "ignore":
-            optic.set_polarization("ignore")
+            optic.updater.set_polarization("ignore")
         elif mode == "unpolarized":
             state = PolarizationState(is_polarized=False)
-            optic.set_polarization(state)
+            optic.updater.set_polarization(state)
         elif mode == "polarized":
             if None in (Ex, Ey, phase_x_deg, phase_y_deg):
                 raise ValueError(
@@ -128,7 +128,7 @@ class SystemService:
                 phase_x=phase_x,
                 phase_y=phase_y,
             )
-            optic.set_polarization(state)
+            optic.updater.set_polarization(state)
         else:
             raise ValueError(f"Unknown polarization mode: {mode}")
         self._connector.opticChanged.emit()

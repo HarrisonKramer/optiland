@@ -354,6 +354,7 @@ class OptimizationService:
             "method": {
                 "type": "choice",
                 "options": [
+                    "Default",
                     "Nelder-Mead",
                     "Powell",
                     "CG",
@@ -364,7 +365,7 @@ class OptimizationService:
                     "SLSQP",
                     "trust-constr",
                 ],
-                "default": "SLSQP",
+                "default": "Default",
             },
             "maxiter": {"type": "int", "default": 1000},
             "tol": {"type": "float", "default": 1e-3, "decimals": 6},
@@ -509,6 +510,14 @@ class OptimizationService:
         if 0 <= index < len(self._operands):
             self._operands[index] = dict(op_dict)
 
+    def _resolve_wavelength(self, wave_val: str | float) -> float | str:
+        """Resolve 'primary' to the actual wavelength float."""
+        if wave_val == "primary":
+            optic = self._connector._optic
+            if optic is not None:
+                return float(optic.primary_wavelength)
+        return wave_val
+
     def get_operand_current_value(self, op_dict: dict) -> float | None:
         """Read the current physical value for an operand from the live optic."""
         optic = self._connector._optic
@@ -519,12 +528,21 @@ class OptimizationService:
 
             input_data_val = op_dict.get("input_data")
             if isinstance(input_data_val, dict):
-                extra_data = input_data_val
+                extra_data = dict(input_data_val)
             else:
                 try:
                     extra_data = json.loads(op_dict.get("input_data_str") or "{}")
                 except json.JSONDecodeError:
                     extra_data = {}
+
+            op_dict.get("category", "General")
+            op_meta = self.OPERAND_METADATA.get(op_dict["type"], {})
+            if (
+                "wavelength" in op_meta
+                and extra_data.get("wavelength", "primary") == "primary"
+            ):
+                extra_data["wavelength"] = self._resolve_wavelength("primary")
+
             input_data = {"optic": optic, **extra_data}
             op_inst = Operand(operand_type=op_dict["type"], input_data=input_data)
             return float(op_inst.value)
@@ -630,12 +648,23 @@ class OptimizationService:
         for od in self._operands:
             input_data_val = od.get("input_data")
             if isinstance(input_data_val, dict):
-                extra_data = input_data_val
+                extra_data = dict(input_data_val)
             else:
                 try:
                     extra_data = json.loads(od.get("input_data_str") or "{}")
                 except json.JSONDecodeError:
                     extra_data = {}
+
+            # Resolve 'primary' wavelength if it's explicitly 'primary' or
+            # if it's missing but the operand expects it (defaulting to primary).
+            od.get("category", "General")
+            op_meta = self.OPERAND_METADATA.get(od["type"], {})
+            if (
+                "wavelength" in op_meta
+                and extra_data.get("wavelength", "primary") == "primary"
+            ):
+                extra_data["wavelength"] = self._resolve_wavelength("primary")
+
             input_data = {"optic": optic, **extra_data}
             try:
                 problem.add_operand(
@@ -675,7 +704,7 @@ class OptimizationService:
         class ScipyMethod(base_cls):  # type: ignore[valid-type]
             def optimize(self, maxiter=1000, disp=True, tol=1e-3, callback=None):
                 return super().optimize(
-                    method=method,
+                    method=None if method == "Default" else method,
                     maxiter=maxiter,
                     disp=disp,
                     tol=tol,

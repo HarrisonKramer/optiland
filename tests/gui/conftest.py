@@ -27,25 +27,25 @@ def minimal_optic():
     from optiland.optic import Optic
 
     optic = Optic()
-    optic.add_surface(index=0, radius=be.inf, thickness=be.inf)
-    optic.add_surface(
+    optic.surfaces.add(index=0, radius=be.inf, thickness=be.inf)
+    optic.surfaces.add(
         index=1,
         radius=50.0,
         thickness=5.0,
         material="N-BK7",
         is_stop=False,
     )
-    optic.add_surface(
+    optic.surfaces.add(
         index=2,
         radius=-50.0,
         thickness=45.0,
         is_stop=True,
     )
-    optic.add_surface(index=3, radius=be.inf, thickness=0.0)
+    optic.surfaces.add(index=3, radius=be.inf, thickness=0.0)
 
     optic.set_aperture(aperture_type="EPD", value=10.0)
-    optic.set_field_type("angle")
-    optic.add_field(y=0.0)
-    optic.add_wavelength(value=0.55, is_primary=True)
-    optic.update()
+    optic.fields.set_type("angle")
+    optic.fields.add(y=0.0)
+    optic.wavelengths.add(value=0.55, is_primary=True)
+    optic.updater.update()
     return optic

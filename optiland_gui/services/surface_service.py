@@ -99,7 +99,7 @@ class SurfaceService:
         if not (0 <= row < self.get_surface_count()):
             return headers
 
-        surface = self._connector._optic.surface_group.surfaces[row]
+        surface = self._connector._optic.surfaces.surfaces[row]
         if surface.surface_type == "paraxial":
             headers[c.COL_RADIUS] = "Focal Length"
             headers[c.COL_CONIC] = "N/A"
@@ -122,7 +122,7 @@ class SurfaceService:
             The surface count, or ``0`` if no optic is available.
         """
         optic = self._connector._optic
-        return optic.surface_group.num_surfaces if optic and optic.surface_group else 0
+        return optic.surfaces.num_surfaces if optic and optic.surfaces else 0
 
     def get_geometry_types(self) -> list[str]:
         """Return all geometry type keys registered with :class:`GeometryFactory`.
@@ -159,7 +159,7 @@ class SurfaceService:
         """
         if not (0 <= row < self.get_surface_count()):
             return {"display_text": "Error", "is_changeable": False}
-        surface = self._connector._optic.surface_group.surfaces[row]
+        surface = self._connector._optic.surfaces.surfaces[row]
         if row == 0:
             return {"display_text": "Object", "is_changeable": False}
         if row == self.get_surface_count() - 1:
@@ -197,7 +197,7 @@ class SurfaceService:
             optic.wavelengths.wavelengths[0].is_primary = True
             return optic.wavelengths.wavelengths[0].value
         optic.wavelengths.add(default, is_primary=True, unit="um")
-        optic.update()
+        optic.updater.update()
         return default
 
     def _get_material_data(self, surface: object) -> str:
@@ -284,9 +284,9 @@ class SurfaceService:
             A formatted thickness string, or ``"N/A"``.
         """
         optic = self._connector._optic
-        row = optic.surface_group.surfaces.index(surface)
+        row = optic.surfaces.surfaces.index(surface)
         if row < self.get_surface_count() - 1:
-            t = optic.surface_group.get_thickness(row)
+            t = optic.surfaces.get_thickness(row)
             return f"{float(t[0]):.4f}" if t is not None and len(t) > 0 else "N/A"
         return "N/A"
 
@@ -307,7 +307,7 @@ class SurfaceService:
         if not (0 <= row < self.get_surface_count()):
             return None
         c = self._connector
-        surface = c._optic.surface_group.surfaces[row]
+        surface = c._optic.surfaces.surfaces[row]
         column_handlers = {
             c.COL_TYPE: lambda s: self.get_surface_type_info(row)["display_text"],
             c.COL_COMMENT: lambda s: s.comment,
@@ -359,9 +359,9 @@ class SurfaceService:
                     surface.material_post = OptilandMaterial(name=str(value).strip())
 
         optic = self._connector._optic
-        row = optic.surface_group.surfaces.index(surface)
+        row = optic.surfaces.surfaces.index(surface)
         if row + 1 < self.get_surface_count():
-            next_surface = optic.surface_group.surfaces[row + 1]
+            next_surface = optic.surfaces.surfaces[row + 1]
             next_surface.material_pre = surface.material_post
 
     def _set_thickness_data(self, surface: object, value: str) -> None:
@@ -372,7 +372,7 @@ class SurfaceService:
             value: New thickness as a string-encoded float.
         """
         optic = self._connector._optic
-        row = optic.surface_group.surfaces.index(surface)
+        row = optic.surfaces.surfaces.index(surface)
         if row < self.get_surface_count() - 1:
             optic.updater.set_thickness(float(value), row)
 
@@ -406,7 +406,7 @@ class SurfaceService:
             surface.geometry.cy = 1.0 / val if val != 0 else 0.0
         else:
             optic = self._connector._optic
-            row = optic.surface_group.surfaces.index(surface)
+            row = optic.surfaces.surfaces.index(surface)
             optic.updater.set_radius(val, row)
 
     def _set_dynamic_conic_data(self, surface: object, value: str) -> None:
@@ -425,7 +425,7 @@ class SurfaceService:
             surface.geometry.ky = be.array(val)
         elif hasattr(surface.geometry, "k"):
             optic = self._connector._optic
-            row = optic.surface_group.surfaces.index(surface)
+            row = optic.surfaces.surfaces.index(surface)
             optic.updater.set_conic(val, row)
 
     # ------------------------------------------------------------------
@@ -448,7 +448,7 @@ class SurfaceService:
         old_state = self._connector._capture_optic_state()
         try:
             c = self._connector
-            surface = c._optic.surface_group.surfaces[row]
+            surface = c._optic.surfaces.surfaces[row]
             handler_map = {
                 c.COL_COMMENT: self._set_comment_data,
                 c.COL_MATERIAL: self._set_material_data,
@@ -460,7 +460,7 @@ class SurfaceService:
             handler = handler_map.get(col_idx)
             if handler:
                 handler(surface, value_str)
-            c._optic.update()
+            c._optic.updater.update()
             c._undo_redo_manager.add_state(old_state)
             c.set_modified(True)
             c.opticChanged.emit()
@@ -490,7 +490,7 @@ class SurfaceService:
 
         old_state = self._connector._capture_optic_state()
         try:
-            surface = self._connector._optic.surface_group.surfaces[row]
+            surface = self._connector._optic.surfaces.surfaces[row]
             old_geo = surface.geometry
 
             config_kwargs = {
@@ -521,7 +521,7 @@ class SurfaceService:
             if new_type == "paraxial" and not hasattr(surface, "f"):
                 surface.f = float("inf")
 
-            self._connector._optic.update()
+            self._connector._optic.updater.update()
             self._connector._undo_redo_manager.add_state(old_state)
             self._connector.set_modified(True)
             self._connector.opticChanged.emit()
@@ -551,7 +551,7 @@ class SurfaceService:
             comment="New Surface",
             index=insert_idx,
         )
-        self._connector._optic.update()
+        self._connector._optic.updater.update()
         self._connector._undo_redo_manager.add_state(old_state)
         self._connector.set_modified(True)
         self._connector.opticChanged.emit()
@@ -570,8 +570,8 @@ class SurfaceService:
 
         old_state = self._connector._capture_optic_state()
         try:
-            self._connector._optic.surface_group.remove(lde_row_index)
-            self._connector._optic.update()
+            self._connector._optic.surfaces.remove(lde_row_index)
+            self._connector._optic.updater.update()
             self._connector._undo_redo_manager.add_state(old_state)
             self._connector.set_modified(True)
             self._connector.opticChanged.emit()
@@ -719,7 +719,7 @@ class SurfaceService:
         """
         if not (0 < row < self.get_surface_count() - 1):
             return {}
-        surface = self._connector._optic.surface_group.surfaces[row]
+        surface = self._connector._optic.surfaces.surfaces[row]
         geometry = surface.geometry
         geo_class_name = geometry.__class__.__name__
 
@@ -748,7 +748,7 @@ class SurfaceService:
 
         old_state = self._connector._capture_optic_state()
         try:
-            surface = self._connector._optic.surface_group.surfaces[row]
+            surface = self._connector._optic.surfaces.surfaces[row]
             geometry = surface.geometry
             geo_class_name = geometry.__class__.__name__
 
@@ -773,7 +773,7 @@ class SurfaceService:
                         except (ValueError, SyntaxError):
                             continue
 
-            self._connector._optic.update()
+            self._connector._optic.updater.update()
             self._connector._undo_redo_manager.add_state(old_state)
             self._connector.set_modified(True)
             self._connector.opticChanged.emit()

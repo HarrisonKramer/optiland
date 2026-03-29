@@ -140,7 +140,7 @@ class OptilandConnector(QObject):
         Args:
             optic: The optic to initialise.
         """
-        optic.surface_group.clear()
+        optic.surfaces.clear()
         optic.wavelengths.wavelengths.clear()
         optic.surfaces.add(
             index=0,
@@ -178,8 +178,8 @@ class OptilandConnector(QObject):
         Args:
             optic: The optic to validate and repair if necessary.
         """
-        if optic.surface_group.num_surfaces < 2:
-            optic.surface_group.clear()
+        if optic.surfaces.num_surfaces < 2:
+            optic.surfaces.clear()
             optic.surfaces.add(
                 surface_type="standard",
                 radius=float("inf"),
@@ -224,7 +224,7 @@ class OptilandConnector(QObject):
             self._create_new_optic_structure(optic_instance)
         else:
             self._ensure_valid_optic_structure(optic_instance)
-        optic_instance.update()
+        optic_instance.updater.update()
 
     def _capture_optic_state(self) -> dict:
         """Serialise the current optic state for undo/redo.
@@ -241,7 +241,7 @@ class OptilandConnector(QObject):
             and self._optic.wavelengths.num_wavelengths > 0
         ):
             self._optic.wavelengths.wavelengths[0].is_primary = True
-        self._optic.update()
+        self._optic.updater.update()
         return self._optic.to_dict()
 
     def _restore_optic_state(self, state_data: dict) -> None:
