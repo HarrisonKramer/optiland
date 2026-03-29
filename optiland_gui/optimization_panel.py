@@ -25,7 +25,10 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListWidget,
+    QListWidgetItem,
     QPushButton,
+    QRadioButton,
     QScrollArea,
     QSpinBox,
     QSplitter,
@@ -483,6 +486,147 @@ class AddOperandDialog(QDialog):
         }
 
 
+class AutoGenerateOperandsDialog(QDialog):
+    """Dialog for batch-generating image quality operands.
+
+    Args:
+        connector: The :class:`~optiland_gui.optiland_connector.OptilandConnector`.
+        parent: Parent widget.
+    """
+
+    def __init__(
+        self,
+        connector: OptilandConnector,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Auto-Generate Image Quality Operands")
+        self.setMinimumWidth(500)
+        self._connector = connector
+
+        layout = QVBoxLayout(self)
+
+        # Selection Group (Fields & Wavelengths)
+        selection_layout = QHBoxLayout()
+
+        # Fields
+        field_group = QGroupBox("Fields")
+        field_vbox = QVBoxLayout(field_group)
+        self.listFields = QListWidget()
+        optic = connector.get_optic()
+        if optic:
+            field_coords = optic.fields.get_field_coords()
+            for i, (hx, hy) in enumerate(field_coords):
+                display_name = f"Field {i + 1}: ({hx:.3f}, {hy:.3f})"
+                item = QListWidgetItem(display_name)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                item.setCheckState(Qt.Checked)
+                item.setData(Qt.UserRole, (hx, hy))
+                self.listFields.addItem(item)
+        field_vbox.addWidget(self.listFields)
+        selection_layout.addWidget(field_group)
+
+        # Wavelengths
+        wave_group = QGroupBox("Wavelengths")
+        wave_vbox = QVBoxLayout(wave_group)
+        self.listWaves = QListWidget()
+        if optic:
+            wavelength_values = optic.wavelengths.get_wavelengths()
+            for wl in wavelength_values:
+                display_name = f"{wl:.4f} µm"
+                item = QListWidgetItem(display_name)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                item.setCheckState(Qt.Checked)
+                item.setData(Qt.UserRole, wl)
+                self.listWaves.addItem(item)
+        wave_vbox.addWidget(self.listWaves)
+        selection_layout.addWidget(wave_group)
+
+        layout.addLayout(selection_layout)
+
+        # Metric Group
+        metric_group = QGroupBox("Target Metric")
+        metric_hbox = QHBoxLayout(metric_group)
+        self.radRMS = QRadioButton("RMS Spot Size")
+        self.radOPD = QRadioButton("Optical Path Difference (OPD)")
+        self.radRMS.setChecked(True)
+        metric_hbox.addWidget(self.radRMS)
+        metric_hbox.addWidget(self.radOPD)
+        layout.addWidget(metric_group)
+
+        # Parameters Form
+        params_group = QGroupBox("Parameters")
+        self.form_layout = QFormLayout(params_group)
+
+        self.spnRays = QSpinBox()
+        self.spnRays.setRange(1, 100)
+        self.spnRays.setValue(3)
+        self.form_layout.addRow("Number of Rays:", self.spnRays)
+
+        self.cmbDist = QComboBox()
+        self.form_layout.addRow("Distribution:", self.cmbDist)
+
+        self.spnTarget = QDoubleSpinBox()
+        self.spnTarget.setDecimals(6)
+        self.spnTarget.setRange(-1e9, 1e9)
+        self.spnTarget.setValue(0.0)
+        self.form_layout.addRow("Target:", self.spnTarget)
+
+        self.spnWeight = QDoubleSpinBox()
+        self.spnWeight.setDecimals(4)
+        self.spnWeight.setRange(0.0, 1e9)
+        self.spnWeight.setValue(1.0)
+        self.form_layout.addRow("Weight:", self.spnWeight)
+
+        layout.addWidget(params_group)
+
+        # Signals
+        self.radRMS.toggled.connect(self._update_distributions)
+        self.radOPD.toggled.connect(self._update_distributions)
+
+        # Initial distributions
+        self._update_distributions()
+
+        # Buttons
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self
+        )
+        buttons.button(QDialogButtonBox.Ok).setText("Generate")
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def _update_distributions(self) -> None:
+        self.cmbDist.clear()
+        if self.radRMS.isChecked():
+            self.cmbDist.addItems(["hexapolar", "grid", "uniform", "random"])
+        else:
+            self.cmbDist.addItems(["gaussian_quad", "hexapolar", "grid"])
+
+    def get_selection(self) -> dict:
+        fields = []
+        for i in range(self.listFields.count()):
+            item = self.listFields.item(i)
+            if item.checkState() == Qt.Checked:
+                fields.append(item.data(Qt.UserRole))
+
+        waves = []
+        for i in range(self.listWaves.count()):
+            item = self.listWaves.item(i)
+            if item.checkState() == Qt.Checked:
+                waves.append(item.data(Qt.UserRole))
+
+        return {
+            "fields": fields,
+            "wavelengths": waves,
+            "metric": "rms_spot_size" if self.radRMS.isChecked() else "OPD_difference",
+            "num_rays": self.spnRays.value(),
+            "distribution": self.cmbDist.currentText(),
+            "target": self.spnTarget.value(),
+            "weight": self.spnWeight.value(),
+        }
+
+
 # ---------------------------------------------------------------------------
 # Main panel
 # ---------------------------------------------------------------------------
@@ -621,6 +765,7 @@ class OptimizationPanel(QWidget):
 
         btn_layout = QHBoxLayout()
         self.btnAddOperand = QPushButton("+ Add Operand")
+        self.btnAutoGenerateOperands = QPushButton("Auto-Generate")
         self.btnRemoveOperand = QPushButton("- Remove Selected")
         self.btnRefreshOperands = QPushButton()
         self.btnRefreshOperands.setToolTip("Refresh current values")
@@ -628,6 +773,7 @@ class OptimizationPanel(QWidget):
         self.btnRefreshOperands.setIcon(QIcon(":/icons/dark/refresh.svg"))
 
         btn_layout.addWidget(self.btnAddOperand)
+        btn_layout.addWidget(self.btnAutoGenerateOperands)
         btn_layout.addWidget(self.btnRemoveOperand)
         btn_layout.addWidget(self.btnRefreshOperands)
         btn_layout.addStretch()
@@ -788,6 +934,7 @@ class OptimizationPanel(QWidget):
         self.tblVariables.itemDoubleClicked.connect(self._on_variable_double_clicked)
 
         self.btnAddOperand.clicked.connect(self._on_add_operand)
+        self.btnAutoGenerateOperands.clicked.connect(self._on_auto_generate_operands)
         self.btnRemoveOperand.clicked.connect(self._on_remove_operand)
         self.btnRefreshOperands.clicked.connect(self._refresh_operands_current_values)
         self.tblOperands.itemDoubleClicked.connect(self._on_operand_double_clicked)
@@ -895,6 +1042,45 @@ class OptimizationPanel(QWidget):
         dlg = AddOperandDialog(self.connector, parent=self)
         if dlg.exec() == QDialog.Accepted:
             self.connector.add_optimization_operand(dlg.get_operand_dict())
+            self._refresh_operands_table()
+
+    @Slot()
+    def _on_auto_generate_operands(self) -> None:
+        """Open the auto-generate operands dialog and process results."""
+        dialog = AutoGenerateOperandsDialog(self.connector, self)
+        if dialog.exec() == QDialog.Accepted:
+            selection = dialog.get_selection()
+            fields = selection["fields"]
+            waves = selection["wavelengths"]
+            metric = selection["metric"]
+            num_rays = selection["num_rays"]
+            dist = selection["distribution"]
+            target = selection["target"]
+            weight = selection["weight"]
+
+            last_surface = self.connector.get_surface_count() - 1
+
+            for hx, hy in fields:
+                for wl in waves:
+                    input_data = {
+                        "Hx": hx,
+                        "Hy": hy,
+                        "num_rays": num_rays,
+                        "wavelength": wl,
+                        "distribution": dist,
+                    }
+                    if metric == "rms_spot_size":
+                        input_data["surface_number"] = last_surface
+
+                    op_dict = {
+                        "type": metric,
+                        "category": "Ray",
+                        "target": target,
+                        "weight": weight,
+                        "input_data": input_data,
+                    }
+                    self.connector.add_optimization_operand(op_dict)
+
             self._refresh_operands_table()
 
     @Slot()
