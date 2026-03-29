@@ -534,12 +534,13 @@ class OptilandConnector(QObject):
         self.optimizationVariablesChanged.emit()
 
     def get_optimization_variables(self) -> list[dict]:
-        """Return the current list of optimization variable descriptors.
-
-        Returns:
-            A shallow copy of the variable list.
-        """
+        """Return the current list of optimization variable descriptors."""
         return self._optimization_service.get_variables()
+
+    def set_optimization_variable(self, index: int, var_dict: dict) -> None:
+        """Replace an optimization variable at *index*."""
+        self._optimization_service.set_variable(index, var_dict)
+        self.optimizationVariablesChanged.emit()
 
     def get_variable_current_value(self, var_dict: dict) -> float | None:
         """Return the live optic value for a variable descriptor.
@@ -569,12 +570,16 @@ class OptilandConnector(QObject):
         self._optimization_service.remove_operand(index)
 
     def get_optimization_operands(self) -> list[dict]:
-        """Return the current list of optimization operand descriptors.
-
-        Returns:
-            A shallow copy of the operand list.
-        """
+        """Return the current list of optimization operand descriptors."""
         return self._optimization_service.get_operands()
+
+    def set_optimization_operand(self, index: int, op_dict: dict) -> None:
+        """Replace an optimization operand at *index*."""
+        self._optimization_service.set_operand(index, op_dict)
+
+    def get_operand_current_value(self, op_dict: dict) -> float | None:
+        """Return the live optic value for an operand descriptor."""
+        return self._optimization_service.get_operand_current_value(op_dict)
 
     def get_optimizer_catalog(self) -> list[tuple[str, type]]:
         """Return available optimizer classes as (display_name, cls) tuples.
@@ -600,6 +605,17 @@ class OptilandConnector(QObject):
         """
         return self._optimization_service.COMMON_VARIABLE_TYPES
 
+    def get_variable_metadata(self, var_type: str) -> dict:
+        """Return graphical configuration metadata for a variable type.
+
+        Args:
+            var_type: Variable type key.
+
+        Returns:
+            Dict of parameter metadata names and their default values/types.
+        """
+        return self._optimization_service.get_variable_metadata(var_type)
+
     def get_default_operand_input_data_str(self, op_type: str) -> str:
         """Return the default JSON input_data string for an operand type.
 
@@ -612,20 +628,42 @@ class OptilandConnector(QObject):
         return self._optimization_service.get_default_input_data_str(op_type)
 
     def validate_operand_input_data(
-        self, op_type: str, input_data_str: str
+        self, op_type: str, input_data: str | dict | None
     ) -> str | None:
-        """Validate that *input_data_str* contains required keys for *op_type*.
+        """Validate that *input_data* contains required keys for *op_type*.
 
         Args:
             op_type: Operand type key.
-            input_data_str: JSON string of extra parameters.
+            input_data: JSON string or dict of extra parameters.
 
         Returns:
             An error message string if validation fails, or ``None`` if valid.
         """
         return self._optimization_service.validate_operand_input_data(
-            op_type, input_data_str
+            op_type, input_data
         )
+
+    def get_operand_metadata(self, op_type: str) -> dict:
+        """Return graphical configuration metadata for an operand type.
+
+        Args:
+            op_type: Operand type key.
+
+        Returns:
+            Dict of parameter metadata names and their default values/types.
+        """
+        return self._optimization_service.get_operand_metadata(op_type)
+
+    def get_optimizer_metadata(self, optimizer_cls: type) -> dict:
+        """Return optimization parameter metadata for an optimizer class.
+
+        Args:
+            optimizer_cls: The optimizer class.
+
+        Returns:
+            Dict of parameter metadata.
+        """
+        return self._optimization_service.get_optimizer_metadata(optimizer_cls)
 
     def get_optimizer_groups(self) -> dict:
         """Return optimisers organised into Local/Global groups.

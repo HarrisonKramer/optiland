@@ -10,10 +10,10 @@ Author: Manuel Fragata Mendes / Kramer Harrison, 2025
 
 from __future__ import annotations
 
-import inspect
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -61,50 +61,77 @@ class AddVariableDialog(QDialog):
         connector: OptilandConnector,
         surface_index: int = 1,
         suggested_type: str = "radius",
+        initial_vd: dict | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Add Optimization Variable")
-        self.setMinimumWidth(340)
+        self.setWindowTitle(
+            "Add Optimization Variable"
+            if not initial_vd
+            else "Edit Optimization Variable"
+        )
+        self.setMinimumWidth(380)
         self._connector = connector
+        self._suggested_surface = surface_index
+        if initial_vd:
+            self._suggested_surface = initial_vd.get("surface_number", surface_index)
+            suggested_type = initial_vd.get("type", suggested_type)
+
+        self._param_widgets: dict[str, QWidget] = {}
+        self._dynamic_rows: list[int] = []
 
         layout = QVBoxLayout(self)
-        form = QFormLayout()
-        form.setSpacing(8)
+        self.top_form = QFormLayout()
+        self.dynamic_form = QFormLayout()
+        self.bottom_form = QFormLayout()
+        for f in [self.top_form, self.dynamic_form, self.bottom_form]:
+            f.setSpacing(8)
 
-        # Surface number
-        self.spnSurface = QSpinBox()
-        self.spnSurface.setRange(1, 999)
-        self.spnSurface.setValue(max(1, surface_index))
-        form.addRow("Surface #:", self.spnSurface)
+        layout.addLayout(self.top_form)
+        layout.addLayout(self.dynamic_form)
+        layout.addLayout(self.bottom_form)
+
+        # Surface number (always required for variables)
+        self.spnSurface = QSpinBox(self)
+        self.spnSurface.setRange(1, 9999)
+        self.spnSurface.setValue(self._suggested_surface)
+        self.top_form.addRow("Surface #:", self.spnSurface)
 
         # Variable type
-        self.cmbType = QComboBox()
+        self.cmbType = QComboBox(self)
         for display, key in connector.get_common_variable_types():
             self.cmbType.addItem(display, userData=key)
+        self.top_form.addRow("Type:", self.cmbType)
+
+        # Min / Max (always at the bottom)
+        min_val = (
+            str(initial_vd.get("min_val"))
+            if initial_vd and initial_vd.get("min_val") is not None
+            else "None"
+        )
+        max_val = (
+            str(initial_vd.get("max_val"))
+            if initial_vd and initial_vd.get("max_val") is not None
+            else "None"
+        )
+        self.txtMin = QLineEdit(min_val, self)
+        self.txtMax = QLineEdit(max_val, self)
+        self.bottom_form.addRow("Min value:", self.txtMin)
+        self.bottom_form.addRow("Max value:", self.txtMax)
+
+        self.cmbType.currentIndexChanged.connect(self._rebuild_form)
+
+        # Initial build
         idx = self.cmbType.findData(suggested_type)
         if idx >= 0:
             self.cmbType.setCurrentIndex(idx)
-        form.addRow("Type:", self.cmbType)
 
-        # Coeff number (shown only for asphere_coeff)
-        self.spnCoeff = QSpinBox()
-        self.spnCoeff.setRange(0, 20)
-        self.spnCoeff.setValue(0)
-        self._coeff_label = QLabel("Coeff #:")
-        form.addRow(self._coeff_label, self.spnCoeff)
-        self._update_coeff_visibility()
-        self.cmbType.currentIndexChanged.connect(self._update_coeff_visibility)
+        self._rebuild_form()
 
-        # Min / Max
-        self.txtMin = QLineEdit("None")
-        form.addRow("Min value:", self.txtMin)
+        if initial_vd:
+            self._apply_initial_vd(initial_vd)
 
-        self.txtMax = QLineEdit("None")
-        form.addRow("Max value:", self.txtMax)
-
-        layout.addLayout(form)
-
+        # Buttons
         buttons = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel, Qt.Horizontal, self
         )
@@ -112,18 +139,73 @@ class AddVariableDialog(QDialog):
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
 
-    def _update_coeff_visibility(self) -> None:
-        is_coeff = self.cmbType.currentData() == "asphere_coeff"
-        self._coeff_label.setVisible(is_coeff)
-        self.spnCoeff.setVisible(is_coeff)
+    def _rebuild_form(self) -> None:
+        """Clear and rebuild the dynamic parameters part of the form."""
+        while self.dynamic_form.rowCount() > 0:
+            self.dynamic_form.removeRow(0)
+
+        self._param_widgets.clear()
+        var_type = self.cmbType.currentData()
+        meta = self._connector.get_variable_metadata(var_type)
+
+        for name, info in meta.items():
+            label = name.replace("_", " ").capitalize() + ":"
+            widget = self._create_widget(name, info)
+            self.dynamic_form.addRow(label, widget)
+            self._param_widgets[name] = widget
+
+    def _create_widget(self, name: str, info: dict) -> QWidget:
+        """Create a widget based on metadata."""
+        w_type = info.get("type", "int")
+
+        if w_type == "int":
+            w = QSpinBox()
+            w.setRange(info.get("min", 0), info.get("max", 1000000))
+            w.setValue(info.get("default", 0))
+            return w
+
+        if w_type == "float":
+            w = QDoubleSpinBox()
+            w.setRange(info.get("min", -1e9), info.get("max", 1e9))
+            w.setDecimals(info.get("decimals", 4))
+            w.setValue(info.get("default", 0.0))
+            return w
+
+        if w_type == "choice":
+            w = QComboBox()
+            w.addItems(info.get("options", []))
+            idx = w.findText(info.get("default", ""))
+            if idx >= 0:
+                w.setCurrentIndex(idx)
+            return w
+
+        if w_type == "wavelength":
+            w = QComboBox()
+            w.addItem("Primary", userData="primary")
+            for display, val in self._connector.get_wavelength_options():
+                w.addItem(display, userData=val)
+            return w
+
+        return QLineEdit(str(info.get("default", "")))
+
+    def _apply_initial_vd(self, vd: dict) -> None:
+        """Apply parameters from vd to dynamic widgets."""
+        for name, widget in self._param_widgets.items():
+            if name in vd:
+                val = vd[name]
+                if isinstance(widget, QSpinBox | QDoubleSpinBox):
+                    widget.setValue(val)
+                elif isinstance(widget, QComboBox):
+                    idx = widget.findData(val)
+                    if idx < 0:
+                        idx = widget.findText(str(val))
+                    if idx >= 0:
+                        widget.setCurrentIndex(idx)
+                elif isinstance(widget, QLineEdit):
+                    widget.setText(str(val))
 
     def get_variable_dict(self) -> dict:
-        """Return the variable descriptor dict from the current form values.
-
-        Returns:
-            A dict suitable for
-            :meth:`~optiland_gui.optiland_connector.OptilandConnector.add_optimization_variable`.
-        """
+        """Return the variable descriptor dict from the current form values."""
 
         def _parse_val(text):
             text = text.strip()
@@ -135,13 +217,21 @@ class AddVariableDialog(QDialog):
                 return None
 
         vd: dict = {
-            "surface_number": self.spnSurface.value(),
             "type": self.cmbType.currentData(),
+            "surface_number": self.spnSurface.value(),
             "min_val": _parse_val(self.txtMin.text()),
             "max_val": _parse_val(self.txtMax.text()),
         }
-        if vd["type"] == "asphere_coeff":
-            vd["coeff_number"] = self.spnCoeff.value()
+
+        for name, widget in self._param_widgets.items():
+            if isinstance(widget, QSpinBox | QDoubleSpinBox):
+                vd[name] = widget.value()
+            elif isinstance(widget, QComboBox):
+                data = widget.currentData()
+                vd[name] = data if data is not None else widget.currentText()
+            elif isinstance(widget, QLineEdit):
+                vd[name] = widget.text()
+
         return vd
 
 
@@ -156,54 +246,77 @@ class AddOperandDialog(QDialog):
     def __init__(
         self,
         connector: OptilandConnector,
+        initial_od: dict | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle("Add Optimization Operand")
-        self.setMinimumWidth(380)
+        self.setWindowTitle(
+            "Add Optimization Operand"
+            if not initial_od
+            else "Edit Optimization Operand"
+        )
+        self.setMinimumWidth(440)
         self._connector = connector
+        self._param_widgets: dict[str, QWidget] = {}
 
         layout = QVBoxLayout(self)
-        form = QFormLayout()
-        form.setSpacing(8)
+        self.top_form = QFormLayout()
+        self.dynamic_form = QFormLayout()
+        self.bottom_form = QFormLayout()
+        for f in [self.top_form, self.dynamic_form, self.bottom_form]:
+            f.setSpacing(8)
+
+        layout.addLayout(self.top_form)
+        layout.addLayout(self.dynamic_form)
+        layout.addLayout(self.bottom_form)
 
         # Category
         categories = list(connector.get_operand_categories().keys())
-        self.cmbCategory = QComboBox()
+        self.cmbCategory = QComboBox(self)
         self.cmbCategory.addItems(categories)
-        form.addRow("Category:", self.cmbCategory)
-
-        # Extra input_data JSON
-        self.txtInputData = QLineEdit("{}")
-        self.txtInputData.setToolTip(
-            "JSON dict of extra parameters (optic added automatically).\n"
-            'Example: {"surface_number": 1}'
-        )
+        self.top_form.addRow("Category:", self.cmbCategory)
 
         # Type — filtered by category
-        self.cmbType = QComboBox()
-        form.addRow("Type:", self.cmbType)
-        self.cmbCategory.currentTextChanged.connect(self._on_category_changed)
-        self._on_category_changed(self.cmbCategory.currentText())
+        self.cmbType = QComboBox(self)
+        self.top_form.addRow("Type:", self.cmbType)
 
-        # Target (equality)
-        self.spnTarget = QDoubleSpinBox()
+        # Target / Weight (static)
+        self.spnTarget = QDoubleSpinBox(self)
         self.spnTarget.setDecimals(6)
         self.spnTarget.setRange(-1e9, 1e9)
         self.spnTarget.setValue(0.0)
-        form.addRow("Target:", self.spnTarget)
 
-        # Weight
-        self.spnWeight = QDoubleSpinBox()
+        self.spnWeight = QDoubleSpinBox(self)
         self.spnWeight.setDecimals(4)
         self.spnWeight.setRange(0.0, 1e9)
         self.spnWeight.setValue(1.0)
-        form.addRow("Weight:", self.spnWeight)
 
-        form.addRow("Parameters (JSON):", self.txtInputData)
-        self.cmbType.currentTextChanged.connect(self._update_default_input_data)
+        self.bottom_form.addRow(QLabel("<hr>"))
+        self.bottom_form.addRow("Target:", self.spnTarget)
+        self.bottom_form.addRow("Weight:", self.spnWeight)
 
-        layout.addLayout(form)
+        self.cmbCategory.currentTextChanged.connect(self._on_category_changed)
+        self.cmbType.currentTextChanged.connect(self._rebuild_form)
+
+        if initial_od:
+            cat_idx = self.cmbCategory.findText(initial_od.get("category", ""))
+            if cat_idx >= 0:
+                self.cmbCategory.setCurrentIndex(cat_idx)
+
+            self._on_category_changed(self.cmbCategory.currentText())
+
+            type_idx = self.cmbType.findText(initial_od.get("type", ""))
+            if type_idx >= 0:
+                self.cmbType.setCurrentIndex(type_idx)
+
+            self.spnTarget.setValue(initial_od.get("target", 0.0))
+            self.spnWeight.setValue(initial_od.get("weight", 1.0))
+        else:
+            # Initial build
+            self._on_category_changed(self.cmbCategory.currentText())
+
+        if initial_od:
+            self._apply_initial_od(initial_od)
 
         self._error_label = QLabel("")
         self._error_label.setStyleSheet("color: #e57373;")
@@ -225,35 +338,140 @@ class AddOperandDialog(QDialog):
         types = self._connector.get_operand_categories().get(category, [])
         self.cmbType.addItems(types)
         self.cmbType.blockSignals(False)
-        if types:
-            self._update_default_input_data(types[0])
+        self._rebuild_form()
 
-    @Slot(str)
-    def _update_default_input_data(self, op_type: str) -> None:
-        """Pre-fill the Parameters field with a sensible default."""
-        default = self._connector.get_default_operand_input_data_str(op_type)
-        self.txtInputData.setText(default)
+    def _rebuild_form(self) -> None:
+        """Clear and rebuild the dynamic parameters part of the form."""
+        while self.dynamic_form.rowCount() > 0:
+            self.dynamic_form.removeRow(0)
+
+        self._param_widgets.clear()
+        op_type = self.cmbType.currentText()
+        if not op_type:
+            return
+
+        meta = self._connector.get_operand_metadata(op_type)
+
+        if meta:
+            # Header for extra parameters
+            sep = QLabel("<b>Parameters</b>")
+            sep.setAlignment(Qt.AlignCenter)
+            self.dynamic_form.addRow(sep)
+
+            for name, info in meta.items():
+                label = (
+                    name.replace("_", " ")
+                    .replace("line ray", "Ray A")
+                    .replace("point ray", "Ray B")
+                    .capitalize()
+                    + ":"
+                )
+                widget = self._create_widget(name, info)
+                self.dynamic_form.addRow(label, widget)
+                self._param_widgets[name] = widget
+
+    def _create_widget(self, name: str, info: dict) -> QWidget:
+        """Create a widget based on metadata."""
+        w_type = info.get("type", "int")
+
+        if w_type == "int":
+            w = QSpinBox()
+            w.setRange(info.get("min", 0), info.get("max", 9999))
+            w.setValue(info.get("default", 1))
+            return w
+
+        if w_type == "float":
+            w = QDoubleSpinBox()
+            w.setRange(info.get("min", -1e9), info.get("max", 1e9))
+            w.setDecimals(info.get("decimals", 4))
+            w.setValue(info.get("default", 0.0))
+            return w
+
+        if w_type == "choice":
+            w = QComboBox()
+            w.addItems(info.get("options", []))
+            idx = w.findText(info.get("default", ""))
+            if idx >= 0:
+                w.setCurrentIndex(idx)
+            return w
+
+        if w_type == "wavelength":
+            w = QComboBox()
+            w.addItem("Primary", userData="primary")
+            for display, val in self._connector.get_wavelength_options():
+                w.addItem(display, userData=val)
+            return w
+
+        if w_type == "tuple":
+            # For tuples like (Hx, Hy), use two spin boxes in HBox
+            container = QWidget()
+            h_layout = QHBoxLayout(container)
+            h_layout.setContentsMargins(0, 0, 0, 0)
+
+            w1 = QDoubleSpinBox()
+            w1.setRange(-1e9, 1e9)
+            w1.setDecimals(4)
+            w1.setValue(info.get("default", [0.0, 0.0])[0])
+
+            w2 = QDoubleSpinBox()
+            w2.setRange(-1e9, 1e9)
+            w2.setDecimals(4)
+            w2.setValue(info.get("default", [0.0, 0.0])[1])
+
+            h_layout.addWidget(w1)
+            h_layout.addWidget(w2)
+
+            # Monkey-patch a way to get the value
+            container.get_value = lambda: [w1.value(), w2.value()]
+            return container
+
+        return QLineEdit(str(info.get("default", "")))
+
+    def _apply_initial_od(self, od: dict) -> None:
+        """Apply parameters from od to dynamic widgets."""
+        input_data = od.get("input_data", {})
+        for name, widget in self._param_widgets.items():
+            if name in input_data:
+                val = input_data[name]
+                if hasattr(widget, "get_value"):  # Tuple container
+                    spinboxes = widget.findChildren(QDoubleSpinBox)
+                    if (
+                        len(spinboxes) >= 2
+                        and isinstance(val, list | tuple)
+                        and len(val) >= 2
+                    ):
+                        spinboxes[0].setValue(val[0])
+                        spinboxes[1].setValue(val[1])
+                elif isinstance(widget, QSpinBox | QDoubleSpinBox):
+                    widget.setValue(val)
+                elif isinstance(widget, QComboBox):
+                    idx = widget.findData(val)
+                    if idx < 0:
+                        idx = widget.findText(str(val))
+                    if idx >= 0:
+                        widget.setCurrentIndex(idx)
+                elif isinstance(widget, QLineEdit):
+                    widget.setText(str(val))
 
     def accept(self) -> None:
-        """Validate input_data before accepting the dialog."""
-        op_type = self.cmbType.currentText()
-        error = self._connector.validate_operand_input_data(
-            op_type, self.txtInputData.text()
-        )
-        if error:
-            self._error_label.setText(error)
-            self._error_label.setVisible(True)
-            return
-        self._error_label.setVisible(False)
+        """Validate before accepting."""
+        # For now, minimal validation as GUI is more restrictive than JSON
         super().accept()
 
     def get_operand_dict(self) -> dict:
-        """Return the operand descriptor dict from the current form values.
+        """Return the operand descriptor dict from the current form values."""
+        input_data = {}
+        for name, widget in self._param_widgets.items():
+            if hasattr(widget, "get_value"):
+                input_data[name] = widget.get_value()
+            elif isinstance(widget, QSpinBox | QDoubleSpinBox):
+                input_data[name] = widget.value()
+            elif isinstance(widget, QComboBox):
+                data = widget.currentData()
+                input_data[name] = data if data is not None else widget.currentText()
+            elif isinstance(widget, QLineEdit):
+                input_data[name] = widget.text()
 
-        Returns:
-            A dict suitable for
-            :meth:`~optiland_gui.optiland_connector.OptilandConnector.add_optimization_operand`.
-        """
         return {
             "type": self.cmbType.currentText(),
             "category": self.cmbCategory.currentText(),
@@ -261,7 +479,7 @@ class AddOperandDialog(QDialog):
             "min_val": None,
             "max_val": None,
             "weight": self.spnWeight.value(),
-            "input_data_str": self.txtInputData.text(),
+            "input_data": input_data,
         }
 
 
@@ -371,8 +589,14 @@ class OptimizationPanel(QWidget):
         btn_layout = QHBoxLayout()
         self.btnAddVariable = QPushButton("+ Add Variable")
         self.btnRemoveVariable = QPushButton("- Remove Selected")
+        self.btnRefreshVariables = QPushButton()
+        self.btnRefreshVariables.setToolTip("Refresh current values")
+        self.btnRefreshVariables.setFixedSize(25, 25)
+        self.btnRefreshVariables.setIcon(QIcon(":/icons/dark/refresh.svg"))
+
         btn_layout.addWidget(self.btnAddVariable)
         btn_layout.addWidget(self.btnRemoveVariable)
+        btn_layout.addWidget(self.btnRefreshVariables)
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
@@ -386,9 +610,9 @@ class OptimizationPanel(QWidget):
         layout.setSpacing(4)
 
         self.tblOperands = QTableWidget()
-        self.tblOperands.setColumnCount(5)
+        self.tblOperands.setColumnCount(6)
         self.tblOperands.setHorizontalHeaderLabels(
-            ["Category", "Type", "Target", "Weight", "Parameters"]
+            ["Category", "Type", "Current Value", "Target", "Weight", "Parameters"]
         )
         self.tblOperands.horizontalHeader().setStretchLastSection(True)
         self.tblOperands.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -398,8 +622,14 @@ class OptimizationPanel(QWidget):
         btn_layout = QHBoxLayout()
         self.btnAddOperand = QPushButton("+ Add Operand")
         self.btnRemoveOperand = QPushButton("- Remove Selected")
+        self.btnRefreshOperands = QPushButton()
+        self.btnRefreshOperands.setToolTip("Refresh current values")
+        self.btnRefreshOperands.setFixedSize(25, 25)
+        self.btnRefreshOperands.setIcon(QIcon(":/icons/dark/refresh.svg"))
+
         btn_layout.addWidget(self.btnAddOperand)
         btn_layout.addWidget(self.btnRemoveOperand)
+        btn_layout.addWidget(self.btnRefreshOperands)
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
@@ -415,7 +645,8 @@ class OptimizationPanel(QWidget):
         form_top = QFormLayout()
         self.cmbAlgorithm = QComboBox()
         model = self.cmbAlgorithm.model()
-        for group_name, entries in self.connector.get_optimizer_groups().items():
+        groups = self.connector.get_optimizer_groups()
+        for group_name, entries in groups.items():
             # Non-selectable group header
             self.cmbAlgorithm.addItem(group_name)
             header_idx = self.cmbAlgorithm.count() - 1
@@ -440,8 +671,13 @@ class OptimizationPanel(QWidget):
         scroll.setWidget(self._optimizer_settings_widget)
         layout.addWidget(scroll, 1)
 
+        self._optimizer_param_widgets: dict[str, QWidget] = {}
         self.cmbAlgorithm.currentIndexChanged.connect(self._rebuild_optimizer_settings)
-        self._rebuild_optimizer_settings()
+
+        # Select first valid algorithm (usually index 1 as 0 is "Local" header)
+        if self.cmbAlgorithm.count() > 1:
+            self.cmbAlgorithm.setCurrentIndex(1)
+            self._rebuild_optimizer_settings()
 
         return w
 
@@ -472,54 +708,72 @@ class OptimizationPanel(QWidget):
 
     def _rebuild_optimizer_settings(self) -> None:
         """Clear and re-populate the Optimizer settings form."""
-        # Remove all rows
         while self._optimizer_settings_layout.rowCount() > 0:
             self._optimizer_settings_layout.removeRow(0)
-        self._optimizer_param_edits: dict[str, QLineEdit] = {}
 
+        self._optimizer_param_widgets.clear()
         cls = self.cmbAlgorithm.currentData()
-        if cls is None:
+        if not cls:
             return
 
-        try:
-            sig = inspect.signature(cls.optimize)
-        except (ValueError, TypeError):
+        meta = self.connector.get_optimizer_metadata(cls)
+        if not meta:
             return
 
-        skip = frozenset({"self", "callback"})
-        variadic = frozenset(
-            {inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD}
-        )
+        for name, info in meta.items():
+            label = name.replace("_", " ").capitalize() + ":"
+            widget = self._create_optimizer_widget(name, info)
+            self._optimizer_settings_layout.addRow(label, widget)
+            self._optimizer_param_widgets[name] = widget
 
-        for pname, param in sig.parameters.items():
-            if pname in skip or param.kind in variadic:
-                continue
-            default = (
-                param.default if param.default is not inspect.Parameter.empty else ""
-            )
-            edit = QLineEdit(str(default))
-            self._optimizer_param_edits[pname] = edit
-            self._optimizer_settings_layout.addRow(f"{pname}:", edit)
+    def _create_optimizer_widget(self, name: str, info: dict) -> QWidget:
+        """Create a widget based on metadata for optimizer settings."""
+        w_type = info.get("type", "float")
+
+        if w_type == "int":
+            w = QSpinBox()
+            w.setRange(0, 1000000)
+            w.setValue(info.get("default", 1000))
+            return w
+
+        if w_type == "float":
+            w = QDoubleSpinBox()
+            w.setRange(0, 1e9)
+            w.setDecimals(info.get("decimals", 4))
+            w.setValue(info.get("default", 0.001))
+            return w
+
+        if w_type == "choice":
+            w = QComboBox()
+            w.addItems(info.get("options", []))
+            idx = w.findText(info.get("default", ""))
+            if idx >= 0:
+                w.setCurrentIndex(idx)
+            return w
+
+        if w_type == "bool":
+            w = QCheckBox()
+            w.setChecked(info.get("default", True))
+            return w
+
+        return QLineEdit(str(info.get("default", "")))
 
     def _collect_optimizer_kwargs(self) -> dict:
-        """Parse the dynamic settings form and return kwargs for optimize().
+        """Collect all optimizer settings from the dynamic widgets.
 
         Returns:
-            A dict of ``param_name → parsed_value``.
+            A dict of ``param_name → value``.
         """
-        kwargs: dict = {}
-        for pname, edit in getattr(self, "_optimizer_param_edits", {}).items():
-            text = edit.text().strip()
-            if not text:
-                continue
-            try:
-                # Try int first, then float, then string
-                if "." in text or "e" in text.lower():
-                    kwargs[pname] = float(text)
-                else:
-                    kwargs[pname] = int(text)
-            except ValueError:
-                kwargs[pname] = text
+        kwargs = {}
+        for name, widget in self._optimizer_param_widgets.items():
+            if isinstance(widget, QSpinBox | QDoubleSpinBox):
+                kwargs[name] = widget.value()
+            elif isinstance(widget, QComboBox):
+                kwargs[name] = widget.currentText()
+            elif isinstance(widget, QCheckBox):
+                kwargs[name] = widget.isChecked()
+            elif isinstance(widget, QLineEdit):
+                kwargs[name] = widget.text()
         return kwargs
 
     # ------------------------------------------------------------------
@@ -530,8 +784,14 @@ class OptimizationPanel(QWidget):
         """Wire all internal signals."""
         self.btnAddVariable.clicked.connect(self._on_add_variable)
         self.btnRemoveVariable.clicked.connect(self._on_remove_variable)
+        self.btnRefreshVariables.clicked.connect(self._refresh_variables_current_values)
+        self.tblVariables.itemDoubleClicked.connect(self._on_variable_double_clicked)
+
         self.btnAddOperand.clicked.connect(self._on_add_operand)
         self.btnRemoveOperand.clicked.connect(self._on_remove_operand)
+        self.btnRefreshOperands.clicked.connect(self._refresh_operands_current_values)
+        self.tblOperands.itemDoubleClicked.connect(self._on_operand_double_clicked)
+
         self.btnRun.clicked.connect(self._on_run)
         self.btnStop.clicked.connect(self._on_stop)
 
@@ -577,6 +837,18 @@ class OptimizationPanel(QWidget):
             return
         self.connector.remove_optimization_variable(row)
         self._refresh_variables_table()
+
+    @Slot(QTableWidgetItem)
+    def _on_variable_double_clicked(self, item: QTableWidgetItem) -> None:
+        """Edit the double-clicked variable."""
+        row = item.row()
+        variables = self.connector.get_optimization_variables()
+        if 0 <= row < len(variables):
+            vd = variables[row]
+            dlg = AddVariableDialog(self.connector, initial_vd=vd, parent=self)
+            if dlg.exec() == QDialog.Accepted:
+                self.connector.set_optimization_variable(row, dlg.get_variable_dict())
+                self._refresh_variables_table()
 
     @Slot()
     def _refresh_variables_table(self) -> None:
@@ -632,20 +904,48 @@ class OptimizationPanel(QWidget):
         self.connector.remove_optimization_operand(row)
         self._refresh_operands_table()
 
+    @Slot(QTableWidgetItem)
+    def _on_operand_double_clicked(self, item: QTableWidgetItem) -> None:
+        """Edit the double-clicked operand."""
+        row = item.row()
+        operands = self.connector.get_optimization_operands()
+        if 0 <= row < len(operands):
+            od = operands[row]
+            dlg = AddOperandDialog(self.connector, initial_od=od, parent=self)
+            if dlg.exec() == QDialog.Accepted:
+                self.connector.set_optimization_operand(row, dlg.get_operand_dict())
+                self._refresh_operands_table()
+
     @Slot()
     def _refresh_operands_table(self) -> None:
         """Reload the Operands table from the connector."""
         operands = self.connector.get_optimization_operands()
         self.tblOperands.setRowCount(len(operands))
         for i, od in enumerate(operands):
-            target_str = f"{od['target']:.4f}" if od.get("target") is not None else "—"
+            cur_val = self.connector.get_operand_current_value(od)
+            cur_str = f"{cur_val:.6f}" if cur_val is not None else "N/A"
+            target_str = f"{od['target']:.6f}" if od.get("target") is not None else "—"
+
             self.tblOperands.setItem(i, 0, QTableWidgetItem(od.get("category", "")))
             self.tblOperands.setItem(i, 1, QTableWidgetItem(od.get("type", "")))
-            self.tblOperands.setItem(i, 2, QTableWidgetItem(target_str))
-            self.tblOperands.setItem(i, 3, QTableWidgetItem(str(od.get("weight", 1.0))))
-            self.tblOperands.setItem(
-                i, 4, QTableWidgetItem(od.get("input_data_str", "{}"))
-            )
+            self.tblOperands.setItem(i, 2, QTableWidgetItem(cur_str))
+            self.tblOperands.setItem(i, 3, QTableWidgetItem(target_str))
+            self.tblOperands.setItem(i, 4, QTableWidgetItem(str(od.get("weight", 1.0))))
+
+            # Format parameters for display
+            params = od.get("input_data", {})
+            param_str = ", ".join(f"{k}={v}" for k, v in params.items())
+            self.tblOperands.setItem(i, 5, QTableWidgetItem(param_str))
+
+    def _refresh_operands_current_values(self) -> None:
+        """Update only the Current Value column (cheaper than full refresh)."""
+        operands = self.connector.get_optimization_operands()
+        for i, od in enumerate(operands):
+            if i >= self.tblOperands.rowCount():
+                break
+            cur_val = self.connector.get_operand_current_value(od)
+            cur_str = f"{cur_val:.6f}" if cur_val is not None else "N/A"
+            self.tblOperands.setItem(i, 2, QTableWidgetItem(cur_str))
 
     # ------------------------------------------------------------------
     # Slots — Run / Stop
@@ -682,8 +982,9 @@ class OptimizationPanel(QWidget):
 
         # Validate operand input_data before starting
         for od in self.connector.get_optimization_operands():
+            input_val = od.get("input_data") or od.get("input_data_str", "{}")
             err = self.connector.validate_operand_input_data(
-                od.get("type", ""), od.get("input_data_str", "{}")
+                od.get("type", ""), input_val
             )
             if err:
                 self.txtLog.append(f"Error: {err}")

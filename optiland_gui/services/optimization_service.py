@@ -170,6 +170,7 @@ class OptimizationService:
     ]
 
     # Required extra keys (beyond 'optic') per operand type.
+    # Deprecated: use OPERAND_METADATA instead.
     _REQUIRED_KEYS: dict[str, list[str]] = {
         "clearance": ["surface_number"],
         "edge_thickness": ["surface_number"],
@@ -187,6 +188,7 @@ class OptimizationService:
     }
 
     # Default extra input_data (JSON string, optic excluded) per operand type.
+    # Deprecated: use OPERAND_METADATA instead.
     _DEFAULT_INPUT_DATA: dict[str, str] = {
         "clearance": '{"surface_number": 1}',
         "edge_thickness": '{"surface_number": 1}',
@@ -203,6 +205,34 @@ class OptimizationService:
         "seidel": '{"seidel_number": 0, "surface_number": 1}',
     }
 
+    # Graphical configuration metadata for variables.
+    # Maps variable type -> dict of parameter name -> metadata.
+    VARIABLE_METADATA: dict[str, dict] = {
+        "radius": {},
+        "thickness": {},
+        "conic": {},
+        "asphere_coeff": {
+            "coeff_number": {"type": "int", "default": 0, "min": 0, "max": 20}
+        },
+        "index": {"wavelength": {"type": "wavelength", "default": "primary"}},
+        "tilt": {"axis": {"type": "choice", "options": ["x", "y"], "default": "x"}},
+        "decenter": {"axis": {"type": "choice", "options": ["x", "y"], "default": "x"}},
+        "polynomial_coeff": {"coeff_index": {"type": "int", "default": 0}},
+        "chebyshev_coeff": {"coeff_index": {"type": "int", "default": 0}},
+        "zernike_coeff": {"coeff_index": {"type": "int", "default": 0}},
+        "reciprocal_radius": {},
+        "forbes_qbfs_coeff": {"coeff_number": {"type": "int", "default": 0}},
+        "forbes_qnormalslope_coeff": {"coeff_number": {"type": "int", "default": 0}},
+        "forbes_q2d_coeff": {"coeff_number": {"type": "int", "default": 0}},
+        "norm_radius": {},
+        "nurbs_control_point": {"coeff_index": {"type": "int", "default": 0}},
+        "nurbs_weight": {"coeff_index": {"type": "int", "default": 0}},
+    }
+
+    # Graphical configuration metadata for operands.
+    # Maps operand type -> dict of parameter name -> metadata.
+    OPERAND_METADATA: dict[str, dict] = {}  # Populated below
+
     # ------------------------------------------------------------------
     # Construction
     # ------------------------------------------------------------------
@@ -213,6 +243,161 @@ class OptimizationService:
         self._operands: list[dict] = []
         self._thread: QThread | None = None
         self._worker: _OptimizationWorker | None = None
+        self._init_operand_metadata()
+        self._init_optimizer_metadata()
+
+    def _init_operand_metadata(self) -> None:
+        """Initialize the OPERAND_METADATA dictionary."""
+        # Common parameter groups
+        std_ray = {
+            "surface_number": {"type": "int", "default": 1},
+            "Hx": {"type": "float", "default": 0.0},
+            "Hy": {"type": "float", "default": 0.0},
+            "Px": {"type": "float", "default": 0.0},
+            "Py": {"type": "float", "default": 0.0},
+            "wavelength": {"type": "wavelength", "default": "primary"},
+        }
+        dist_ray = {
+            "surface_number": {"type": "int", "default": 1},
+            "Hx": {"type": "float", "default": 0.0},
+            "Hy": {"type": "float", "default": 0.0},
+            "num_rays": {"type": "int", "default": 6},
+            "wavelength": {"type": "wavelength", "default": "primary"},
+            "distribution": {
+                "type": "choice",
+                "options": ["hexapolar", "grid", "uniform", "random"],
+                "default": "hexapolar",
+            },
+        }
+
+        meta = self.OPERAND_METADATA
+
+        # Aberrations
+        for op in [
+            "TSC",
+            "SC",
+            "CC",
+            "TCC",
+            "TAC",
+            "AC",
+            "TPC",
+            "PC",
+            "DC",
+            "TAchC",
+            "LchC",
+            "TchC",
+        ]:
+            meta[op] = {"surface_number": {"type": "int", "default": 1}}
+
+        meta["seidel"] = {
+            "seidel_number": {"type": "int", "default": 1, "min": 1, "max": 5},
+            "surface_number": {"type": "int", "default": 1},
+        }
+
+        # Ray Intercepts and Cosines
+        for op in [
+            "real_x_intercept",
+            "real_y_intercept",
+            "real_z_intercept",
+            "real_x_intercept_lcs",
+            "real_y_intercept_lcs",
+            "real_z_intercept_lcs",
+            "real_L",
+            "real_M",
+            "real_N",
+            "AOI",
+        ]:
+            meta[op] = std_ray.copy()
+
+        # Others
+        meta["rms_spot_size"] = dist_ray.copy()
+        meta["OPD_difference"] = {
+            "Hx": {"type": "float", "default": 0.0},
+            "Hy": {"type": "float", "default": 0.0},
+            "num_rays": {"type": "int", "default": 6},
+            "wavelength": {"type": "wavelength", "default": "primary"},
+            "distribution": {
+                "type": "choice",
+                "options": ["gaussian_quad", "hexapolar", "grid"],
+                "default": "gaussian_quad",
+            },
+        }
+
+        meta["edge_thickness"] = {"surface_number": {"type": "int", "default": 1}}
+
+        # Clearance is special
+        meta["clearance"] = {
+            "line_ray_surface_idx": {"type": "int", "default": 1},
+            "line_ray_field_coords": {"type": "tuple", "default": [0.0, 0.0]},
+            "line_ray_pupil_coords": {"type": "tuple", "default": [0.0, 0.0]},
+            "point_ray_surface_idx": {"type": "int", "default": 1},
+            "point_ray_field_coords": {"type": "tuple", "default": [0.0, 0.0]},
+            "point_ray_pupil_coords": {"type": "tuple", "default": [0.0, 0.0]},
+            "wavelength": {"type": "wavelength", "default": "primary"},
+        }
+
+    def _init_optimizer_metadata(self) -> None:
+        """Populate the OPTIMIZER_METADATA dictionary."""
+        from optiland.optimization.optimizer.scipy import (
+            SHGO,
+            BasinHopping,
+            DifferentialEvolution,
+            DualAnnealing,
+            LeastSquares,
+            OptimizerGeneric,
+            OrthogonalDescent,
+        )
+
+        meta = self.OPTIMIZER_METADATA
+
+        meta[OptimizerGeneric] = {
+            "method": {
+                "type": "choice",
+                "options": [
+                    "Nelder-Mead",
+                    "Powell",
+                    "CG",
+                    "BFGS",
+                    "L-BFGS-B",
+                    "TNC",
+                    "COBYLA",
+                    "SLSQP",
+                    "trust-constr",
+                ],
+                "default": "SLSQP",
+            },
+            "maxiter": {"type": "int", "default": 1000},
+            "tol": {"type": "float", "default": 1e-3, "decimals": 6},
+            "disp": {"type": "bool", "default": True},
+        }
+
+        meta[LeastSquares] = {
+            "maxiter": {"type": "int", "default": 1000},
+            "tol": {"type": "float", "default": 1e-3, "decimals": 6},
+            "method_choice": {
+                "type": "choice",
+                "options": ["lm", "trf", "dogbox"],
+                "default": "lm",
+            },
+            "disp": {"type": "bool", "default": True},
+        }
+
+        meta[OrthogonalDescent] = {
+            "max_iter": {"type": "int", "default": 100},
+            "tol": {"type": "float", "default": 1e-4, "decimals": 6},
+        }
+
+        # Global optimizers generally share these
+        global_params = {
+            "maxiter": {"type": "int", "default": 1000},
+            "disp": {"type": "bool", "default": True},
+        }
+        for cls in [DualAnnealing, DifferentialEvolution, SHGO, BasinHopping]:
+            meta[cls] = global_params.copy()
+
+    def get_optimizer_metadata(self, optimizer_cls: type) -> dict:
+        """Return optimization parameter metadata for an optimizer class."""
+        return self.OPTIMIZER_METADATA.get(optimizer_cls, {})
 
     # ------------------------------------------------------------------
     # Variable management
@@ -240,6 +425,24 @@ class OptimizationService:
     def get_variables(self) -> list[dict]:
         """Return a shallow copy of the variable list."""
         return list(self._variables)
+
+    def set_variable(self, index: int, var_dict: dict) -> None:
+        """Replace a variable at *index* with *var_dict*."""
+        if 0 <= index < len(self._variables):
+            self._variables[index] = dict(var_dict)
+
+    def get_variable_metadata(self, var_type: str) -> dict:
+        """Return graphical configuration metadata for a variable type.
+
+        Args:
+            var_type: Variable type key.
+
+        Returns:
+            Dict of parameter metadata (defaulting to surface_number only).
+        """
+        return self.VARIABLE_METADATA.get(
+            var_type, {"surface_number": {"type": "int", "default": 1}}
+        )
 
     def clear_variables(self) -> None:
         """Remove all registered variables."""
@@ -301,6 +504,44 @@ class OptimizationService:
         """Return a shallow copy of the operand list."""
         return list(self._operands)
 
+    def set_operand(self, index: int, op_dict: dict) -> None:
+        """Replace an operand at *index* with *op_dict*."""
+        if 0 <= index < len(self._operands):
+            self._operands[index] = dict(op_dict)
+
+    def get_operand_current_value(self, op_dict: dict) -> float | None:
+        """Read the current physical value for an operand from the live optic."""
+        optic = self._connector._optic
+        if optic is None:
+            return None
+        try:
+            from optiland.optimization.operand.operand import Operand
+
+            input_data_val = op_dict.get("input_data")
+            if isinstance(input_data_val, dict):
+                extra_data = input_data_val
+            else:
+                try:
+                    extra_data = json.loads(op_dict.get("input_data_str") or "{}")
+                except json.JSONDecodeError:
+                    extra_data = {}
+            input_data = {"optic": optic, **extra_data}
+            op_inst = Operand(operand_type=op_dict["type"], input_data=input_data)
+            return float(op_inst.value)
+        except Exception:
+            return None
+
+    def get_operand_metadata(self, op_type: str) -> dict:
+        """Return graphical configuration metadata for an operand type.
+
+        Args:
+            op_type: Operand type key.
+
+        Returns:
+            Dict of parameter metadata (empty if none required).
+        """
+        return self.OPERAND_METADATA.get(op_type, {})
+
     def clear_operands(self) -> None:
         """Remove all registered operands."""
         self._operands.clear()
@@ -317,13 +558,13 @@ class OptimizationService:
         return self._DEFAULT_INPUT_DATA.get(op_type, "{}")
 
     def validate_operand_input_data(
-        self, op_type: str, input_data_str: str
+        self, op_type: str, input_data_str_or_dict: str | dict | None
     ) -> str | None:
-        """Check that *input_data_str* contains all required keys for *op_type*.
+        """Check that *input_data* contains all required keys for *op_type*.
 
         Args:
             op_type: The operand type key.
-            input_data_str: JSON string of extra parameters (optic excluded).
+            input_data_str_or_dict: JSON string or dict of extra parameters.
 
         Returns:
             An error message string if validation fails, or ``None`` if valid.
@@ -331,10 +572,15 @@ class OptimizationService:
         required = self._REQUIRED_KEYS.get(op_type, [])
         if not required:
             return None
-        try:
-            data = json.loads(input_data_str or "{}")
-        except json.JSONDecodeError:
-            return f"Invalid JSON in parameters for '{op_type}'"
+
+        if isinstance(input_data_str_or_dict, dict):
+            data = input_data_str_or_dict
+        else:
+            try:
+                data = json.loads(input_data_str_or_dict or "{}")
+            except json.JSONDecodeError:
+                return f"Invalid JSON in parameters for '{op_type}'"
+
         missing = [k for k in required if k not in data]
         if missing:
             return f"'{op_type}' requires parameter(s): {', '.join(missing)}"
@@ -382,10 +628,14 @@ class OptimizationService:
                 )
 
         for od in self._operands:
-            try:
-                extra_data = json.loads(od.get("input_data_str") or "{}")
-            except json.JSONDecodeError:
-                extra_data = {}
+            input_data_val = od.get("input_data")
+            if isinstance(input_data_val, dict):
+                extra_data = input_data_val
+            else:
+                try:
+                    extra_data = json.loads(od.get("input_data_str") or "{}")
+                except json.JSONDecodeError:
+                    extra_data = {}
             input_data = {"optic": optic, **extra_data}
             try:
                 problem.add_operand(
@@ -452,27 +702,14 @@ class OptimizationService:
             DualAnnealing,
             LeastSquares,
             OptimizerGeneric,
+            OrthogonalDescent,
         )
-
-        scipy_methods = [
-            "Nelder-Mead",
-            "Powell",
-            "CG",
-            "BFGS",
-            "L-BFGS-B",
-            "TNC",
-            "COBYLA",
-            "SLSQP",
-            "trust-constr",
-        ]
 
         local: list[tuple[str, type, str]] = [
             ("Generic (scipy.minimize)", OptimizerGeneric, "none"),
+            ("Least Squares", LeastSquares, "none"),
+            ("Orthogonal Descent", OrthogonalDescent, "none"),
         ]
-        _make = OptimizationService._build_scipy_method_cls
-        for method in scipy_methods:
-            local.append((method, _make(method, OptimizerGeneric), "none"))
-        local.append(("Least Squares", LeastSquares, "none"))
 
         global_: list[tuple[str, type, str]] = [
             ("Dual Annealing [bounds req.]", DualAnnealing, "required"),
@@ -482,6 +719,9 @@ class OptimizationService:
         ]
 
         return {"Local": local, "Global": global_}
+
+    # Configuration metadata for optimizers: parameters for .optimize()
+    OPTIMIZER_METADATA: dict[type, dict] = {}  # Populated in __init__
 
     @staticmethod
     def get_optimizer_catalog() -> list[tuple[str, type]]:
@@ -591,6 +831,7 @@ class OptimizationService:
         self._worker.finished.connect(self._thread.quit)
         self._worker.error.connect(self._thread.quit)
         self._thread.finished.connect(self._thread.deleteLater)
+        self._thread.finished.connect(self._on_thread_finished)
 
         if on_progress is not None:
             self._worker.progress.connect(on_progress)
@@ -605,3 +846,8 @@ class OptimizationService:
         """Request cancellation of an in-progress run."""
         if self._worker is not None:
             self._worker.request_cancel()
+
+    @Slot()
+    def _on_thread_finished(self) -> None:
+        """Handle thread completion by clearing the reference."""
+        self._thread = None
