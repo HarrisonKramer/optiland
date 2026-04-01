@@ -26,6 +26,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+_GITHUB_URL = "https://github.com/optiland/optiland"
+_HELP_URL = "https://optiland.readthedocs.io/en/latest/index.html"
+
+_BTN_SIZE = QSize(30, 30)
+
 
 class CustomTitleBar(QWidget):
     """
@@ -250,7 +255,7 @@ class CustomTitleBar(QWidget):
 
     def _open_github_url(self):
         """Opens the Optiland GitHub repository URL in a web browser."""
-        url = "https://github.com/HarrisonKramer/optiland"
+        url = "https://github.com/optiland/optiland"
         webbrowser.open(url)
 
     def _open_help_url(self):

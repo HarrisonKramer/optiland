@@ -1,8 +1,8 @@
-![Tests](https://github.com/HarrisonKramer/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
+![Tests](https://github.com/optiland/optiland/actions/workflows/ci.yml/badge.svg?label=Tests)
 [![Documentation Status](https://readthedocs.org/projects/optiland/badge/?version=latest)](https://optiland.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/github/HarrisonKramer/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/HarrisonKramer/optiland)
-[![Maintainability](https://qlty.sh/gh/HarrisonKramer/projects/optiland/maintainability.svg)](https://qlty.sh/gh/HarrisonKramer/projects/optiland)
-![Stars](https://img.shields.io/github/stars/HarrisonKramer/optiland.svg)
+[![codecov](https://codecov.io/github/optiland/optiland/graph/badge.svg?token=KAOE152K5O)](https://codecov.io/github/optiland/optiland)
+[![Maintainability](https://qlty.sh/gh/optiland/projects/optiland/maintainability.svg)](https://qlty.sh/gh/optiland/projects/optiland)
+![Stars](https://img.shields.io/github/stars/optiland/optiland.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14588961.svg)](https://doi.org/10.5281/zenodo.14588961)
 [![Python Versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%7C%203.12%20%7C%203.13%20-blue)](https://img.shields.io/badge/python-3.10%20%7C%203.11%7C%203.12%20%7C%203.13%20-blue)
@@ -10,12 +10,12 @@
 
 <div align="center">
   <a href="https://optiland.readthedocs.io/">
-    <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/optiland.svg" alt="Optiland">
+    <img src="https://github.com/optiland/optiland/raw/master/docs/images/optiland.svg" alt="Optiland">
   </a>
 </div>
 
 <div align="center">
-    <img src="https://github.com/HarrisonKramer/optiland/raw/master/docs/images/gui.png" alt="Optiland GUI" style="max-width: 100%; height: auto;">
+    <img src="https://github.com/optiland/optiland/raw/master/docs/images/gui.png" alt="Optiland GUI" style="max-width: 100%; height: auto;">
 </div>
 
 <p align="center"><em>The Optiland GUI showing a reverse telephoto system.</em></p>
@@ -160,13 +160,13 @@ Optiland is built by the community, for the community. We are actively looking f
 **Where to start?**
 We curate issues specifically for new contributors. Click the badges below to find a task:
 
-[![Good First Issues](https://img.shields.io/github/issues/HarrisonKramer/optiland/good%20first%20issue?color=7057ff&label=Good%20First%20Issues)](https://github.com/HarrisonKramer/optiland/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+[![Good First Issues](https://img.shields.io/github/issues/optiland/optiland/good%20first%20issue?color=7057ff&label=Good%20First%20Issues)](https://github.com/optiland/optiland/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 *Perfect for your first PR. These are self-contained and well-defined.*
 
-[![Help Wanted](https://img.shields.io/github/issues/HarrisonKramer/optiland/help%20wanted?color=008672&label=Help%20Wanted)](https://github.com/HarrisonKramer/optiland/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+[![Help Wanted](https://img.shields.io/github/issues/optiland/optiland/help%20wanted?color=008672&label=Help%20Wanted)](https://github.com/optiland/optiland/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 *Slightly larger tasks where we need your expertise.*
 
-[![Discussion](https://img.shields.io/github/discussions/HarrisonKramer/optiland?color=0e8a16&label=Join%20the%20Discussion)](https://github.com/HarrisonKramer/optiland/discussions)
+[![Discussion](https://img.shields.io/github/discussions/optiland/optiland?color=0e8a16&label=Join%20the%20Discussion)](https://github.com/optiland/optiland/discussions)
 *Have a feature idea? Want to show off a design? Talk to us here.*
 
 
@@ -178,19 +178,19 @@ To get started, please check out the [contributing guide](./CONTRIBUTING.md) for
 
 
 ## License
-Distributed under the MIT License. See [LICENSE](https://github.com/HarrisonKramer/optiland/blob/master/LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/optiland/optiland/blob/master/LICENSE) for more information.
 
 
 ## Contact and Support
 
-If you **found a bug**, have a **feature request**, or need to report a **documentation issue**, please [open an issue](https://github.com/HarrisonKramer/optiland/issues).  
-If you have a **question** or would like to start a broader **discussion**, please use the [GitHub Discussions](https://github.com/HarrisonKramer/optiland/discussions) section.  
+If you **found a bug**, have a **feature request**, or need to report a **documentation issue**, please [open an issue](https://github.com/optiland/optiland/issues).  
+If you have a **question** or would like to start a broader **discussion**, please use the [GitHub Discussions](https://github.com/optiland/optiland/discussions) section.  
 
 This keeps all project-related communication public, searchable, and helpful for others who may encounter the same problems or questions.
 
 Before opening an issue or discussion, please make sure you have:  
 - Checked the [documentation](https://optiland.readthedocs.io/en/latest/) and API reference  
-- Searched existing [issues](https://github.com/HarrisonKramer/optiland/issues) and [discussions](https://github.com/HarrisonKramer/optiland/discussions)  
+- Searched existing [issues](https://github.com/optiland/optiland/issues) and [discussions](https://github.com/optiland/optiland/discussions)  
 - Made a reasonable attempt to solve the problem on your own  
 
 Well-prepared reports and questions help maintainers and the community respond more effectively. Very low-effort submissions (for example, asking for direct answers without reviewing available resources) are discouraged.
