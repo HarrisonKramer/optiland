@@ -71,7 +71,7 @@ designs from these platforms to Optiland, preserving the integrity of system pro
    Not all Zemax or CODE V features are supported in the Optiland file format (e.g., specific geometry types or complex 
    field definitions). However, core optical properties are maintained during conversion. If you experience any 
    unexpected issues during the conversion process, please kindly report them by opening a new issue on the 
-   `Optiland GitHub repository <https://github.com/HarrisonKramer/optiland>`_.
+   `Optiland GitHub repository <https://github.com/optiland/optiland>`_.
 
 Future Extensions
 -----------------
