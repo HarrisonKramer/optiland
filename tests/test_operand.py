@@ -478,7 +478,7 @@ class TestLensOperand:
 
         sa1 = self.optic.surfaces[2].semi_aperture
         sa2 = self.optic.surfaces[3].semi_aperture
-        semi_aperture = self.optic.surfaces[3].semi_aperture
+        semi_aperture = be.maximum(sa1, sa2)
 
         r1 = 50.0
         r2 = -50.0
