@@ -83,6 +83,10 @@ class OpticUpdater:
             return
 
         positions = self.optic.surfaces.positions
+        # Detach positions used as reference points to prevent stale computation
+        # graphs (from prior iterations) from being pulled into the current graph.
+        if hasattr(positions, "detach"):
+            positions = positions.detach()
         delta_t = value - positions[surface_number + 1] + positions[surface_number]
         positions = be.copy(positions)  # required to avoid in-place modification
         positions[surface_number + 1 :] = positions[surface_number + 1 :] + delta_t

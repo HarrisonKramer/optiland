@@ -364,8 +364,26 @@ class TorchBackend(AbstractBackend):
         if isinstance(x, torch.Tensor):
             return x
 
-        if isinstance(x, list | tuple) and len(x) > 0 and isinstance(x[0], np.ndarray):
-            x = np.array(x)
+        if isinstance(x, (list, tuple)) and len(x) > 0:
+            # Check if any element is a Tensor
+            if any(isinstance(v, torch.Tensor) for v in x):
+                # Ensure all are tensors and stack them to preserve gradients
+                tensors = [
+                    v
+                    if isinstance(v, torch.Tensor)
+                    else torch.tensor(v, device=self._device(), dtype=self._dtype())
+                    for v in x
+                ]
+                # Normalize 0-d (scalar) tensors to 1-d to ensure consistent
+                # shapes before stacking (e.g. mix of [] and [1] tensors)
+                if len(set(t.shape for t in tensors)) > 1:
+                    tensors = [t.unsqueeze(0) if t.dim() == 0 else t for t in tensors]
+                try:
+                    return torch.stack(tensors)
+                except RuntimeError:
+                    return torch.cat(tensors)
+            elif isinstance(x[0], np.ndarray):
+                x = np.array(x)
 
         return torch.tensor(
             x,

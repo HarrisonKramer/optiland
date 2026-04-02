@@ -20,6 +20,7 @@ from optiland.optimization.operand import OperandManager
 from optiland.optimization.variable import VariableManager
 
 if TYPE_CHECKING:
+    from optiland.optimization.batched_evaluator import BatchedRayEvaluator
     from optiland.optimization.scaling.base import Scaler
 
 
@@ -47,15 +48,25 @@ class OptimizationProblem:
 
     """
 
-    def __init__(self):
+    def __init__(self, batching: bool = True):
+        """Initialize an optimization problem.
+
+        Args:
+            batching: If ``True`` (default), batched ray evaluation is enabled.
+                Set to ``False`` to opt out and use per-operand evaluation.
+        """
         self.operands = OperandManager()
         self.variables = VariableManager()
         self.initial_value = 0.0
+        self._batched_evaluator: BatchedRayEvaluator | None = None
 
         # Enable gradient tracking for PyTorch
         if be.get_backend() == "torch" and not be.grad_mode.requires_grad:
             warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
             be.grad_mode.enable()
+
+        if batching:
+            self.enable_batching()
 
     @staticmethod
     def _to_item(x):
@@ -68,6 +79,31 @@ class OptimizationProblem:
         if hasattr(x, "item"):
             return x.item()
         return x
+
+    def enable_batching(self):
+        """Enable batched ray evaluation for faster optimization.
+
+        When batching is enabled, operands that require ray tracing are
+        grouped by optic and wavelength so that redundant traces are
+        eliminated. This can dramatically speed up merit-function
+        evaluation for problems with many ray operands.
+
+        The evaluator is re-created whenever this method is called, so
+        it always reflects the current set of operands.
+        """
+        from optiland.optimization.batched_evaluator import BatchedRayEvaluator
+
+        self._batched_evaluator = BatchedRayEvaluator(self)
+
+    def disable_batching(self):
+        """Disable batched ray evaluation and use standard per-operand
+        evaluation."""
+        self._batched_evaluator = None
+
+    @property
+    def batching_enabled(self) -> bool:
+        """Whether batched evaluation is currently active."""
+        return self._batched_evaluator is not None
 
     def add_operand(
         self,
@@ -82,6 +118,9 @@ class OptimizationProblem:
         if input_data is None:
             input_data = {}
         self.operands.add(operand_type, target, min_val, max_val, weight, input_data)
+        # Invalidate batch plan when operands change
+        if self._batched_evaluator is not None:
+            self._batched_evaluator.refresh()
 
     def add_variable(self, optic, variable_type, scaler: Scaler = None, **kwargs):
         """Add a variable to the merit function"""
@@ -91,6 +130,8 @@ class OptimizationProblem:
         """Clear all operands from the merit function"""
         self.initial_value = 0.0
         self.operands.clear()
+        if self._batched_evaluator is not None:
+            self._batched_evaluator.refresh()
 
     def clear_variables(self):
         """Clear all variables from the merit function"""
@@ -102,17 +143,24 @@ class OptimizationProblem:
 
         Each term is computed as::
 
-            effective_weight(op) × op.delta() ** 2
+            effective_weight(op) * op.delta() ** 2
 
-        where ``effective_weight = operand.weight × field_weight × wl_weight``.
+        where ``effective_weight = operand.weight * field_weight * wl_weight``.
         Field and wavelength weights are read from the optic stored in each
-        operand's ``input_data``.  Operands with an effective weight of zero are
-        excluded from the result (their delta is never evaluated).
+        operand's ``input_data``. Operands with an effective weight of zero are
+        excluded from the result.
+
+        When batching is enabled, delegates to the
+        :class:`~optiland.optimization.batched_evaluator.BatchedRayEvaluator`
+        which minimises redundant ray traces.
 
         Returns:
-            be.ndarray: 1-D array of per-operand contribution values.  Returns
+            be.ndarray: 1-D array of per-operand contribution values. Returns
             ``[0.0]`` when there are no active operands.
         """
+        if self._batched_evaluator is not None:
+            return self._batched_evaluator.fun_array()
+
         terms = []
         for op in self.operands:
             ew = op.effective_weight()
@@ -123,8 +171,40 @@ class OptimizationProblem:
             return be.array([0.0])
         return be.stack(terms)
 
+    def residual_vector(self):
+        """Vector of weighted operand deltas (unsquared).
+
+        Returns a 1-D array whose *i*-th element is
+        ``weight_i * delta_i`` for each operand. This is the residual
+        vector **r** needed by least-squares algorithms such as the
+        Damped Least-Squares (Levenberg-Marquardt) optimizer.
+
+        Unlike :meth:`fun_array`, the values are *not* squared, so the
+        merit function equals ``sum(residual_vector() ** 2)``.
+
+        When batching is enabled, delegates to the
+        :class:`~optiland.optimization.batched_evaluator.BatchedRayEvaluator`
+        which minimises redundant ray traces.
+
+        Returns:
+            be.ndarray: A 1-D array of length ``len(self.operands)``.
+        """
+        if self._batched_evaluator is not None:
+            return self._batched_evaluator.residual_vector()
+        terms = [op.fun() for op in self.operands]
+        if not terms:
+            return be.array([])
+        return be.stack(terms)
+
     def sum_squared(self):
-        """Calculate the sum of squared operand weighted deltas"""
+        """Calculate the sum of squared operand weighted deltas.
+
+        When batching is enabled, delegates to the
+        :class:`~optiland.optimization.batched_evaluator.BatchedRayEvaluator`
+        which minimises redundant ray traces.
+        """
+        if self._batched_evaluator is not None:
+            return self._batched_evaluator.sum_squared()
         return be.sum(self.fun_array())
 
     def rss(self):
