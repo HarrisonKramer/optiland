@@ -411,23 +411,45 @@ class TestInequalityOperands:
 class TestProblemIntegration:
     """Test that enable_batching/disable_batching on OptimizationProblem works."""
 
-    def test_enable_disable_batching(self):
+    def test_default_batching_and_enable_disable(self):
         problem, _ = _make_mixed_problem()
 
-        # Standard evaluation
-        standard = float(be.to_numpy(problem.sum_squared()))
+        # Batching is on by default
+        assert problem.batching_enabled
+        batched_default = float(be.to_numpy(problem.sum_squared()))
 
-        # Enable batching
+        # Disable batching for legacy per-operand behavior
+        problem.disable_batching()
+        assert not problem.batching_enabled
+        standard = float(be.to_numpy(problem.sum_squared()))
+        assert batched_default == pytest.approx(standard, rel=1e-6)
+
+        # Re-enable batching
         problem.enable_batching()
         assert problem.batching_enabled
+        batched_again = float(be.to_numpy(problem.sum_squared()))
+        assert batched_again == pytest.approx(standard, rel=1e-6)
+
+    def test_opt_out_constructor_starts_without_batching(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem(batching=False)
+        assert not problem.batching_enabled
+
+        problem.add_operand(
+            operand_type="f2",
+            target=90.0,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+
+        standard = float(be.to_numpy(problem.sum_squared()))
+
+        problem.enable_batching()
         batched = float(be.to_numpy(problem.sum_squared()))
         assert batched == pytest.approx(standard, rel=1e-6)
 
-        # Disable batching
         problem.disable_batching()
         assert not problem.batching_enabled
-        standard_again = float(be.to_numpy(problem.sum_squared()))
-        assert standard_again == pytest.approx(standard, rel=1e-6)
 
     def test_batching_refresh_on_add_operand(self):
         """Adding an operand refreshes the evaluator."""
@@ -652,6 +674,80 @@ class TestEvaluatorStructure:
 
         evaluator.refresh()
         assert len(evaluator._operand_plan) == initial_plan_len + 1
+
+
+class TestEvaluatorHelpers:
+    """Coverage-oriented tests for internal helper methods."""
+
+    def test_ensure_plan_current_rebuilds_when_mismatched(self):
+        problem, _ = _make_problem_with_ray_operands()
+        evaluator = BatchedRayEvaluator(problem)
+
+        # Simulate stale internal state and ensure helper re-analyzes.
+        evaluator._operand_plan = []
+        evaluator._ensure_plan_current()
+
+        assert len(evaluator._operand_plan) == len(problem.operands)
+
+    def test_safe_execute_returns_none_on_exception(self):
+        class _BadJob:
+            def execute(self):
+                raise RuntimeError("boom")
+
+        assert BatchedRayEvaluator._safe_execute(_BadJob()) is None
+
+    def test_evaluate_direct_operands_skips_zero_effective_weight(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=50.0,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+        evaluator = BatchedRayEvaluator(problem)
+
+        # Force the zero-effective-weight path.
+        op = problem.operands[0]
+        op.effective_weight = lambda optic=None: 0.0
+
+        raw_values = [None]
+        evaluator._evaluate_direct_operands(raw_values)
+        assert raw_values[0] is None
+
+        # No contribution terms should be produced for zero-effective-weight ops.
+        assert evaluator._build_contribution_terms(raw_values) == []
+
+    def test_evaluate_direct_operands_unknown_operand_raises(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=50.0,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+        evaluator = BatchedRayEvaluator(problem)
+
+        # Force unknown direct metric lookup branch.
+        problem.operands[0].operand_type = "not_registered_operand"
+
+        with pytest.raises(ValueError, match="Unknown operand type"):
+            evaluator._evaluate_direct_operands([None])
+
+    def test_build_contribution_terms_raises_for_missing_value(self):
+        lens = CookeTriplet()
+        problem = optimization.OptimizationProblem()
+        problem.add_operand(
+            operand_type="f2",
+            target=50.0,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+        evaluator = BatchedRayEvaluator(problem)
+
+        with pytest.raises(RuntimeError, match="was not evaluated"):
+            evaluator._build_contribution_terms([None])
 
 
 # ---------------------------------------------------------------------------

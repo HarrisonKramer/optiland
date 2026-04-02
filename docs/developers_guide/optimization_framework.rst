@@ -116,11 +116,9 @@ Typical Optimization Process
    # Add radius of curvature variable for second surface
    problem.add_variable(lens, 'radius', surface_number=2)
 
-4. **(Optional) Enable Batched Ray Evaluation**. If your merit function has many ray-based operands (for example `real_*` intercepts or `rms_spot_size`), enable batching to reduce repeated tracing work:
+4. **(Optional) Configure Batched Ray Evaluation**. Batching is enabled by default. If you need to compare with legacy per-operand behavior, disable it explicitly:
 
 .. code:: python
-
-   problem.enable_batching()
 
    # Squared weighted deltas (used by many optimizers)
    merit = problem.sum_squared()
@@ -128,7 +126,7 @@ Typical Optimization Process
    # Unsquared weighted deltas (useful for least-squares style methods)
    residuals = problem.residual_vector()
 
-   # Disable batching again if needed
+   # Disable batching to opt out (legacy per-operand evaluation)
    problem.disable_batching()
 
 5. **Choose an Optimizer**. Select an optimizer and run the optimization:
@@ -151,7 +149,7 @@ Typical Optimization Process
 Batched Ray Evaluation Internals
 --------------------------------
 
-The batching path is implemented by `optiland.optimization.batched_evaluator.BatchedRayEvaluator` and is integrated into `OptimizationProblem` via `enable_batching()`.
+The batching path is implemented by `optiland.optimization.batched_evaluator.BatchedRayEvaluator` and is integrated into `OptimizationProblem` by default. You can opt out with `disable_batching()` and re-enable with `enable_batching()`.
 
 When enabled, the evaluator performs three steps:
 

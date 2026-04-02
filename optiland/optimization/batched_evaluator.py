@@ -411,39 +411,27 @@ class BatchedRayEvaluator:
         """
         self._analyze()
 
-    # ------------------------------------------------------------------
-    # Evaluation
-    # ------------------------------------------------------------------
-
-    def fun_array(self):
-        """Compute contribution terms for each active operand.
-
-        This is the batched equivalent of
-        ``OptimizationProblem.fun_array()``.
-
-        Trace jobs are executed one at a time and operand values are
-        extracted immediately after each trace, before the next trace
-        overwrites the shared ``surface_group`` state.
-        """
+    def _ensure_plan_current(self) -> None:
+        """Rebuild the operand plan when the problem size has changed."""
         if len(self._operand_plan) != len(self.problem.operands):
             self._analyze()
 
+    @staticmethod
+    def _safe_execute(job):
+        """Execute a trace job and return ``None`` on trace failures."""
+        try:
+            return job.execute()
+        except Exception:
+            return None
+
+    def _evaluate_generic_jobs(self, raw_values: list[Any]) -> None:
+        """Populate values for operands covered by ``trace_generic`` jobs."""
         num_operands = len(self.problem.operands)
-
-        # Pre-allocate operand values — None means "not yet computed"
-        raw_values: list[Any] = [None] * num_operands
-
-        # --- Execute generic trace jobs and extract values eagerly ---
         for job_idx, job in enumerate(self._generic_jobs):
-            try:
-                sg = job.execute()
-            except Exception:
-                sg = None
-
+            sg = self._safe_execute(job)
             if sg is None:
                 continue
 
-            # Extract values for every operand mapped to this job
             for i in range(num_operands):
                 plan_type, pj, ray_idx = self._operand_plan[i]
                 if plan_type == "generic" and pj == job_idx:
@@ -454,12 +442,11 @@ class BatchedRayEvaluator:
                         ray_idx,
                     )
 
-        # --- Execute distribution trace jobs and extract values eagerly ---
+    def _evaluate_distribution_jobs(self, raw_values: list[Any]) -> None:
+        """Populate values for operands covered by distribution trace jobs."""
+        num_operands = len(self.problem.operands)
         for job_idx, job in enumerate(self._distribution_jobs):
-            try:
-                sg = job.execute()
-            except Exception:
-                sg = None
+            sg = self._safe_execute(job)
 
             for i in range(num_operands):
                 plan_type, pj, _ = self._operand_plan[i]
@@ -475,31 +462,68 @@ class BatchedRayEvaluator:
                         metric_fn = operand_registry.get(operand.operand_type)
                         raw_values[i] = metric_fn(**operand.input_data)
 
-        # --- Evaluate direct (non-ray) operands ---
+    def _evaluate_direct_operands(self, raw_values: list[Any]) -> None:
+        """Populate values for non-ray operands evaluated directly."""
+        num_operands = len(self.problem.operands)
         for i in range(num_operands):
             if raw_values[i] is not None:
                 continue
             plan_type, _, _ = self._operand_plan[i]
             if plan_type == "direct":
                 operand = self.problem.operands[i]
+                # Match OptimizationProblem.fun_array semantics: zero-effective-
+                # weight operands are excluded and should not be evaluated.
+                if operand.effective_weight() == 0.0:
+                    continue
                 metric_fn = operand_registry.get(operand.operand_type)
                 if metric_fn is None:
                     raise ValueError(f"Unknown operand type: {operand.operand_type}")
                 raw_values[i] = metric_fn(**operand.input_data)
 
-        # --- Compute contribution terms using effective_weight * delta**2 ---
+    def _build_contribution_terms(self, raw_values: list[Any]) -> list[Any]:
+        """Convert raw operand values into merit contribution terms."""
         terms = []
         for i, operand in enumerate(self.problem.operands):
+            ew = operand.effective_weight()
+            if ew == 0.0:
+                continue
             value = raw_values[i]
             if value is None:
                 raise RuntimeError(
                     f"Operand {i} ({operand.operand_type}) was not evaluated"
                 )
-            ew = operand.effective_weight()
-            if ew == 0.0:
-                continue
             delta = self._compute_delta(operand, value)
             terms.append(ew * delta**2)
+        return terms
+
+    # ------------------------------------------------------------------
+    # Evaluation
+    # ------------------------------------------------------------------
+
+    def fun_array(self):
+        """Compute contribution terms for each active operand.
+
+        This is the batched equivalent of
+        ``OptimizationProblem.fun_array()``.
+
+        Trace jobs are executed one at a time and operand values are
+        extracted immediately after each trace, before the next trace
+        overwrites the shared ``surface_group`` state.
+        """
+        self._ensure_plan_current()
+
+        num_operands = len(self.problem.operands)
+
+        # Pre-allocate operand values — None means "not yet computed"
+        raw_values: list[Any] = [None] * num_operands
+
+        # Three-stage evaluation: generic traces, distribution traces, and
+        # direct/non-ray metrics.
+        self._evaluate_generic_jobs(raw_values)
+        self._evaluate_distribution_jobs(raw_values)
+        self._evaluate_direct_operands(raw_values)
+
+        terms = self._build_contribution_terms(raw_values)
 
         if not terms:
             return be.array([0.0])
@@ -516,8 +540,7 @@ class BatchedRayEvaluator:
         extracted immediately after each trace, before the next trace
         overwrites the shared ``surface_group`` state.
         """
-        if len(self._operand_plan) != len(self.problem.operands):
-            self._analyze()
+        self._ensure_plan_current()
 
         num_operands = len(self.problem.operands)
 
@@ -528,10 +551,7 @@ class BatchedRayEvaluator:
 
         # --- 1. Process Batched Ray Traces (Vectorized) ---
         for _job_idx, job in enumerate(self._generic_jobs):
-            try:
-                sg = job.execute()
-            except Exception:
-                sg = None
+            sg = self._safe_execute(job)
 
             if sg is None:
                 continue
@@ -600,10 +620,7 @@ class BatchedRayEvaluator:
 
         # --- 2. Process Distribution Jobs ---
         for job_idx, job in enumerate(self._distribution_jobs):
-            try:
-                sg = job.execute()
-            except Exception:
-                sg = None
+            sg = self._safe_execute(job)
             for i in range(num_operands):
                 plan_type, pj, _ = self._operand_plan[i]
                 if plan_type == "distribution" and pj == job_idx:

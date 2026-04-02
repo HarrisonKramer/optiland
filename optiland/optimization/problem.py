@@ -48,7 +48,13 @@ class OptimizationProblem:
 
     """
 
-    def __init__(self):
+    def __init__(self, batching: bool = True):
+        """Initialize an optimization problem.
+
+        Args:
+            batching: If ``True`` (default), batched ray evaluation is enabled.
+                Set to ``False`` to opt out and use per-operand evaluation.
+        """
         self.operands = OperandManager()
         self.variables = VariableManager()
         self.initial_value = 0.0
@@ -58,6 +64,9 @@ class OptimizationProblem:
         if be.get_backend() == "torch" and not be.grad_mode.requires_grad:
             warnings.warn("Gradient tracking is enabled for PyTorch.", stacklevel=2)
             be.grad_mode.enable()
+
+        if batching:
+            self.enable_batching()
 
     @staticmethod
     def _to_item(x):
