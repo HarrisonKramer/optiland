@@ -492,6 +492,21 @@ class TestLensOperand:
         edge_thickness = LensOperand.edge_thickness(self.optic, surface_number=2)
         assert_allclose(edge_thickness, expected_edge_thickness)
 
+    def test_edge_thickness_auto_initializes_semi_apertures(self, set_test_backend):
+        self.optic.surfaces.add(index=2, radius=50.0, thickness=5.0, material="N-BK7")
+        self.optic.surfaces.add(index=3, radius=-50.0, thickness=100.0, material="air")
+        self.optic.surfaces.add(index=4)
+
+        # No explicit updater.update_paraxial() call on purpose.
+        assert self.optic.surfaces[2].semi_aperture is None
+        assert self.optic.surfaces[3].semi_aperture is None
+
+        edge_thickness = LensOperand.edge_thickness(self.optic, surface_number=2)
+
+        assert self.optic.surfaces[2].semi_aperture is not None
+        assert self.optic.surfaces[3].semi_aperture is not None
+        assert be.size(edge_thickness) == 1
+
     def test_edge_thickness_plano_concave(self, set_test_backend):
         self.optic.surfaces.add(index=2, radius=be.inf, thickness=2.0, material="N-BK7")
         self.optic.surfaces.add(index=3, radius=50.0, thickness=100.0, material="air")
@@ -525,7 +540,7 @@ class TestLensOperand:
         r1 = 50.0
         r2 = -50.0
         t = 5.0
-        semi_aperture = 8.0
+        semi_aperture = 10.0
 
         sag1 = r1 - be.sqrt(r1**2 - semi_aperture**2)
         sag2 = r2 + be.sqrt(r2**2 - semi_aperture**2)
@@ -553,7 +568,7 @@ class TestLensOperand:
 
         sa1 = self.optic.surfaces[2].semi_aperture
         sa2 = self.optic.surfaces[3].semi_aperture
-        semi_aperture = be.minimum(sa1, sa2)
+        semi_aperture = be.maximum(sa1, sa2)
 
         r1 = 50.0
         r2 = -50.0
