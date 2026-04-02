@@ -679,6 +679,13 @@ class BatchedRayEvaluator:
         This replicates the logic from ``Operand.delta()`` but accepts a
         pre-computed *value* so we avoid re-evaluating the operand.
         """
+        # Some direct operands naturally return shape-(1,) tensors/arrays.
+        # Standard (non-batched) inequality logic may collapse these to
+        # scalars via Python max(...), so mirror that behavior here to avoid
+        # mixed scalar/(1,) terms that cannot be stacked together.
+        if be.size(value) == 1:
+            value = be.ravel(value)[0]
+
         if operand.target is not None:
             return value - operand.target
 

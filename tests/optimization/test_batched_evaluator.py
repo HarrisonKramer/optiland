@@ -15,6 +15,7 @@ import pytest
 import optiland.backend as be
 from optiland.optimization import optimization
 from optiland.optimization.batched_evaluator import BatchedRayEvaluator
+from optiland.optimization.operand.operand import operand_registry
 from optiland.samples.microscopes import Microscope20x, Objective60x
 from optiland.samples.objectives import CookeTriplet
 
@@ -402,6 +403,48 @@ class TestInequalityOperands:
 
         assert batched == pytest.approx(standard, rel=1e-6)
 
+    def test_mixed_scalar_and_singleton_direct_inequality(self, monkeypatch):
+        lens = Objective60x()
+
+        # Mimic a direct operand that returns a singleton backend array.
+        monkeypatch.setitem(
+            operand_registry._registry,
+            "_singleton_metric_for_batch_test",
+            lambda optic: be.array([1.0]),
+        )
+
+        standard_problem = optimization.OptimizationProblem(batching=False)
+        standard_problem.add_operand(
+            operand_type="f2",
+            target=90.0,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+        standard_problem.add_operand(
+            operand_type="_singleton_metric_for_batch_test",
+            min_val=0.5,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+
+        batched_problem = optimization.OptimizationProblem(batching=True)
+        batched_problem.add_operand(
+            operand_type="f2",
+            target=90.0,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+        batched_problem.add_operand(
+            operand_type="_singleton_metric_for_batch_test",
+            min_val=0.5,
+            weight=1.0,
+            input_data={"optic": lens},
+        )
+
+        standard = float(be.to_numpy(standard_problem.sum_squared()))
+        batched = float(be.to_numpy(batched_problem.sum_squared()))
+        assert batched == pytest.approx(standard, rel=1e-6)
+
 
 # ---------------------------------------------------------------------------
 # Tests: Problem integration (enable_batching / disable_batching)
@@ -513,11 +556,8 @@ class TestNonRayOperands:
 
         assert batched == pytest.approx(standard, rel=1e-6)
 
-    @pytest.mark.skip(reason="LensOperand.edge_thickness has pre-existing sag bug")
     def test_edge_thickness(self):
         lens = CookeTriplet()
-        # First trace to populate semi-apertures
-        lens.trace(0.0, 0.0, 0.55, 100)
 
         problem = optimization.OptimizationProblem()
 
