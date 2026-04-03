@@ -112,6 +112,9 @@ class ReferenceStrategy(ABC):
         if not isinstance(self.optic.fields.field_definition, AngleField):
             return opd
 
+        if not self.optic.object_surface.is_infinite:
+            return opd
+
         hx, hy = field
         max_field_deg = self.optic.fields.max_field
         fx = hx * max_field_deg
