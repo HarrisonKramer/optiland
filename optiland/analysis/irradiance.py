@@ -253,10 +253,10 @@ class IncoherentIrradiance(BaseAnalysis):
         data = []
         for field in self.fields:
             f_block = []
-            for wl in self.wavelengths:
+            for wp in self.wavelengths:
                 f_block.append(
                     self._generate_field_data(
-                        field, wl, self.distribution, self.user_initial_rays
+                        field, wp.value, self.distribution, self.user_initial_rays
                     )
                 )
             data.append(f_block)
@@ -486,7 +486,7 @@ class IncoherentIrradiance(BaseAnalysis):
             return f"(User Rays: {field_label})"
         else:
             field_coord = self.fields[f_idx]
-            wavelength_val = self.wavelengths[w_idx]
+            wavelength_val = self.wavelengths[w_idx].value
             text = (
                 f"Field {f_idx} {field_coord}, "
                 f"$\\lambda_{w_idx}$ = {wavelength_val:.3f} µm"

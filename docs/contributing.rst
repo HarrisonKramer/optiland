@@ -27,7 +27,7 @@ Task Workflow and Coordination
 
 We use a lightweight workflow to help contributors collaborate smoothly and avoid duplicated effort:
 
-- **Each task should have an issue** on GitHub. If you're working on something new, check for an existing issue or `open a new one <https://github.com/HarrisonKramer/optiland/issues>`_. This keeps the project transparent and easier to coordinate.
+- **Each task should have an issue** on GitHub. If you're working on something new, check for an existing issue or `open a new one <https://github.com/optiland/optiland/issues>`_. This keeps the project transparent and easier to coordinate.
 - **Leave a comment on the issue** if you plan to work on it. Optionally, you can be assigned the issue to make your involvement visible.
 - **Progress is tracked using GitHub Projects (kanban).** Issues are moved across columns such as "To Do", "In Progress", and "In Review". You can view the board here: `Optiland GitHub Project <https://github.com/users/HarrisonKramer/projects/1>`_. If you don’t have permission to move cards, maintainers will update them based on issue comments.
 - **Milestones help plan releases.** Larger features and grouped improvements may be linked to a milestone. If you're contributing to a milestone, try to complete the work in time — but there's no strict deadline.

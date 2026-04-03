@@ -173,7 +173,8 @@ class BaseAngleVsHeightAnalysis(BaseAnalysis, abc.ABC):
         Px = be.atleast_1d(Px)
         Py = be.atleast_1d(Py)
 
-        wavelength_value = self.wavelengths[0]  # Use the first and only wavelength
+        # Use the first and only wavelength
+        wavelength_value = self.wavelengths[0].value
 
         self.optic.trace_generic(
             Hx=Hx, Hy=Hy, Px=Px, Py=Py, wavelength=wavelength_value

@@ -65,7 +65,9 @@ class BaseMTF(abc.ABC):
         self.remove_tilt = remove_tilt
         self.strategy_kwargs = kwargs
 
-        self.resolved_fields = resolve_fields(optic, fields)
+        resolved = resolve_fields(optic, fields)
+        # extract plain (x, y) coords; BaseMTF uses single wavelength (no weighting)
+        self.resolved_fields = [fp.coord for fp in resolved]
         self.resolved_wavelength = resolve_wavelength(optic, wavelength)
 
         self._calculate_psf()

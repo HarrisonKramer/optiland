@@ -59,7 +59,7 @@ class TestSpotReference:
         centered_data = spot._center_spots(spot.data)
 
         # Also compute the uncentered chief ray centers
-        chief_centers = spot.generate_chief_rays_centers(ref_wl)
+        chief_centers = spot.generate_chief_rays_centers(ref_wl.value)
         chief_centers_np = be.to_numpy(chief_centers)
 
         # Original centroid of the data (not centered on chief ray yet)

@@ -232,6 +232,50 @@ class Operand:
             return self.delta_ineq()
         raise ValueError(f"{self.operand_type} operand cannot compute delta")
 
+    def effective_weight(self, optic=None) -> float:
+        """Return the total scaling factor this operand contributes.
+
+        This is ``operand.weight × field_weight × wavelength_weight``,
+        where field and wavelength weights come from the optic's current
+        field/wavelength definitions. If the operand references a field or
+        wavelength index, the corresponding weight is looked up from the
+        optic. User-specified raw coordinates default to weight=1.0.
+
+        The optic is resolved in the following order:
+
+            1. The ``optic`` argument (if provided).
+            2. ``self.input_data["optic"]`` (the standard operand convention).
+            3. Falls back to field_w = wl_w = 1.0 when no optic is available.
+
+        Args:
+            optic: The optic this operand will be evaluated against.  If
+                None, the optic is read from ``self.input_data``.
+
+        Returns:
+            The effective scalar multiplier for this operand's contribution.
+        """
+        import contextlib
+
+        if optic is None and self.input_data:
+            optic = self.input_data.get("optic")
+
+        field_w = 1.0
+        wl_w = 1.0
+
+        if optic is not None:
+            field_idx = self.input_data.get("field") if self.input_data else None
+            wl_idx = self.input_data.get("wavelength") if self.input_data else None
+
+            if field_idx is not None and isinstance(field_idx, int):
+                with contextlib.suppress(IndexError):
+                    field_w = optic.fields.fields[field_idx].weight
+
+            if wl_idx is not None and isinstance(wl_idx, int):
+                with contextlib.suppress(IndexError):
+                    wl_w = optic.wavelengths.wavelengths[wl_idx].weight
+
+        return self.weight * field_w * wl_w
+
     def fun(self):
         """Calculate the objective function value"""
         return self.weight * self.delta()

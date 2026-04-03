@@ -38,6 +38,8 @@ Components Explained
      - Adding **operands** to define the merit function.
      - Adding **variables** to define the parameters to optimize.
      - Computing the overall objective function value.
+   - Optionally batching compatible ray operands to avoid redundant traces.
+   - Providing both squared terms (`fun_array`) and residual vectors (`residual_vector`) for least-squares optimizers.
 
 2. **Optimizers**:
 
@@ -96,7 +98,7 @@ Typical Optimization Process
 .. code:: python
 
    from optiland.optimization import OptimizationProblem
-   problem = OptimizationProblem(optic)
+   problem = OptimizationProblem()
 
 2. **Add Operands**. Add operands to define the merit function:
 
@@ -114,7 +116,20 @@ Typical Optimization Process
    # Add radius of curvature variable for second surface
    problem.add_variable(lens, 'radius', surface_number=2)
 
-4. **Choose an Optimizer**. Select an optimizer and run the optimization:
+4. **(Optional) Configure Batched Ray Evaluation**. Batching is enabled by default. If you need to compare with legacy per-operand behavior, disable it explicitly:
+
+.. code:: python
+
+   # Squared weighted deltas (used by many optimizers)
+   merit = problem.sum_squared()
+
+   # Unsquared weighted deltas (useful for least-squares style methods)
+   residuals = problem.residual_vector()
+
+   # Disable batching to opt out (legacy per-operand evaluation)
+   problem.disable_batching()
+
+5. **Choose an Optimizer**. Select an optimizer and run the optimization:
 
 .. code:: python
 
@@ -122,13 +137,34 @@ Typical Optimization Process
    optimizer = OptimizerGeneric(problem)
    result = optimizer.optimize()
 
-5. **Review Results**. Print optimization results and visualize performance:
+6. **Review Results**. Print optimization results and visualize performance:
 
 .. code:: python
 
    problem.info()  # print optimization problem details
    print(result)   # standard output from scipy.optimize.minimize
    lens.draw()     # Plot the lens in 2D
+
+
+Batched Ray Evaluation Internals
+--------------------------------
+
+The batching path is implemented by `optiland.optimization.batched_evaluator.BatchedRayEvaluator` and is integrated into `OptimizationProblem` by default. You can opt out with `disable_batching()` and re-enable with `enable_batching()`.
+
+When enabled, the evaluator performs three steps:
+
+1. Group compatible operands that can share the same trace call.
+2. Execute the minimum required set of `trace_generic` and `trace` calls.
+3. Extract per-operand values from shared traced arrays while preserving backend behavior and autograd.
+
+Current batching support includes:
+
+- **Single-ray (`trace_generic`) operands** such as `real_x_intercept`, `real_y_intercept`, `real_z_intercept`, local-coordinate intercept variants, direction cosines (`real_L`, `real_M`, `real_N`), and `AOI`.
+- **Distribution (`trace`) operands** for `rms_spot_size` when trace parameters match.
+
+Operands that are not currently batchable are evaluated through the standard direct path, so mixed merit functions are fully supported.
+
+For PyTorch workflows, this design keeps gradients valid because values are extracted by tensor indexing from traced data (without detaching). For NumPy workflows, behavior remains numerically equivalent to the standard per-operand evaluation path.
 
 
 .. figure:: ../_static/cooke_triplet_starting_point.png
@@ -152,7 +188,7 @@ Understanding Operands
 Operands represent individual components of the merit function. To find the inputs required for a specific operand:
 
 - Refer to the operand registry in the Operand module, or the API documentation.
-- Use operand-specific documentation for parameter details. For example, the RMS spot size requires a field as an input, while the focal length does not. All operands require a target value, weight, and an `Optic` instance.
+- Use operand-specific documentation for parameter details. For example, the RMS spot size requires a field as an input, while the focal length does not. All operands require a target value, weight, and an `Optic` instance. Note that the ``weight`` of an operand dictates its contribution relative to other operands in the merit function. For operands evaluated across the pupil or across a spectrum (e.g., standard RMS Spot Size), the merit function also automatically accounts for the intrinsic ``weight`` assigned to the ``Field`` and ``Wavelength`` objects defined in the ``Optic``.
 
 .. raw:: html
 

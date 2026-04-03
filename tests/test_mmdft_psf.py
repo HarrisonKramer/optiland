@@ -60,7 +60,7 @@ def make_mmdftpsf_and_fftpsf(set_test_backend):
             optic, field, wavelength, num_rays=num_rays, grid_size=image_size
         )
         dx = (
-            fftpsf.wavelengths[0]
+            fftpsf.wavelengths[0].value
             * fftpsf._get_working_FNO()
             * (fftpsf.num_rays - 1)
             / fftpsf.grid_size

@@ -88,12 +88,16 @@ class Wavefront:
         """Retrieves precomputed wavefront data for a field and wavelength.
 
         Args:
-            field (tuple[float, float]): The field coordinates.
-            wl (float): The wavelength.
+            field (tuple[float, float]): The field coordinates, or a FieldPoint.
+            wl (float): The wavelength in µm, or a WavelengthPoint.
 
         Returns:
             WavefrontData: A data container with the computed wavefront results.
         """
+        if hasattr(field, "coord"):
+            field = field.coord
+        if hasattr(wl, "value"):
+            wl = wl.value
         return self.data[(field, wl)]
 
     @staticmethod
@@ -160,8 +164,10 @@ class Wavefront:
         This method iterates through each field and wavelength pair and
         delegates the computation to the selected strategy object.
         """
-        for field in self.fields:
-            for wl in self.wavelengths:
+        for fp in self.fields:
+            field = fp.coord
+            for wp in self.wavelengths:
+                wl = wp.value
                 data = self.strategy.compute_wavefront_data(field, wl)
 
                 if self.remove_tilt:

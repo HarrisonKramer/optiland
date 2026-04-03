@@ -142,9 +142,9 @@ class RadiantIntensity(BaseAnalysis):
         analysis_data = []
         for field_coord in self.fields:
             field_block = []
-            for wl in self.wavelengths:
+            for wp in self.wavelengths:
                 field_block.append(
-                    self._generate_field_wavelength_data(field_coord, wl)
+                    self._generate_field_wavelength_data(field_coord, wp.value)
                 )
             analysis_data.append(field_block)
         return analysis_data
@@ -626,7 +626,7 @@ class RadiantIntensity(BaseAnalysis):
                         axis_type=cs_axis_type,
                         slice_idx=cs_slice_idx,
                         title=f"Field: {self.fields[f_idx]}, "
-                        f"λ={self.wavelengths[w_idx]:.3f} µm",
+                        f"λ={self.wavelengths[w_idx].value:.3f} µm",
                         style=cross_section_style,
                         color=cross_section_color,
                         ylabel=cbar_label,
@@ -649,7 +649,7 @@ class RadiantIntensity(BaseAnalysis):
                     ax_map.set_ylabel("Y-Angle (degrees)")
                     ax_map.set_title(
                         f"Field: {self.fields[f_idx]}, "
-                        f"λ={self.wavelengths[w_idx]:.3f} µm"
+                        f"λ={self.wavelengths[w_idx].value:.3f} µm"
                     )
                     ax_map.grid(True, linestyle=":", alpha=0.7)  # Add grid to 2D plots
                     fig.colorbar(

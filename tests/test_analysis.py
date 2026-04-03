@@ -17,6 +17,7 @@ from optiland.physical_apertures import RectangularAperture
 from optiland.rays import RealRays
 from optiland.samples.objectives import CookeTriplet, TripletTelescopeObjective
 from optiland.sources import SMFSource
+from optiland.utils import FieldPoint, WavelengthPoint
 
 from .utils import assert_allclose
 
@@ -591,7 +592,7 @@ class TestTelescopeTripletFieldCurvature:
         field_curvature = analysis.FieldCurvature(telescope_objective)
         assert field_curvature.optic == telescope_objective
         assert (
-            field_curvature.wavelengths
+            [wp.value for wp in field_curvature.wavelengths]
             == telescope_objective.wavelengths.get_wavelengths()
         )
         assert field_curvature.num_points == 128
@@ -604,7 +605,7 @@ class TestTelescopeTripletFieldCurvature:
             wavelengths=[0.5, 0.6],
         )
         assert field_curvature.optic == telescope_objective
-        assert field_curvature.wavelengths == [0.5, 0.6]
+        assert [wp.value for wp in field_curvature.wavelengths] == [0.5, 0.6]
         assert field_curvature.num_points == 128
 
     def test_field_curvature_init_with_num_points(
@@ -617,7 +618,7 @@ class TestTelescopeTripletFieldCurvature:
         )
         assert field_curvature.optic == telescope_objective
         assert (
-            field_curvature.wavelengths
+            [wp.value for wp in field_curvature.wavelengths]
             == telescope_objective.wavelengths.get_wavelengths()
         )
         assert field_curvature.num_points == num_points
@@ -632,7 +633,7 @@ class TestTelescopeTripletFieldCurvature:
             num_points=num_points,
         )
         assert field_curvature.optic == telescope_objective
-        assert field_curvature.wavelengths == [0.55]
+        assert [wp.value for wp in field_curvature.wavelengths] == [0.55]
         assert field_curvature.num_points == num_points
 
     def test_field_curvature_view(self, set_test_backend, telescope_objective):
@@ -763,8 +764,8 @@ class TestPupilAberration:
     def test_initialization(self, set_test_backend, telescope_objective):
         pupil_ab = analysis.PupilAberration(telescope_objective)
         assert pupil_ab.optic == telescope_objective
-        assert pupil_ab.fields == [(0.0, 0.0), (0.0, 0.7), (0.0, 1.0)]
-        assert pupil_ab.wavelengths == [0.4861, 0.5876, 0.6563]
+        assert [fp.coord for fp in pupil_ab.fields] == [(0.0, 0.0), (0.0, 0.7), (0.0, 1.0)]
+        assert [wp.value for wp in pupil_ab.wavelengths] == [0.4861, 0.5876, 0.6563]
         assert pupil_ab.num_points == 257  # num_points is forced to be odd
 
     def test_generate_data(self, set_test_backend, telescope_objective):
@@ -801,8 +802,8 @@ def test_generate_field_data_local(set_test_backend, cooke_triplet):
     spot = analysis.SpotDiagram(cooke_triplet, coordinates="local")
 
     # Pick the first field and wavelength
-    field = spot.fields[0]
-    wavelength = spot.wavelengths[0]
+    field = spot.fields[0].coord
+    wavelength = spot.wavelengths[0].value
 
     data = spot._generate_field_data(
         field,
@@ -825,8 +826,8 @@ def test_generate_field_data_global(set_test_backend, cooke_triplet):
     spot = analysis.SpotDiagram(cooke_triplet, coordinates="global")
 
     # Pick the first field and wavelength
-    field = spot.fields[0]
-    wavelength = spot.wavelengths[0]
+    field = spot.fields[0].coord
+    wavelength = spot.wavelengths[0].value
 
     data = spot._generate_field_data(
         field,
@@ -1465,7 +1466,7 @@ def test_incoherent_irradiance_initialization(
     assert irr.px_size == (0.1, 0.1)
     assert irr.detector_surface == -1
     assert irr.fields == optic.fields.get_field_coords()
-    assert irr.wavelengths == optic.wavelengths.get_wavelengths()
+    assert [wp.value for wp in irr.wavelengths] == optic.wavelengths.get_wavelengths()
     assert irr.user_initial_rays is None
     assert len(irr.data) == len(optic.fields.get_field_coords())
     assert len(irr.data[0]) == len(optic.wavelengths.get_wavelengths())
@@ -2075,8 +2076,8 @@ class TestCookeTripletBestFitRayFan:
 
         # Instantiate RayFan, it will be our object under test
         fan = analysis.BestFitRayFan(mock_optic, num_points=5)
-        fan.fields = [(0.0, 0.7)]
-        fan.wavelengths = [0.55]
+        fan.fields = [FieldPoint(coord=(0.0, 0.7), weight=1.0)]
+        fan.wavelengths = [WavelengthPoint(value=0.55, weight=1.0)]
 
         # 2. Manually construct the input data dictionary
         center_idx = fan.num_points // 2  # This will be index 2 for num_points=5

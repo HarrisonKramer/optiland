@@ -98,11 +98,11 @@ class RmsSpotSizeVsField(SpotDiagram):
         spot_size_data = be.to_numpy(self._spot_size)
 
         # Plot each wavelength's data as a separate line to handle legends correctly.
-        for i, wavelength in enumerate(analysis_wavelengths):
+        for i, wp in enumerate(analysis_wavelengths):
             ax.plot(
                 be.to_numpy(self._field[:, 1]),
                 spot_size_data[:, i],
-                label=f"{wavelength:.4f} µm",
+                label=f"{wp.value:.4f} µm",
             )
 
         ax.set_xlabel("Normalized Y Field Coordinate")
@@ -168,11 +168,11 @@ class RmsWavefrontErrorVsField(Wavefront):
         wavefront_error_data = be.to_numpy(self._wavefront_error)
 
         # Plot each wavelength's data as a separate line.
-        for i, wavelength in enumerate(analysis_wavelengths):
+        for i, wp in enumerate(analysis_wavelengths):
             ax.plot(
                 be.to_numpy(self._field[:, 1]),
                 wavefront_error_data[:, i],
-                label=f"{wavelength:.4f} µm",
+                label=f"{wp.value:.4f} µm",
             )
         ax.set_xlabel("Normalized Y Field Coordinate")
         ax.set_ylabel("RMS Wavefront Error (waves)")
@@ -189,10 +189,11 @@ class RmsWavefrontErrorVsField(Wavefront):
     def _rms_wavefront_error(self):
         """Calculate the RMS wavefront error."""
         rows = []
-        for field in self.fields:
+        for fp in self.fields:
+            field = fp.coord
             cols = []
-            for wl in self.wavelengths:
-                wavefront_data = self.get_data(field, wl)
+            for wp in self.wavelengths:
+                wavefront_data = self.get_data(field, wp.value)
                 rms_ij = be.sqrt(be.mean(wavefront_data.opd**2))
                 cols.append(rms_ij)
             # turn this row into a backend array/tensor

@@ -279,7 +279,7 @@ class ScalarFFTPSF(BasePSF):
         FNO = self._get_working_FNO()
 
         Q = self.grid_size / (self.num_rays - 1)
-        dx = self.wavelengths[0] * FNO / Q
+        dx = self.wavelengths[0].value * FNO / Q
 
         x = be.to_numpy(image.shape[1] * dx)
         y = be.to_numpy(image.shape[0] * dx)

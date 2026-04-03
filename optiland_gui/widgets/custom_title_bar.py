@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-_GITHUB_URL = "https://github.com/HarrisonKramer/optiland"
+_GITHUB_URL = "https://github.com/optiland/optiland"
 _HELP_URL = "https://optiland.readthedocs.io/en/latest/index.html"
 
 _BTN_SIZE = QSize(30, 30)

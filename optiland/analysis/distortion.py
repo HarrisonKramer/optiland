@@ -85,9 +85,9 @@ class Distortion(BaseAnalysis):
         field = be.linspace(1e-10, self.optic.fields.max_field, self.num_points)
         field_np = be.to_numpy(field)
 
-        for k, wavelength in enumerate(self.wavelengths):
+        for k, wp in enumerate(self.wavelengths):
             dist_k_np = be.to_numpy(self.data[k])
-            ax.plot(dist_k_np, field_np, label=f"{wavelength:.4f} µm")
+            ax.plot(dist_k_np, field_np, label=f"{wp.value:.4f} µm")
 
         ax.set_xlabel("Distortion (%)")
         ax.set_ylabel("Field")
@@ -117,7 +117,8 @@ class Distortion(BaseAnalysis):
         Hy = be.linspace(1e-10, 1, self.num_points)
 
         data = []
-        for wavelength in self.wavelengths:
+        for wp in self.wavelengths:
+            wavelength = wp.value
             self.optic.trace_generic(Hx=Hx, Hy=Hy, Px=0, Py=0, wavelength=wavelength)
             yr = self.optic.surfaces.y[-1, :]
 

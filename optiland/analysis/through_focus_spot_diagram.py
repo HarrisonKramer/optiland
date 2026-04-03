@@ -124,10 +124,13 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
             list: a list of spot diagram data, including intersection points and
                 intensity
         """
+        # Extract raw coords and wavelength values so SpotDiagram can consume them
+        fields_raw = [fp.coord for fp in self.fields]
+        wavelengths_raw = [wp.value for wp in self.wavelengths]
         spot_diagram_at_focus = SpotDiagram(
             self.optic,
-            fields=self.fields,
-            wavelengths=self.wavelengths,
+            fields=fields_raw,
+            wavelengths=wavelengths_raw,
             num_rings=self.num_rings,
             distribution=self.distribution,
             coordinates=self.coordinates,
@@ -189,7 +192,8 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
         x_label, y_label = self._get_plot_axis_labels()
         legend_handles, legend_labels = [], []
 
-        for i, field_coord in enumerate(self.fields):
+        for i, fp in enumerate(self.fields):
+            field_coord = fp.coord
             for j, position in enumerate(self.positions):
                 ax = axs[i, j]
                 data = self.results[j][i]
@@ -366,7 +370,7 @@ class ThroughFocusSpotDiagram(ThroughFocusAnalysis):
                     alpha=0.7,
                 )
                 if i == 0 and j == 0:
-                    wl = self.wavelengths[k]
+                    wl = self.wavelengths[k].value
                     handles.append(scatter)
                     labels.append(f"{wl:.4f} µm")
 

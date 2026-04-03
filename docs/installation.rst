@@ -64,7 +64,7 @@ To clone and install the latest development version:
 
    .. code-block:: console
 
-      git clone https://github.com/HarrisonKramer/optiland.git
+      git clone https://github.com/optiland/optiland.git
 
 2. **Change the directory**
 

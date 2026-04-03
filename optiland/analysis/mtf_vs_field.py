@@ -74,9 +74,9 @@ class MTFvsField(BaseAnalysis):
                 "Set override_limits=True to bypass this check."
             )
 
-        from optiland.utils import resolve_wavelengths
+        from optiland.utils import resolve_wavelengths as _resolve_wls
 
-        resolved_wls = resolve_wavelengths(optic, wavelengths)
+        resolved_wls = _resolve_wls(optic, wavelengths)
         num_wl = len(resolved_wls)
 
         if num_wl > self.MAX_WAVELENGTHS:
@@ -98,7 +98,8 @@ class MTFvsField(BaseAnalysis):
             freqs_to_calc.append((0.0, freq))
 
         results = []
-        for wl in self.wavelengths:
+        for wp in self.wavelengths:
+            wl = wp.value
             wl_results = [{"tangential": [], "sagittal": []} for _ in self.frequencies]
 
             for field in fields:
@@ -177,7 +178,7 @@ class MTFvsField(BaseAnalysis):
 
         axes_color_cycle = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
-        for i_wl, wavelength in enumerate(self.wavelengths):
+        for i_wl, wp in enumerate(self.wavelengths):
             for i_freq, freq in enumerate(self.frequencies):
                 color_idx = (i_wl * len(self.frequencies) + i_freq) % len(
                     axes_color_cycle
@@ -189,7 +190,7 @@ class MTFvsField(BaseAnalysis):
 
                 label_prefix = f"{freq} cyc/mm"
                 if len(self.wavelengths) > 1:
-                    label_prefix += f", {wavelength:.4f} µm"
+                    label_prefix += f", {wp.value:.4f} µm"
 
                 ax.plot(
                     x_plot,

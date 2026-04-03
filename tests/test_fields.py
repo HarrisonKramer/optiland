@@ -119,7 +119,7 @@ def test_field_group_set_type(set_test_backend):
 
 def test_field_to_dict(set_test_backend):
     f = fields.Field(0, 0)
-    assert f.to_dict() == {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0}
+    assert f.to_dict() == {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0, "weight": 1.0}
 
 
 def test_field_group_to_dict(set_test_backend):
@@ -130,10 +130,10 @@ def test_field_group_to_dict(set_test_backend):
 
     data = f.to_dict()
     assert data["fields"] == [
-        {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0},
-        {"x": 2.5, "y": 0, "vx": 0.0, "vy": 0.0},
-        {"x": 0, "y": 2, "vx": 0.0, "vy": 0.0},
-        {"x": 4, "y": 3, "vx": 0.0, "vy": 0.0},
+        {"x": 0, "y": 0, "vx": 0.0, "vy": 0.0, "weight": 1.0},
+        {"x": 2.5, "y": 0, "vx": 0.0, "vy": 0.0, "weight": 1.0},
+        {"x": 0, "y": 2, "vx": 0.0, "vy": 0.0, "weight": 1.0},
+        {"x": 4, "y": 3, "vx": 0.0, "vy": 0.0, "weight": 1.0},
     ]
     assert data["telecentric"] is False
     assert data["field_definition"] is None

@@ -25,8 +25,8 @@ class TestWavefront:
         optic = OpticClass()
         w = Wavefront(optic)
         assert w.num_rays == 12
-        assert w.fields == optic.fields.get_field_coords()
-        assert w.wavelengths == optic.wavelengths.get_wavelengths()
+        assert [fp.coord for fp in w.fields] == optic.fields.get_field_coords()
+        assert [wp.value for wp in w.wavelengths] == optic.wavelengths.get_wavelengths()
         assert isinstance(w.distribution, distribution.HexagonalDistribution)
 
     def test_wavefront_init_custom(self, set_test_backend):
@@ -39,7 +39,7 @@ class TestWavefront:
         )
         assert w.num_rays == 100
         assert isinstance(w.distribution, distribution.RandomDistribution)
-        assert w.wavelengths == [optic.primary_wavelength]
+        assert [wp.value for wp in w.wavelengths] == [optic.primary_wavelength]
 
     def test_generate_data(self, set_test_backend):
         optic = EyepieceErfle()
@@ -59,8 +59,8 @@ class TestOPDFan:
         optic = DoubleGauss()
         opd_fan = OPDFan(optic)
         assert opd_fan.num_rays == 100
-        assert opd_fan.fields == optic.fields.get_field_coords()
-        assert opd_fan.wavelengths == optic.wavelengths.get_wavelengths()
+        assert [fp.coord for fp in opd_fan.fields] == optic.fields.get_field_coords()
+        assert [wp.value for wp in opd_fan.wavelengths] == optic.wavelengths.get_wavelengths()
         assert isinstance(opd_fan.distribution, distribution.CrossDistribution)
         arr = be.linspace(-1, 1, opd_fan.num_rays)
         assert be.all(opd_fan.pupil_coord == arr)
@@ -91,8 +91,8 @@ class TestOPD:
         optic = EyepieceErfle()
         opd = OPD(optic, (0, 1), 0.55)
         assert opd.num_rays == 15
-        assert opd.fields == [(0, 1)]
-        assert opd.wavelengths == [0.55]
+        assert [fp.coord for fp in opd.fields] == [(0, 1)]
+        assert [wp.value for wp in opd.wavelengths] == [0.55]
         assert isinstance(opd.distribution, distribution.HexagonalDistribution)
 
     @patch("matplotlib.pyplot.show")
@@ -146,8 +146,8 @@ class TestZernikeOPD:
         optic = DoubleGauss()
         zernike_opd = ZernikeOPD(optic, (0, 1), 0.55)
         assert zernike_opd.num_rays == 15
-        assert zernike_opd.fields == [(0, 1)]
-        assert zernike_opd.wavelengths == [0.55]
+        assert [fp.coord for fp in zernike_opd.fields] == [(0, 1)]
+        assert [wp.value for wp in zernike_opd.wavelengths] == [0.55]
         assert isinstance(zernike_opd.distribution, distribution.HexagonalDistribution)
         assert be.allclose(zernike_opd.x, zernike_opd.distribution.x)
         assert be.allclose(zernike_opd.y, zernike_opd.distribution.y)

@@ -29,7 +29,10 @@ dependencies = [
 license = { text = "MIT License" }
 
 [project.urls]
-Homepage = "https://github.com/HarrisonKramer/optiland"
+Homepage = "https://github.com/optiland/optiland"
+Repository = "https://github.com/optiland/optiland"
+Documentation = "https://optiland.readthedocs.io/en/latest/"
+"Bug Tracker" = "https://github.com/optiland/optiland/issues"
 
 [project.scripts]
 optiland = "optiland_gui.run_gui:main"
