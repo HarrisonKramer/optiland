@@ -324,7 +324,7 @@ class ParticleSwarm(OptimizerGeneric):
                     f"improvement = {improvement:.6g}"
                 )
 
-            callback()
+            callback() if callback else None
 
             if no_improve_count >= stall_iterations:
                 success = True
