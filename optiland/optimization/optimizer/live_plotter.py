@@ -27,14 +27,20 @@ class LiveOptimizationPlotter:
         self._optical_system_handle: Any = None
         self._merit_function_handle: Any = None
 
+        self._initialized = False
+
         if not self._is_inline_backend:
             plt.ion()
 
     def initialize(self) -> None:
-        """Create persistent figures once so CLI backends keep the windows alive."""
+        """Create persistent figures once so CLI backends keep the windows alive
+        and draw a placeholder content immediately."""
+        if self._initialized:
+            return
+
         if self._system_fig is None:
             self._system_fig, self._system_ax = plt.subplots()
-            self._system_fig.canvas.manager.set_window_title("Optimization")
+            self._system_fig.canvas.manager.set_window_title("Lens optimization")
 
         if self._merit_fig is None:
             self._merit_fig, self._merit_ax = plt.subplots()
@@ -46,13 +52,17 @@ class LiveOptimizationPlotter:
             self._merit_ax.grid(alpha=0.25)
             self._merit_fig.canvas.manager.set_window_title("Merit function")
 
+        self._draw_placeholders()
+
         if not self._is_inline_backend:
             assert self._system_fig is not None
             assert self._merit_fig is not None
             self._system_fig.show()
             self._merit_fig.show()
             self._position_windows()
-            plt.pause(0.001)
+            self._force_render()
+
+        self._initialized = True
 
     def update(self) -> None:
         """Update the optical system plot and the merit function plot."""
@@ -67,6 +77,46 @@ class LiveOptimizationPlotter:
         self._redraw_optical_system()
         self._update_merit_history()
         self._render()
+
+    def _draw_placeholders(self) -> None:
+        """Draw non-empty initial content so windows do not look frozen."""
+        assert self._system_ax is not None
+        assert self._merit_ax is not None
+        assert self._merit_line is not None
+
+        self._system_ax.clear()
+        self._system_ax.set_title("Lens optimization")
+        self._system_ax.text(
+            0.5,
+            0.5,
+            "Preparing optimization...",
+            ha="center",
+            va="center",
+            transform=self._system_ax.transAxes,
+            fontsize=12,
+        )
+        self._system_ax.set_xticks([])
+        self._system_ax.set_yticks([])
+
+        self._merit_line.set_data([], [])
+        self._merit_ax.set_title("Merit function")
+        self._merit_ax.set_xlabel("Iteration")
+        self._merit_ax.set_ylabel("Merit function value")
+        self._merit_ax.grid(alpha=0.25)
+        self._merit_ax.text(
+            0.5,
+            0.5,
+            "Preparing optimization...",
+            ha="center",
+            va="center",
+            transform=self._merit_ax.transAxes,
+            fontsize=12,
+        )
+
+        assert self._system_fig is not None
+        assert self._merit_fig is not None
+        self._system_fig.tight_layout()
+        self._merit_fig.tight_layout()
 
     def _position_windows(self) -> None:
         """Place optics and merit windows side by side."""
@@ -103,10 +153,29 @@ class LiveOptimizationPlotter:
         )
         self.history.append(f_val_float)
 
-        self._merit_line.set_data(range(len(self.history)), self.history)
+        self._merit_ax.clear()
+        (self._merit_line,) = self._merit_ax.plot(
+            range(len(self.history)), self.history
+        )
+        self._merit_ax.set_yscale("log")
+        self._merit_ax.set_title("Merit function")
+        self._merit_ax.set_xlabel("Iteration")
+        self._merit_ax.set_ylabel("Merit function value")
+        self._merit_ax.grid(alpha=0.25)
         self._merit_ax.relim()
         self._merit_ax.autoscale_view()
         self._merit_fig.tight_layout()
+
+    def _force_render(self) -> None:
+        """Force an immediate GUI draw so the user sees populated windows."""
+        assert self._system_fig is not None
+        assert self._merit_fig is not None
+
+        self._system_fig.canvas.draw()
+        self._system_fig.canvas.flush_events()
+        self._merit_fig.canvas.draw()
+        self._merit_fig.canvas.flush_events()
+        plt.pause(0.001)
 
     def _render(self) -> None:
         assert self._system_fig is not None
@@ -123,11 +192,7 @@ class LiveOptimizationPlotter:
             else:
                 self._merit_function_handle.update(self._merit_fig)
         else:
-            self._system_fig.canvas.draw_idle()
-            self._system_fig.canvas.flush_events()
-            self._merit_fig.canvas.draw_idle()
-            self._merit_fig.canvas.flush_events()
-            plt.pause(0.001)
+            self._force_render()
 
         gc.collect()
 
