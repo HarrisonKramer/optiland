@@ -104,7 +104,7 @@ def present_2d(viewer, data, context, restyle=False, *, reset=False):
                 {identities[i]: xy for i, xy in data["boundaries"].items()},
                 {identities[i]: xy for i, xy in data["references"].items()},
             )
-        style_chief_rays(viewer)
+        viewer.canvas.draw_idle()
         viewer._scene_document_id = context["document_id"]
     finally:
         viewer._is_plotting = False

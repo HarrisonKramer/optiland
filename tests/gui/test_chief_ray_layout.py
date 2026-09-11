@@ -33,6 +33,57 @@ def progress(*args):
     pass
 
 
+@pytest.mark.parametrize("theme", ["dark", "light"])
+def test_shared_presenter_needs_no_chief_checkbox(qapp, theme):
+    from types import SimpleNamespace
+
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+    from matplotlib.figure import Figure
+
+    from optiland_gui.layout_presenter import present_2d
+
+    figure = Figure()
+    canvas = FigureCanvasQTAgg(figure)
+    viewer = SimpleNamespace(
+        figure=figure,
+        canvas=canvas,
+        ax=figure.add_subplot(),
+        current_theme=theme,
+        _preserve_next=False,
+        _user_initiated_view_change=False,
+    )
+    data = {
+        "name": "Synthetic preview",
+        "annotations": [],
+        "boundaries": {},
+        "references": {},
+        "primitives": [
+            {
+                "kind": "line",
+                "role": "ray",
+                "surfaces": (),
+                "chief": True,
+                "color_index": 0,
+                "xy": np.array([[0.0, 0.0], [1.0, 1.0]]),
+                "linewidth": 1.0,
+                "linestyle": "-",
+                "label": "Chief ray",
+            }
+        ],
+    }
+    context = {"document_id": "preview-test", "surface_identities": ()}
+    try:
+        for restyle in (False, True):
+            present_2d(viewer, data, context, restyle=restyle)
+            assert len(viewer.ax.lines) == 1
+            line, normal_color, width, order = viewer._chief_ray_artists[0]
+            assert line.get_color() == normal_color
+            assert line.get_linewidth() == width == 1
+            assert line.get_zorder() == order
+    finally:
+        canvas.close()
+
+
 @pytest.mark.parametrize(
     "distribution,requested,total",
     [

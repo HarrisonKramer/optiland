@@ -561,6 +561,7 @@ class MatplotlibViewer(QWidget):
 
     def _present_layout(self, data, context, restyle=False, *, reset=False):
         present_2d(self, data, context, restyle, reset=reset)
+        style_chief_rays(self)
 
     def plot_optic(self, preserve_zoom=False):
         """Request the latest visible layout; calculation belongs to its worker."""
