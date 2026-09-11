@@ -190,7 +190,7 @@ def test_checkbox_restyles_without_jobs_and_latest_choice_survives_result(
         serial, token = jobs._serial, connector.document_state.edit_token
         old_data = viewer.layout_job.data
         line, normal_color, normal_width, order = viewer._chief_ray_artists[0]
-        assert to_rgba(line.get_color()) == to_rgba("#2196F3")
+        assert to_rgba(line.get_color()) == to_rgba("#C4CFFF")
         assert line.get_zorder() > order and line.get_linewidth() > normal_width
         trace = MagicMock(side_effect=AssertionError("Display toggle retraced"))
         monkeypatch.setattr(connector.get_optic(), "trace_generic", trace)
@@ -213,10 +213,10 @@ def test_checkbox_restyles_without_jobs_and_latest_choice_survives_result(
             == 5
         )
         line = viewer._chief_ray_artists[0][0]
-        assert to_rgba(line.get_color()) == to_rgba("#2196F3")
+        assert to_rgba(line.get_color()) == to_rgba("#C4CFFF")
         viewer.update_theme("light")
         assert to_rgba(viewer._chief_ray_artists[0][0].get_color()) == to_rgba(
-            "#005FCC"
+            "#304FFE"
         )
         assert jobs._serial == serial + 1
         assert viewer.ax.get_xlim() == (0, 35)

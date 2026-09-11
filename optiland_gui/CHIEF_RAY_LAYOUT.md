@@ -5,6 +5,10 @@ ray for each field in blue, slightly thicker and above the other rays. Uncheckin
 restores its ordinary ray color and line width. This takes effect immediately,
 without recalculating the design or moving the view.
 
+The chief uses pale periwinkle blue in the dark theme and deep blue in the light
+theme, distinct from surface selection and hover. Selection keeps the theme's
+accent and thicker surface outline; it does not turn red against green rays.
+
 The chief ray uses normalized pupil coordinates **Px=Py=0**, with the design's
 configured aiming, field and polarization. It can leave the source at an angle
 in an off-axis/decentered design. It is not a zero-angle construction line.

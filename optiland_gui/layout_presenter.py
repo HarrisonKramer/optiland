@@ -113,7 +113,9 @@ def present_2d(viewer, data, context, restyle=False, *, reset=False):
 def style_chief_rays(viewer):
     """Change retained 2D ray appearance without recalculation or axis changes."""
     highlight = viewer.chief_ray_checkbox.isChecked()
-    blue = "#2196F3" if viewer.current_theme == "dark" else "#005FCC"
+    # Keep the chief distinct from the theme's selection/hover accents and
+    # green rays, including under red-green color-vision deficiencies.
+    blue = "#C4CFFF" if viewer.current_theme == "dark" else "#304FFE"
     for line, color, width, order in viewer._chief_ray_artists:
         line.set_color(blue if highlight else color)
         line.set_linewidth(1.8 if highlight else width)
