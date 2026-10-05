@@ -180,6 +180,11 @@ additional scroll or default-pan handler to a canvas using this toolbar.
 ``test_plot_navigation.py`` exercises the shared contract, while
 ``test_viewer_navigation.py`` checks real lens-worker integration.
 
+The rectangle-zoom glyph combines a dotted selection box and magnifier, with
+an explicit accessible name and tooltip. It follows the local foreground
+palette and provides native-size pixmaps for standard and HiDPI displays.
+Qt owns the finished icon; no Python icon-engine lifetime is exposed to Qt.
+
 Contributing to the GUI
 -----------------------
 

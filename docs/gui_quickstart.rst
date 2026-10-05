@@ -71,7 +71,7 @@ When you first open the Optiland GUI, you'll see a main window containing severa
     and optimizer candidate previews. There is currently no mouse-binding
     settings window.
 
-    Select **Zoom to rectangle** and
+    Select **Zoom to rectangle** (a magnifier over a dotted rectangle) and
     left-drag around the area to inspect. The drawing stays fixed until you
     release the mouse. The **Pan** tool enables left-drag panning. Right/middle
     panning and wheel zoom remain available with either tool selected; wheel

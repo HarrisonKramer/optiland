@@ -9,14 +9,54 @@ from typing import TYPE_CHECKING
 import numpy as np
 from matplotlib.backend_bases import MouseButton, cursors
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, QPointF, QRectF, Qt
+from PySide6.QtGui import QIcon, QPainter, QPainterPath, QPen, QPixmap
 
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.backend_bases import MouseEvent
     from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
     from PySide6.QtCore import QObject
+    from PySide6.QtGui import QColor
     from PySide6.QtWidgets import QWidget
+
+
+def _rectangle_zoom_icon(color: QColor) -> QIcon:
+    """Draw a palette-aware icon at native sizes for standard and HiDPI displays.
+
+    Qt owns the finished pixmaps and icon engine. Keeping the vector drawing
+    out of a Python QIconEngine also makes Qt icon copies safe during teardown.
+    """
+    icon = QIcon()
+    for size in (16, 20, 24, 32, 48, 64, 96, 128):
+        for mode in (QIcon.Mode.Normal, QIcon.Mode.Disabled):
+            pixmap = QPixmap(size, size)
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pixmap)
+            try:
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                painter.scale(size / 24, size / 24)
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                if mode == QIcon.Mode.Disabled:
+                    painter.setOpacity(0.5)
+                pen = QPen(color, 1.8, Qt.PenStyle.DotLine, Qt.PenCapStyle.RoundCap)
+                painter.setPen(pen)
+                # The magnifier occludes the lower-right selection-box corner.
+                box = QPainterPath(QPointF(8, 15))
+                box.lineTo(3, 15)
+                box.lineTo(3, 3)
+                box.lineTo(15, 3)
+                box.lineTo(15, 8)
+                painter.drawPath(box)
+                pen.setStyle(Qt.PenStyle.SolidLine)
+                pen.setWidthF(2)
+                painter.setPen(pen)
+                painter.drawEllipse(QRectF(9, 9, 10, 10))
+                painter.drawLine(QPointF(17.6, 17.6), QPointF(22, 22))
+            finally:
+                painter.end()
+            icon.addPixmap(pixmap, mode)
+    return icon
 
 
 def valid_plot_view(x: tuple[float, float], y: tuple[float, float]) -> bool:
@@ -49,15 +89,31 @@ class PlotNavigationToolbar(NavigationToolbar2QT):
     ) -> None:
         self._pointer_pan: _PointerPan | None = None
         super().__init__(canvas, parent, coordinates=coordinates)
+        action = self._actions["zoom"]
+        action.setText("Zoom to rectangle")
+        action.setToolTip("Zoom to rectangle: left-drag a box; Escape exits the tool.")
+        self.widgetForAction(action).setAccessibleName("Zoom to rectangle")
         self._actions["pan"].setToolTip(
             "Pan with left-drag. Right-drag and middle-drag always pan."
         )
+        self.update_icon_theme()
         canvas.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         canvas.installEventFilter(self)
         canvas.mpl_connect("scroll_event", self._on_scroll)
         canvas.setToolTip(
             "Right-drag or middle-drag to pan; scroll to zoom at the pointer. "
             "Pan and Zoom to rectangle tools use left-drag. Escape exits the tool."
+        )
+
+    def changeEvent(self, event: QEvent) -> None:
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.PaletteChange and "zoom" in self._actions:
+            self.update_icon_theme()
+
+    def update_icon_theme(self) -> None:
+        """Match the vector glyph to the toolbar's local foreground palette."""
+        self._actions["zoom"].setIcon(
+            _rectangle_zoom_icon(self.palette().color(self.foregroundRole()))
         )
 
     @property
