@@ -79,6 +79,11 @@ class ZemaxDataParser:
             "VANN": self._read_vignette_tangent_angle,
             "CLAP": self._read_circular_aperture,
             "FLAP": self._read_floating_aperture,
+            "OBSC": self._read_unsupported_aperture,
+            "SQAP": self._read_unsupported_aperture,
+            "ELAP": self._read_unsupported_aperture,
+            "SPID": self._read_unsupported_aperture,
+            "USAP": self._read_unsupported_aperture,
             "OBDC": self._read_aperture_decenter,
         }
 
@@ -433,6 +438,11 @@ class ZemaxDataParser:
         r_max = float(data[2])
         self._current_surf_data["aperture"] = self._make_circular_aperture(0.0, r_max)
 
+    def _read_unsupported_aperture(self, data: list[str]) -> None:
+        # An aperture type the reader cannot build yet. It still replaces the
+        # fixed semi-diameter clip, as it does in OpticStudio.
+        self._current_surf_data["unsupported_aperture"] = data[0]
+
     def _make_circular_aperture(self, r_min: float, r_max: float) -> RadialAperture:
         offset_x, offset_y = self._current_aperture_offset
         if offset_x == 0.0 and offset_y == 0.0:
@@ -505,8 +515,9 @@ class ZemaxDataParser:
 
         OpticStudio vignettes rays at a user-fixed ("U") semi-diameter even
         when the surface has no explicit aperture, so such a surface gets a
-        circular aperture of that radius. An explicit aperture (CLAP, FLAP)
-        takes precedence. Automatic semi-diameters never clip.
+        circular aperture of that radius. Any surface aperture, including
+        types not imported yet (OBSC, SQAP, ELAP, SPID, USAP), replaces that
+        clip. Automatic semi-diameters never clip.
         """
         if self._current_surf < 0:
             return
@@ -514,6 +525,7 @@ class ZemaxDataParser:
         semi_diameter = surf.get("semi_diameter", 0.0)
         if (
             surf.get("aperture") is None
+            and "unsupported_aperture" not in surf
             and surf.get("semi_diameter_fixed")
             and semi_diameter > 0.0
         ):

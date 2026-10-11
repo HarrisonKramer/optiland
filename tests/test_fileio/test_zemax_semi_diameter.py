@@ -128,6 +128,18 @@ class TestRefractive:
         optic = load_zemax_file(_singlet(tmp_path, diam))
         assert optic.surfaces[2].aperture is None
 
+    @pytest.mark.parametrize(
+        "aperture_line",
+        ["OBSC 0 2 0", "SQAP 6 6 0", "ELAP 6 4 0", "SPID 1 3 0", "USAP 0 0 0"],
+    )
+    def test_unsupported_aperture_replaces_fixed_clip(
+        self, tmp_path, aperture_line, set_test_backend
+    ):
+        # In OpticStudio any surface aperture replaces the semi-diameter clip,
+        # so a type the reader cannot build yet must not leave a U clip behind.
+        optic = load_zemax_file(_singlet(tmp_path, 'DIAM 5 1 0 0 1 ""', aperture_line))
+        assert optic.surfaces[2].aperture is None
+
 
 class TestFloatingStop:
     def test_stop_semi_diameter_is_doubled(self, tmp_path, set_test_backend):
@@ -155,7 +167,13 @@ class TestFloatingStop:
         assert_allclose(float(stop_diam[0]), 10.0)
 
 
-def _two_mirror(tmp_path, primary_diam: str, secondary_diam: str, aperture="ENPD 60"):
+def _two_mirror(
+    tmp_path,
+    primary_diam: str,
+    secondary_diam: str,
+    *primary_extra: str,
+    aperture="ENPD 60",
+):
     """Paraboloid primary (f = 100) with a flat secondary 70 mm in front of it.
 
     Light reflected from the primary at height h heads for the focus at
@@ -177,6 +195,7 @@ def _two_mirror(tmp_path, primary_diam: str, secondary_diam: str, aperture="ENPD
             "DISZ -70",
             "GLAS MIRROR 0 0 1.5 40 0 0 0 0 0 0",
             primary_diam,
+            *primary_extra,
         ),
         _surf(
             3,
@@ -218,6 +237,19 @@ class TestReflectors:
         assert _secondary_height(h_inside) < r_secondary < _secondary_height(h_outside)
         assert _passes(optic, py=h_inside / 30)
         assert not _passes(optic, py=h_outside / 30)
+
+    def test_obscuration_replaces_fixed_clip_on_mirror(
+        self, tmp_path, set_test_backend
+    ):
+        # Checked in OpticStudio: with a central obscuration on the primary,
+        # rays beyond the U semi-diameter of 25 still reach the image.
+        optic = load_zemax_file(
+            _two_mirror(
+                tmp_path, 'DIAM 25 1 0 0 1 ""', 'DIAM 20 0 0 0 1 ""', "OBSC 0 5 0"
+            )
+        )
+        assert optic.surfaces[2].aperture is None
+        assert _passes(optic, py=26.0 / 30)
 
     def test_floating_stop_on_mirror(self, tmp_path, set_test_backend):
         # The stop is the primary, with nothing powered in front of it.
