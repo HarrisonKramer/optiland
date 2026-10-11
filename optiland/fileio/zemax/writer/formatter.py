@@ -284,10 +284,11 @@ class OpticToZemaxConverter:
             raw["STOP"] = True
 
         # Semi-aperture (DIAM)
-        # For float_by_stop_size aperture, the stop surface must carry DIAM
+        # For float_by_stop_size aperture, the stop surface must carry DIAM,
+        # which is a semi-diameter; the aperture value is the full diameter.
         ap = self._optic.aperture
         if surface.is_stop and ap is not None and ap.ap_type == "float_by_stop_size":
-            raw["DIAM"] = float(ap.value)
+            raw["DIAM"] = float(ap.value) / 2.0
         elif surface.semi_aperture is not None:
             raw["DIAM"] = float(surface.semi_aperture)
 

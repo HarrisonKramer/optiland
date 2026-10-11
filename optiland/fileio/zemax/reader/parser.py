@@ -255,8 +255,7 @@ class ZemaxDataParser:
             )
 
     def _read_surface(self, data: list[str]) -> None:
-        if self._current_surf >= 0:
-            self.data_model.surfaces[self._current_surf] = self._current_surf_data
+        self._store_current_surface()
         self._current_surf += 1
         self._current_aperture_offset = (0.0, 0.0)
         self._current_surf_data = {
@@ -378,7 +377,12 @@ class ZemaxDataParser:
         self._current_surf_data["is_stop"] = True
 
     def _read_diameter(self, data: list[str]) -> None:
-        self._current_surf_data["diameter"] = float(data[1])
+        # DIAM <semi-diameter> <solve> ...: solve 1 is a user-fixed ("U")
+        # semi-diameter, 0 an automatic one recomputed by OpticStudio.
+        self._current_surf_data["semi_diameter"] = float(data[1])
+        self._current_surf_data["semi_diameter_fixed"] = (
+            len(data) > 2 and data[2] == "1"
+        )
 
     def _read_mode(self, data: list[str]) -> None:
         if data[1] != "SEQ":
@@ -494,5 +498,24 @@ class ZemaxDataParser:
 
     def _finalize_surface(self) -> None:
         """Flush the last in-progress surface into the model."""
-        if self._current_surf >= 0:
-            self.data_model.surfaces[self._current_surf] = self._current_surf_data
+        self._store_current_surface()
+
+    def _store_current_surface(self) -> None:
+        """Store the in-progress surface, applying its fixed semi-diameter.
+
+        OpticStudio vignettes rays at a user-fixed ("U") semi-diameter even
+        when the surface has no explicit aperture, so such a surface gets a
+        circular aperture of that radius. An explicit aperture (CLAP, FLAP)
+        takes precedence. Automatic semi-diameters never clip.
+        """
+        if self._current_surf < 0:
+            return
+        surf = self._current_surf_data
+        semi_diameter = surf.get("semi_diameter", 0.0)
+        if (
+            surf.get("aperture") is None
+            and surf.get("semi_diameter_fixed")
+            and semi_diameter > 0.0
+        ):
+            surf["aperture"] = RadialAperture(r_min=0.0, r_max=semi_diameter)
+        self.data_model.surfaces[self._current_surf] = surf
