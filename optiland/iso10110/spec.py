@@ -98,9 +98,9 @@ class DrawingSpec:
         - ``grating_type`` — ISO 10110-16 type symbol (for grating surfaces)
 
         Raises:
-            pydantic.ValidationError: If an unknown keyword is given (typo'd
-                or renamed field name) or a value fails validation — subclasses
-                ``ValueError``. See :class:`~optiland.iso10110.notation.SurfaceSpec`.
+            ValueError: If an unknown keyword is given (typo'd or renamed
+                field name) or a value fails validation. See
+                :class:`~optiland.iso10110.notation.SurfaceSpec`.
         """
         self._surface_specs[surface_index] = SurfaceSpec(**kwargs)
 
@@ -132,9 +132,9 @@ class DrawingSpec:
         ``set_title`` call for the same *element_index*.
 
         Raises:
-            pydantic.ValidationError: If an unknown keyword is given (typo'd
-                or renamed field name) or a value fails validation — subclasses
-                ``ValueError``. See :class:`~optiland.iso10110.notation.ElementSpec`.
+            ValueError: If an unknown keyword is given (typo'd or renamed
+                field name) or a value fails validation. See
+                :class:`~optiland.iso10110.notation.ElementSpec`.
         """
         self._element_specs[element_index] = ElementSpec(**kwargs)
 
@@ -199,9 +199,9 @@ class DrawingSpec:
         ``revision``, etc.) are only used from the element-level spec.
 
         Raises:
-            pydantic.ValidationError: If an unknown keyword is given (typo'd
-                or renamed field name) or a value fails validation — subclasses
-                ``ValueError``. See :class:`~optiland.iso10110.notation.ElementSpec`.
+            ValueError: If an unknown keyword is given (typo'd or renamed
+                field name) or a value fails validation. See
+                :class:`~optiland.iso10110.notation.ElementSpec`.
         """
         self._material_specs[(element_index, component_index)] = ElementSpec(**kwargs)
 

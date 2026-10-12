@@ -27,7 +27,7 @@ Bernhard Lutzer, 2026
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from optiland.iso10110._validation import coerce_fields, strict_dataclass
 
 #: Names of every multiplicative scale field on DrawingStyle (everything
 #: except border_margin, which is an absolute mm value).
@@ -49,7 +49,8 @@ _SCALE_FIELDS = (
 )
 
 
-class DrawingStyle(BaseModel):
+@strict_dataclass
+class DrawingStyle:
     """Font-size scale factors and border margin for ISO 10110 drawings.
 
     All scale factors default to ``1.0``, reproducing the built-in
@@ -94,8 +95,6 @@ class DrawingStyle(BaseModel):
       factor). Default ``10.0`` matches the built-in layout.
     """
 
-    model_config = ConfigDict(extra="forbid")
-
     axis_label_scale: float = 1.0
     surface_label_scale: float = 1.0
     symbol_annotation_scale: float = 1.0
@@ -113,12 +112,11 @@ class DrawingStyle(BaseModel):
 
     border_margin: float = 10.0
 
-    @model_validator(mode="after")
-    def _validate(self) -> DrawingStyle:
+    def __post_init__(self) -> None:
+        coerce_fields(self)
         for name in _SCALE_FIELDS:
             v = getattr(self, name)
             if v <= 0:
                 raise ValueError(f"{name} must be > 0, got {v}")
         if self.border_margin <= 0:
             raise ValueError(f"border_margin must be > 0, got {self.border_margin}")
-        return self

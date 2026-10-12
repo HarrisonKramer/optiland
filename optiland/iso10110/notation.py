@@ -1,9 +1,9 @@
 """ISO 10110 Notation Models
 
 Typed, validated containers for per-surface and per-element fabrication
-specifications. Built on pydantic (``extra="forbid"``) so a typo'd or
-renamed keyword argument raises immediately rather than being silently
-dropped. All fields default to None / empty string; unspecified fields are
+specifications. Built on stdlib dataclasses that reject unknown keywords, so
+a typo'd or renamed keyword argument raises immediately rather than being
+silently dropped. All fields default to None / empty string; unspecified fields are
 rendered as the placeholder dash (—) in the drawing.
 
 ISO 10110 part mapping
@@ -28,10 +28,11 @@ Bernhard Lutzer, 2026
 
 from __future__ import annotations
 
+import dataclasses
 import re
 import warnings
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from optiland.iso10110._validation import coerce_fields, field_names, strict_dataclass
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -172,7 +173,8 @@ def _fix_mul(s: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-class SurfaceSpec(BaseModel):
+@strict_dataclass
+class SurfaceSpec:
     """ISO 10110 fabrication specifications for a single optical surface.
 
     3/ Surface form (ISO 10110-5)
@@ -236,8 +238,6 @@ class SurfaceSpec(BaseModel):
       - ``"0.002-1/Rq 0.002"``  — polished with full spatial band (§5.3.3)
     """
 
-    model_config = ConfigDict(extra="forbid")
-
     # ── 3/ surface form ──────────────────────────────────────────────────
     sag_tolerance: float | None = None  # A: test-plate sag error
     irregularity: float | None = None  # B: p-v irregularity
@@ -299,11 +299,11 @@ class SurfaceSpec(BaseModel):
     # Validation
     # ------------------------------------------------------------------
     # Numeric string coercion (e.g. values arriving as strings from YAML) is
-    # handled automatically by pydantic's field typing; this validator only
-    # covers ISO-specific business rules that span more than one field.
+    # done by coerce_fields(); the rest covers ISO-specific business rules
+    # that span more than one field.
 
-    @model_validator(mode="after")
-    def _validate(self) -> SurfaceSpec:
+    def __post_init__(self) -> None:
+        coerce_fields(self)
         if self.centration is not None and self.centration < 0:
             raise ValueError(f"centration must be ≥ 0, got {self.centration}")
         if self.ca_diameter is not None and self.ca_diameter <= 0:
@@ -317,7 +317,7 @@ class SurfaceSpec(BaseModel):
                 "Per ISO 10110-6 the decentration appears only inside '4/ σ′(δ)'; "
                 "without σ, δ will not be rendered. "
                 "Set centration as well to include the decentration value.",
-                stacklevel=3,
+                stacklevel=4,
             )
 
         # ISO 10110-5 §4.2: the rotationally-symmetric irregularity component C
@@ -329,7 +329,7 @@ class SurfaceSpec(BaseModel):
                 "Per ISO 10110-5 §4.2 the C value appears only inside the '(B/C)' "
                 "parenthesis; without B, C will not be rendered in the 3/ code. "
                 "Set irregularity as well to include the RSI component.",
-                stacklevel=3,
+                stacklevel=4,
             )
         # ISO 10110-5 §4.2: the RSI component C cannot exceed total irregularity B,
         # because C is the rotationally-symmetric *part* of B.
@@ -342,7 +342,7 @@ class SurfaceSpec(BaseModel):
                 f"rotationally_symmetric (C={self.rotationally_symmetric}) exceeds "
                 f"irregularity (B={self.irregularity}). "
                 "Per ISO 10110-5 §4.2, C is the RSI component of B and must be ≤ B.",
-                stacklevel=3,
+                stacklevel=4,
             )
         if self.form_unit not in ("fr", "nm"):
             raise ValueError(
@@ -382,7 +382,7 @@ class SurfaceSpec(BaseModel):
                         f"'{grade_str}' is not a valid ISO 10110-8:2019 polish grade. "
                         "Only P1, P2, P3, P4 are defined in Table 1. "
                         f"Got {grade_str}.",
-                        stacklevel=3,
+                        stacklevel=4,
                     )
 
         # Advisory for unknown grating type (ISO 10110-16:2017 Table 5)
@@ -390,7 +390,7 @@ class SurfaceSpec(BaseModel):
             warnings.warn(
                 f"grating_type '{self.grating_type}' is not a standard ISO 10110-16 "
                 f"Table 5 designator.  Known types: {sorted(GRATING_TYPES)}.",
-                stacklevel=3,
+                stacklevel=4,
             )
 
         # Advisory for 13/ wavefront deformation format (ISO 10110-14)
@@ -406,10 +406,8 @@ class SurfaceSpec(BaseModel):
                     "does not match the ISO 10110-14 format A(B/C) where A, B, "
                     "C are non-negative numbers "
                     "(e.g. '0.25', '0.25(0.1)', '0.25(0.1/0.05)').",
-                    stacklevel=3,
+                    stacklevel=4,
                 )
-
-        return self
 
     # ------------------------------------------------------------------
     # ISO formatted strings
@@ -605,14 +603,14 @@ class SurfaceSpec(BaseModel):
         return f"8/ {self.roughness}"
 
     def to_dict(self) -> dict:
-        return self.model_dump()
+        return dataclasses.asdict(self)
 
     @classmethod
     def from_dict(cls, d: dict) -> SurfaceSpec:
         # Tolerant of stale/unknown keys from previously-saved YAML files —
         # unlike direct API calls (set_surface/set_element), which forbid
         # unknown keywords so typos raise immediately.
-        return cls(**{k: v for k, v in d.items() if k in cls.model_fields})
+        return cls(**{k: v for k, v in d.items() if k in field_names(cls)})
 
 
 # ---------------------------------------------------------------------------
@@ -620,7 +618,8 @@ class SurfaceSpec(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class ElementSpec(BaseModel):
+@strict_dataclass
+class ElementSpec:
     """ISO 10110 fabrication specifications for a lens element (bulk glass).
 
     Bulk-glass codes
@@ -653,8 +652,6 @@ class ElementSpec(BaseModel):
     - *part_number*, *revision*, *drawn_by*, *approved_by*, *notes*.
     """
 
-    model_config = ConfigDict(extra="forbid")
-
     # ── Bulk glass codes ─────────────────────────────────────────────────
     birefringence: float | None = None
     bubbles: str | None = None
@@ -685,11 +682,11 @@ class ElementSpec(BaseModel):
     # Validation
     # ------------------------------------------------------------------
     # Numeric string coercion (e.g. values arriving as strings from YAML) is
-    # handled automatically by pydantic's field typing; this validator only
-    # covers ISO-specific business rules that span more than one field.
+    # done by coerce_fields(); the rest covers ISO-specific business rules
+    # that span more than one field.
 
-    @model_validator(mode="after")
-    def _validate(self) -> ElementSpec:
+    def __post_init__(self) -> None:
+        coerce_fields(self)
         if self.birefringence is not None and self.birefringence < 0:
             raise ValueError(f"birefringence must be ≥ 0, got {self.birefringence}")
 
@@ -718,8 +715,6 @@ class ElementSpec(BaseModel):
         hg = self.homogeneity_grade
         if hg is not None and not (0 <= hg <= 5):
             raise ValueError(f"homogeneity_grade must be 0–5, got {hg}")
-
-        return self
 
     # ------------------------------------------------------------------
     # ISO formatted strings
@@ -780,11 +775,11 @@ class ElementSpec(BaseModel):
         return f"2/ {h_str}; {s_str}"
 
     def to_dict(self) -> dict:
-        return self.model_dump()
+        return dataclasses.asdict(self)
 
     @classmethod
     def from_dict(cls, d: dict) -> ElementSpec:
         # Tolerant of stale/unknown keys from previously-saved YAML files —
         # unlike direct API calls (set_element/set_title), which forbid
         # unknown keywords so typos raise immediately.
-        return cls(**{k: v for k, v in d.items() if k in cls.model_fields})
+        return cls(**{k: v for k, v in d.items() if k in field_names(cls)})
