@@ -22,6 +22,7 @@ from optiland.paraxial_path import (
     ParaxialPath,
     build_paraxial_path,
     require_global_z_geometry,
+    shared_path,
     transverse_basis,
 )
 from optiland.surfaces.factories.surface_factory import SurfaceFactory
@@ -243,7 +244,13 @@ class SurfaceGroup:
         is rebuilt rather than cached. High-level operations should build it
         once and pass it through their call chain instead of re-deriving
         frames, directions and parity in each consumer.
+
+        In a :func:`~optiland.paraxial_path.shared_path_scope` for this
+        group, all calls return the same path.
         """
+        path = shared_path(self, lambda: build_paraxial_path(list(self.surfaces)))
+        if path is not None:
+            return path
         return build_paraxial_path(list(self.surfaces))
 
     @property
