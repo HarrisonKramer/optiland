@@ -135,12 +135,13 @@ def test_output_cannot_start_preserves_document_and_destination(
 def test_loaded_candidate_install_failure_preserves_current_document(
     file_operations, monkeypatch, tmp_path
 ):
-    from optiland_gui.services.job_records import JobResult, OpticSnapshot
+    from optiland_gui.services.job_records import JobResult
+    from optiland_gui.services.prepared_optic import PreparedOptic
 
     connector, operations, _, _, notifications = file_operations
     original = connector.get_optic()
     token = connector.document_state.edit_token
-    snapshot = OpticSnapshot.capture(original)
+    snapshot = PreparedOptic.capture(original)
     monkeypatch.setattr(operations.jobs, "_dispatch", lambda: None)
     request = operations.request_load(tmp_path / "candidate.json")
 

@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import os
 import uuid
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 from optiland_gui.services.job_records import BackendConfig, OpticSnapshot
+from optiland_gui.services.prepared_optic import PreparedOptic
 
 
 @dataclass
@@ -119,6 +120,13 @@ class FileOperations(QObject):
     def _queue(self, operation, handler):
         if operation.identifier not in self._operations:
             return None
+        if operation.phase == "publishing" and self._has_earlier_write(operation):
+            # Keep ownership of the completed stage while an older write to the
+            # same destination drains. Queue-pressure retries must not reorder
+            # the eventual replacements on disk.
+            operation.phase = "waiting"
+            self._changed()
+            return None
         parameters = {
             "path": operation.path,
             "format": operation.file_format,
@@ -153,11 +161,27 @@ class FileOperations(QObject):
             if operation.kind != "open" and operation.phase != "cleaning":
                 self._abort_close(f"The file operation for {operation.path} failed")
             self._notify(f"File operation could not start: {exc}", "error")
+            self._resume_publications()
             self._changed()
             return None
         self._requests[request.job_id] = operation
         self._changed()
         return request
+
+    def _has_earlier_write(self, operation):
+        destination = os.path.normcase(operation.path)
+        for earlier in self._operations.values():
+            if earlier is operation:
+                return False
+            if earlier.kind != "open" and os.path.normcase(earlier.path) == destination:
+                return True
+        return False
+
+    def _resume_publications(self):
+        for operation in tuple(self._operations.values()):
+            if operation.phase == "waiting" and not self._has_earlier_write(operation):
+                operation.phase = "publishing"
+                self._queue(operation, "publish_output")
 
     @Slot()
     def cancel_pending(self):
@@ -295,9 +319,11 @@ class FileOperations(QObject):
             )
             return False
         try:
-            # Reconstruction binds ordinary model objects; parsing, catalog
-            # resolution, normalization and solves ran in the owned worker.
-            candidate = replace(snapshot, backend=BackendConfig.capture()).restore()
+            if not isinstance(snapshot, PreparedOptic):
+                raise ValueError("Invalid prepared optical document.")
+            # Install the owned worker model without repeating material lookup,
+            # normalization or optical solves on the GUI thread.
+            candidate = snapshot.restore()
             if self.connector.document_state.edit_token != expected_edit_token:
                 return False
             native = operation.file_format == "optiland"
@@ -348,6 +374,7 @@ class FileOperations(QObject):
 
     def _complete(self, operation):
         self._operations.pop(operation.identifier, None)
+        self._resume_publications()
         self.completed.emit()
         self._changed()
 
@@ -359,7 +386,9 @@ class FileOperations(QObject):
         if self._operations:
             operation = next(reversed(self._operations.values()))
             label = stage or (
-                "Finishing save…"
+                "Waiting for an earlier write to this file…"
+                if operation.phase == "waiting"
+                else "Finishing save…"
                 if operation.phase in ("publishing", "reconciling")
                 else "Cleaning up file operation…"
                 if operation.phase == "cleaning"

@@ -17,6 +17,7 @@ from optiland.fileio import (
 from optiland.optic import Optic
 from optiland_gui.services.job_records import OpticSnapshot, check_cancelled
 from optiland_gui.services.model_initialization import initialize_loaded_optic
+from optiland_gui.services.prepared_optic import PreparedOptic
 
 
 def load_file(snapshot, parameters, progress, cancelled):
@@ -50,10 +51,14 @@ def load_file(snapshot, parameters, progress, cancelled):
     else:
         raise ValueError(f"Unsupported file format: {file_format}")
     check_cancelled(cancelled)
+    if type(candidate) is not Optic:
+        # Gallery classes become the same editable model as a saved prescription.
+        # Validate supported tracing behavior before normalizing in the worker.
+        candidate = OpticSnapshot.capture(candidate).restore()
     progress("Validating optical document")
     initialize_loaded_optic(candidate)
     check_cancelled(cancelled)
-    return OpticSnapshot.capture(candidate)
+    return PreparedOptic.capture(candidate)
 
 
 def _stage_path(parameters):
