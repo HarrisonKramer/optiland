@@ -110,8 +110,13 @@ class TestZemaxDataParser:
         assert self.parser._current_surf_data["conic"] == 0.0
 
     def test_read_glass(self):
+        # Glasses resolve after the whole file is read, against GCAT.
+        self.parser._read_glass_catalog(["GCAT", "SCHOTT"])
+        self.parser._read_surface(["SURF", "0"])
         self.parser._read_glass(["GLAS", "N-BK7", "0", "0", "1.5", "50"])
-        mat = self.parser._current_surf_data["material"]
+        self.parser._finalize_surface()
+        self.parser._resolve_glasses()
+        mat = self.parser.data_model.surfaces[0]["material"]
         assert isinstance(mat, Material)
 
     def test_read_stop(self):

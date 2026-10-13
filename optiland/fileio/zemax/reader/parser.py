@@ -8,17 +8,29 @@ Kramer Harrison, 2024
 
 from __future__ import annotations
 
+import re
+import warnings
 from typing import Any
 
 import optiland.backend as be
 from optiland.fileio.zemax.model import ZemaxDataModel
-from optiland.materials import AbbeMaterial, BaseMaterial, Material
+from optiland.materials import (
+    AbbeMaterial,
+    BaseMaterial,
+    IdealMaterial,
+    Material,
+    OptilandMaterialWarning,
+)
 from optiland.materials.material_spec import MatchPolicy
+from optiland.materials.registry import MaterialRegistry
 from optiland.physical_apertures import OffsetRadialAperture, RadialAperture
 
 # Fraunhofer d-line (um), used to evaluate a candidate glass's index for
 # comparison against the Nd recorded on a GLAS line.
 _WL_D = 0.5875618
+
+# A six-digit MIL glass number, e.g. 517642 or 517.642: nd 1.517, vd 64.2.
+_MIL_NUMBER = re.compile(r"(\d{3})\.?(\d{3})")
 
 
 class ZemaxDataParser:
@@ -117,6 +129,7 @@ class ZemaxDataParser:
 
         self._finalize_fields()
         self._finalize_surface()
+        self._resolve_glasses()
         return self.data_model
 
     # ------------------------------------------------------------------
@@ -283,80 +296,119 @@ class ZemaxDataParser:
         self._current_surf_data["conic"] = float(data[1])
 
     def _read_glass(self, data: list[str]) -> None:
+        # GLAS <name> <solve> <?> <nd> <vd> ...: solve 1 marks a model glass.
+        # The name is resolved once the whole file is read, so the result does
+        # not depend on where GCAT appears.
         material_name = data[1]
         if material_name.upper() == "MIRROR":
             self._current_surf_data["material"] = "mirror"
             return
 
         self._current_surf_data["material"] = material_name
+        self._current_surf_data["model_glass"] = (
+            len(data) > 2 and data[2] == "1"
+        ) or material_name == "___BLANK"
         try:
             self._current_surf_data["index"] = float(data[4].replace(",", "."))
             self._current_surf_data["abbe"] = float(data[5].replace(",", "."))
-        except IndexError:
+        except (IndexError, ValueError):
             self._current_surf_data["index"] = None
             self._current_surf_data["abbe"] = None
 
-        resolved = self._resolve_glass_by_catalog_and_index(material_name)
+    def _resolve_glasses(self) -> None:
+        """Replace each surface's glass name with a material.
 
-        if resolved is not None:
-            self._current_surf_data["material"] = resolved
-        else:
-            # Try to resolve to a real Material from the glass catalog
-            try:
-                self._current_surf_data["material"] = Material(material_name)
-            except ValueError:
-                if self.data_model.glass_catalogs:
-                    for mfg in self.data_model.glass_catalogs:
-                        try:
-                            self._current_surf_data["material"] = Material(
-                                material_name, mfg.lower()
-                            )
-                            break
-                        except ValueError:
-                            continue
-
-        # Fall back to AbbeMaterial if catalog lookup failed
-        if not isinstance(self._current_surf_data["material"], BaseMaterial):
-            self._current_surf_data["material"] = AbbeMaterial(
-                self._current_surf_data["index"],
-                self._current_surf_data["abbe"],
-                model="buchdahl",
-            )
-
-    def _resolve_glass_by_catalog_and_index(
-        self, material_name: str
-    ) -> BaseMaterial | None:
-        """Disambiguate a glass name against the file's declared GCAT catalogs.
-
-        A bare ``Material(name)`` lookup silently returns a single "best
-        match" without regard to which catalogs this file actually declares,
-        so a name present in several catalogs (e.g. "F2" in both Schott and
-        Hikari) can resolve to the wrong one on reload. When the GLAS line
-        carries an Nd/Vd pair, use it to pick whichever catalog candidate is
-        the closest match instead.
-
-        Returns:
-            The resolved material, or None if disambiguation isn't
-            applicable (no declared catalogs, no Nd/Vd on the line, or no
-            candidate found in any declared catalog).
+        Glasses resolve the way OpticStudio resolves them: the GCAT catalogs
+        are searched by exact name only. A name found in several of them is
+        settled by the nd/vd on the GLAS line, then by GCAT order (see
+        ``_closest_to_line``). A glass found in none of them, a MIL-number
+        name (``517642`` means nd = 1.517, vd = 64.2) and an explicit model
+        glass become a model glass built from nd/vd; vd = 0 gives an
+        undispersed ``IdealMaterial``.
+        A catalog glass that had to be modelled emits a warning. There is no
+        fuzzy search across all catalogs, so ``Material(name)`` lookups are
+        not used here.
         """
-        index = self._current_surf_data.get("index")
-        abbe = self._current_surf_data.get("abbe")
-        if not self.data_model.glass_catalogs or index is None or index <= 1.0:
-            return None
-
-        candidates = []
-        for mfg in self.data_model.glass_catalogs:
-            try:
-                candidates.append(
-                    Material(material_name, mfg.lower(), match_policy=MatchPolicy.BEST)
+        known = {c.lower() for c in MaterialRegistry.instance().list_catalogs()}
+        catalogs = []
+        for catalog in self.data_model.glass_catalogs or []:
+            if catalog.lower() in known:
+                catalogs.append(catalog.lower())
+            else:
+                warnings.warn(
+                    f"Glass catalog {catalog} is not in the material database; "
+                    "its glasses are modelled from the nd/vd in the file.",
+                    OptilandMaterialWarning,
+                    stacklevel=4,
                 )
-            except ValueError:
-                continue
 
-        if not candidates:
-            return None
-        if len(candidates) == 1:
+        for index, surf in self.data_model.surfaces.items():
+            # Only surfaces with a GLAS line carry "model_glass".
+            if "model_glass" in surf:
+                surf["material"] = self._resolve_glass(
+                    index, surf, surf["material"], catalogs
+                )
+
+    @classmethod
+    def _resolve_glass(
+        cls, surf_index: int, surf: dict[str, Any], name: str, catalogs: list[str]
+    ) -> BaseMaterial:
+        if not surf.get("model_glass"):
+            candidates = []
+            for catalog in catalogs:
+                try:
+                    # reference names the catalog so the writer exports it.
+                    candidates.append(
+                        Material(
+                            name,
+                            reference=catalog,
+                            catalog=catalog,
+                            match_policy=MatchPolicy.STRICT,
+                        )
+                    )
+                except ValueError:
+                    continue
+            if candidates:
+                return cls._closest_to_line(candidates, surf)
+
+        index, abbe = surf.get("index"), surf.get("abbe")
+        model = surf.get("model_glass")
+        mil = _MIL_NUMBER.fullmatch(name)
+        if mil and not model:
+            index = 1.0 + int(mil[1]) / 1000.0
+            abbe = int(mil[2]) / 10.0
+            model = True
+
+        if index is None or abbe is None or index <= 1.0:
+            raise ValueError(
+                f"Surface {surf_index}: glass {name} is not in the GCAT catalogs "
+                f"{catalogs} and the file gives no nd/vd to model it from."
+            )
+        if not model:
+            warnings.warn(
+                f"Surface {surf_index}: glass {name} is not in the GCAT catalogs "
+                f"{catalogs}; modelled from nd = {index}, vd = {abbe}.",
+                OptilandMaterialWarning,
+                stacklevel=5,
+            )
+        if abbe <= 0.0:
+            return IdealMaterial(n=index)
+        return AbbeMaterial(index, abbe, model="buchdahl")
+
+    @staticmethod
+    def _closest_to_line(
+        candidates: list[BaseMaterial], surf: dict[str, Any]
+    ) -> BaseMaterial:
+        """Pick the candidate whose nd/vd best match the GLAS line.
+
+        A name can exist in several declared catalogs (e.g. "F2" in Schott
+        and Hikari), and a .zmx file lists catalogs only once for the whole
+        file. The nd/vd that OpticStudio and the writer store on the GLAS line
+        identify which one a surface used. Without nd/vd, or on a tie, the
+        first catalog in GCAT order wins.
+        """
+        index, abbe = surf.get("index"), surf.get("abbe")
+        if len(candidates) == 1 or index is None or index <= 1.0:
             return candidates[0]
 
         def _scalar(value) -> float:

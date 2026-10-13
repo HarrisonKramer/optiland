@@ -251,7 +251,7 @@ class ZemaxFileEncoder:
         name = glas.get("name", "")
         if name == "MIRROR":
             return "  GLAS MIRROR 0 0 0 0 0 0 0 0 0 0"
-        if "catalog" not in glas and "n" in glas and "V" in glas:
+        if name == "MODEL" and "n" in glas and "V" in glas:
             # MODEL glass
             return f"  GLAS MODEL 1 0 {_fmt(glas['n'])} {_fmt(glas['V'])} 0 0 0 0 0 0"
         if "n" in glas and "V" in glas:
