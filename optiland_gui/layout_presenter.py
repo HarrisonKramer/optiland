@@ -115,7 +115,7 @@ def style_chief_rays(viewer):
     highlight = viewer.chief_ray_checkbox.isChecked()
     # Keep the chief distinct from the theme's selection/hover accents and
     # green rays, including under red-green color-vision deficiencies.
-    blue = "#C4CFFF" if viewer.current_theme == "dark" else "#304FFE"
+    blue = "#C4CFFF" if viewer.current_theme == "dark" else "#101A78"
     for line, color, width, order in viewer._chief_ray_artists:
         line.set_color(blue if highlight else color)
         line.set_linewidth(1.8 if highlight else width)

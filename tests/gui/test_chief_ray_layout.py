@@ -20,8 +20,12 @@ from optiland.visualization.system.ray_path import (
 )
 from optiland.visualization.system.rays import Rays2D
 from optiland_gui.optiland_connector import OptilandConnector
-from optiland_gui.services.job_records import OpticSnapshot
-from optiland_gui.services.layout_rays import layout_pupil, trace_layout_rays
+from optiland_gui.services.job_records import CalculationCancelled, OpticSnapshot
+from optiland_gui.services.layout_rays import (
+    layout_pupil,
+    normalize_ray_count,
+    trace_layout_rays,
+)
 from optiland_gui.services.layout_tasks import prepare_2d, prepare_3d
 from optiland_gui.surface_interaction import SurfaceInteractionState
 from optiland_gui.viewer_panel import MatplotlibViewer
@@ -49,6 +53,7 @@ def test_shared_presenter_needs_no_chief_checkbox(qapp, theme):
         canvas=canvas,
         ax=figure.add_subplot(),
         current_theme=theme,
+        toolbar=SimpleNamespace(finish_navigation=MagicMock()),
         _preserve_next=False,
         _user_initiated_view_change=False,
     )
@@ -96,6 +101,9 @@ def test_shared_presenter_needs_no_chief_checkbox(qapp, theme):
         ("hexapolar", 1, 1),
         ("hexapolar", 8, 19),
         ("ring", 25, 25),
+        ("ring", 2, 2),
+        ("random", 1, 1),
+        ("hexapolar", 102, 91),
     ],
 )
 def test_counts_center_and_symmetry(set_test_backend, distribution, requested, total):
@@ -216,6 +224,14 @@ def test_count_widget_steps_normalizes_and_uses_actual_hex_totals(qapp):
         spin.set_distribution("random")
         QTest.keyClick(spin, Qt.Key_Down)
         assert spin.value() == 18
+        spin.setValue(spin.minimum())
+        spin.stepBy(-1)
+        assert spin.value() == 1
+        spin.setValue(spin.maximum())
+        spin.stepBy(1)
+        assert spin.value() == 101
+        spin.set_distribution("hexapolar")
+        assert spin.value() == spin.maximum() == 91
     finally:
         spin.close()
 
@@ -267,12 +283,48 @@ def test_checkbox_restyles_without_jobs_and_latest_choice_survives_result(
         assert to_rgba(line.get_color()) == to_rgba("#C4CFFF")
         viewer.update_theme("light")
         assert to_rgba(viewer._chief_ray_artists[0][0].get_color()) == to_rgba(
-            "#304FFE"
+            "#101A78"
         )
         assert jobs._serial == serial + 1
         assert viewer.ax.get_xlim() == (0, 35)
+        viewer.reset_view()
+        assert viewer.ax.get_xlim() != (0, 35)
+        assert to_rgba(viewer._chief_ray_artists[0][0].get_color()) == to_rgba(
+            "#101A78"
+        )
+        assert jobs._serial == serial + 1
     finally:
         viewer.hide()
         jobs.shutdown()
         wait_for(qapp, lambda: jobs._process is None)
         viewer.deleteLater()
+
+
+def test_layout_rejects_unsupported_distribution_and_bounds_totals():
+    with pytest.raises(ValueError, match="Unsupported layout distribution"):
+        layout_pupil(3, "unsupported")
+    assert normalize_ray_count(0, "line_y") == 1
+    assert normalize_ray_count(1000, "line_y") == 101
+    assert normalize_ray_count(1000, "hexapolar") == 91
+
+
+@pytest.mark.parametrize("cancel_after_probes", [False, True])
+def test_cancelled_one_ray_layout_does_not_start_chief_trace(
+    minimal_optic, monkeypatch, cancel_after_probes
+):
+    cancelled = threading.Event()
+    original_trace = minimal_optic.trace_generic
+
+    def trace_and_cancel(*args, **kwargs):
+        original_trace(*args, **kwargs)
+        cancelled.set()
+
+    trace = MagicMock(side_effect=trace_and_cancel)
+    monkeypatch.setattr(minimal_optic, "trace_generic", trace)
+    if not cancel_after_probes:
+        cancelled.set()
+    with pytest.raises(CalculationCancelled):
+        trace_layout_rays(Rays2D(minimal_optic), 1, "line_y", progress, cancelled)
+    assert trace.call_count == int(cancel_after_probes)
+    if cancel_after_probes:
+        assert len(trace.call_args.kwargs["Px"]) == 4
