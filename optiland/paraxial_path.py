@@ -102,6 +102,52 @@ def in_paraxial_seed_scope() -> bool:
     return _SEED_SCOPE.get()
 
 
+# While set, SurfaceGroup.build_paraxial_path returns one path for each
+# surface group instead of a new path for each call. The value maps
+# id(surface_group) to its path, or to None before the first build. A scope
+# must not contain geometry changes. It is a context variable, so a scope
+# in one thread has no effect on other threads.
+_SHARED_PATHS = contextvars.ContextVar("optiland_shared_paraxial_paths", default=None)
+
+
+@contextlib.contextmanager
+def shared_path_scope(surface_group):
+    """Scope in which all calls share one paraxial path of ``surface_group``.
+
+    The path is built at the first request in the scope and is discarded
+    when the scope ends. Nested scopes for the same group use the outer
+    path. Do not change the geometry of the group in the scope.
+    """
+    shared = _SHARED_PATHS.get()
+    if shared is not None and id(surface_group) in shared:
+        yield
+        return
+    scoped = dict(shared) if shared else {}
+    scoped[id(surface_group)] = None
+    token = _SHARED_PATHS.set(scoped)
+    try:
+        yield
+    finally:
+        _SHARED_PATHS.reset(token)
+
+
+def shared_path(surface_group, build):
+    """Return the shared path of ``surface_group``, or ``None`` out of scope.
+
+    Args:
+        surface_group: The group whose path is requested.
+        build: Callable with no arguments that builds the path. It is called
+            only at the first request in the scope.
+    """
+    shared = _SHARED_PATHS.get()
+    if shared is None or id(surface_group) not in shared:
+        return None
+    path = shared[id(surface_group)]
+    if path is None:
+        path = shared[id(surface_group)] = build()
+    return path
+
+
 def angular_tolerance() -> float:
     """Angular collinearity tolerance, backend/dtype aware.
 
