@@ -203,12 +203,50 @@ def scenario_first_order_ops():
     return op
 
 
+def scenario_optimization_merit():
+    """Merit evaluations of a small optimization problem (issue #934).
+
+    One evaluation runs one first-order operand and nine traces, as an
+    optimizer does for each function evaluation. Per-call costs that are
+    small alone add up here.
+    """
+    from optiland.optimization import OptimizationProblem
+    from optiland.samples.objectives import CookeTriplet
+
+    optic = CookeTriplet()
+    problem = OptimizationProblem()
+    problem.add_operand("f2", target=50.0, weight=1, input_data={"optic": optic})
+    for hy in (0.0, 0.7, 1.0):
+        for wavelength in optic.wavelengths.get_wavelengths():
+            problem.add_operand(
+                "rms_spot_size",
+                target=0.0,
+                weight=10,
+                input_data={
+                    "optic": optic,
+                    "surface_number": -1,
+                    "Hx": 0.0,
+                    "Hy": hy,
+                    "num_rays": 5,
+                    "wavelength": wavelength,
+                    "distribution": "hexapolar",
+                },
+            )
+
+    def op():
+        for _ in range(4):
+            problem.sum_squared()
+
+    return op
+
+
 SCENARIOS = {
     "surfaces_trace_spherical": scenario_surfaces_trace_spherical,
     "surfaces_trace_conic_oap": scenario_surfaces_trace_conic_oap,
     "optic_trace_generation": scenario_optic_trace_generation,
     "iterative_aiming": scenario_iterative_aiming,
     "first_order_ops": scenario_first_order_ops,
+    "optimization_merit": scenario_optimization_merit,
 }
 
 
