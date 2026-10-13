@@ -214,10 +214,7 @@ class SequencedOptic:
         tracer._validate_normalized_coordinates(Hx, Hy, "field")
         tracer._validate_normalized_coordinates(Px, Py, "pupil")
 
-        vx, vy = self.fields.get_vig_factor(Hx, Hy)
-        Px = Px * (1 - vx)
-        Py = Py * (1 - vy)
-
+        # Vignetting is applied once, in RayGenerator.generate_rays.
         Hx, Hy, Px, Py = tracer._validate_array_size(Hx, Hy, Px, Py)
 
         rays = tracer.ray_generator.generate_rays(

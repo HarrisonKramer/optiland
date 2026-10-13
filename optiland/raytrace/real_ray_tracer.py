@@ -170,11 +170,7 @@ class RealRayTracer(BaseRayTracer):
         self._validate_normalized_coordinates(Px, Py, "pupil")
 
         with be.no_grad_unless_enabled():
-            vx, vy = self.optic.fields.get_vig_factor(Hx, Hy)
-
-            Px = Px * (1 - vx)
-            Py = Py * (1 - vy)
-
+            # Vignetting is applied once, in RayGenerator.generate_rays.
             # assure all variables are arrays of the same size
             Hx, Hy, Px, Py = self._validate_array_size(Hx, Hy, Px, Py)
 

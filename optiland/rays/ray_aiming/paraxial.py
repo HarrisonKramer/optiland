@@ -85,9 +85,11 @@ class ParaxialRayAimer(BaseRayAimer):
     def _aim_rays_impl(self, Hx, Hy, Px, Py):
         """Body of :meth:`aim_rays`, run inside the paraxial seed scope."""
 
-        vxf, vyf = self.optic.fields.get_vig_factor(Hx, Hy)
-        vx = 1 - be.array(vxf)
-        vy = 1 - be.array(vyf)
+        # (Px, Py) arrive already vignetted: RayGenerator.generate_rays applies
+        # the field vignetting once for every aimer. Unit factors keep the
+        # launch formulas below unchanged.
+        vx = be.ones_like(be.array(Px))
+        vy = be.ones_like(be.array(Py))
 
         x0, y0, z0 = self.optic.fields.require_definition().get_ray_origins(
             self.optic, Hx, Hy, Px, Py, vx, vy

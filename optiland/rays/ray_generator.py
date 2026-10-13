@@ -76,13 +76,18 @@ class RayGenerator:
                 self.set_ray_aiming(**config)
                 self._current_config = config.copy()
 
+        # Vignetting is applied here, once, for every aimer and every trace
+        # entry point (distribution traces and generic rays alike). Aimers
+        # receive the already-vignetted pupil coordinates.
+        Pxv, Pyv = self.optic.fields.apply_vignetting(Hx, Hy, Px, Py)
+
         # Aim rays using the configured strategy. The aimers do not change
         # the geometry, so all their paraxial calls can share one path.
         with shared_path_scope(self.optic.surfaces):
             x0, y0, z0, L, M, N = self.aimer.aim_rays(
                 (Hx, Hy),
                 wavelength,
-                (Px, Py),
+                (Pxv, Pyv),
             )
 
         apodization = self.optic.apodization
