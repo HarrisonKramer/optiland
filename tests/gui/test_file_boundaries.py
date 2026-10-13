@@ -19,6 +19,25 @@ from .test_file_operations import edit_comment
 from .test_file_operations import file_operations as file_operations
 
 
+def test_sync_native_load_publishes_path_clean_state_and_clears_history(
+    file_operations, tmp_path
+):
+    connector, operations, _, _, _ = file_operations
+    original = connector.get_optic()
+    path = tmp_path / "native.json"
+    path.write_text(json.dumps(original.to_dict(), cls=SpecialFloatEncoder))
+    connector.set_surface_data(1, connector.COL_RADIUS, "60")
+    assert connector.is_modified() and connector._undo_redo_manager.can_undo()
+    connector._file_service.load(str(path))
+    assert connector.get_optic() is not original
+    assert float(connector.get_optic().surfaces[1].geometry.radius) == 50
+    assert connector.get_current_filepath() == str(path)
+    assert not connector.is_modified()
+    assert not connector._undo_redo_manager.can_undo()
+    assert not connector._undo_redo_manager.can_redo()
+    assert not operations.busy
+
+
 def test_sync_load_normalizes_candidate_and_new_document_cancels_pending_load(
     file_operations, monkeypatch, tmp_path
 ):
