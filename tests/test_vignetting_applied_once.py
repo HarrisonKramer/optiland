@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 import optiland.backend as be
+from optiland.apodization import GaussianApodization
 from optiland.distribution import create_distribution
 from optiland.samples.objectives import CookeTriplet
 
@@ -71,6 +72,30 @@ def test_generic_and_distribution_traces_agree(set_test_backend, mode):
     generic = _generic_stop_y(optic, PY)
     distribution = _distribution_stop_y(optic)
     assert_allclose(generic, distribution, rtol=0, atol=1e-9)
+
+
+@pytest.mark.parametrize("mode", AIMING_MODES)
+def test_apodization_is_evaluated_on_the_vignetted_pupil(set_test_backend, mode):
+    """A ray at Py = 1 of a field with vy crosses the pupil at 1 - vy."""
+
+    def launch_intensity(vy, py):
+        optic = _cooke(mode, vy)
+        optic.updater.set_apodization(GaussianApodization(sigma=0.5))
+        n = len(py)
+        rays = optic.ray_tracer.ray_generator.generate_rays(
+            be.zeros(n),
+            be.ones(n),
+            be.zeros(n),
+            be.array(py),
+            optic.primary_wavelength,
+        )
+        return be.to_numpy(rays.i)
+
+    vignetted = launch_intensity(VY, PY)
+    shrunk = launch_intensity(0.0, PY * (1 - VY))
+    assert_allclose(vignetted, shrunk, rtol=0, atol=1e-12)
+    # the edge ray is brighter than the unvignetted pupil edge
+    assert vignetted[2] > launch_intensity(0.0, PY)[2]
 
 
 def test_apply_vignetting_uses_nearest_field_factor(set_test_backend):

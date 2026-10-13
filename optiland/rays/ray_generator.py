@@ -92,7 +92,9 @@ class RayGenerator:
 
         apodization = self.optic.apodization
         if apodization:
-            intensity = apodization.get_intensity(Px, Py)
+            # Evaluate the beam profile where the ray crosses the pupil, i.e.
+            # at the vignetted pupil coordinates.
+            intensity = apodization.get_intensity(Pxv, Pyv)
         else:
             intensity = be.ones_like(Px)
 
