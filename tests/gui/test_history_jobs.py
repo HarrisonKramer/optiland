@@ -9,7 +9,9 @@ from dataclasses import replace
 import pytest
 from PySide6.QtWidgets import QMainWindow
 
+import optiland.backend as be
 from optiland.optic import Optic
+from optiland.rays import create_polarization
 from optiland_gui.action_manager import ActionManager
 from optiland_gui.optiland_connector import OptilandConnector
 from optiland_gui.services.job_records import BackendConfig, JobResult
@@ -410,3 +412,34 @@ def test_manager_public_transfers_and_empty_moves(qapp):
     assert manager.revision == revision + 2
     assert manager.peek("undo") is original
     assert manager.redo(original) is None
+
+
+def test_polarized_history_worker_preserves_backend_without_core_json_fix(
+    qapp, set_test_backend, minimal_optic
+):
+    connector = OptilandConnector()
+    try:
+        minimal_optic.polarization = create_polarization("RCP")
+        connector.load_optic_from_object(minimal_optic)
+        connector._undo_redo_manager.clear_stacks()
+        connector.set_surface_data(1, connector.COL_COMMENT, "Edited")
+        backend = BackendConfig.capture()
+        outcomes = []
+        connector.history.finished.connect(
+            lambda status, message: outcomes.append(status)
+        )
+        connector.request_undo()
+        wait_for(qapp, lambda: not connector.history.busy)
+        assert outcomes == ["succeeded"]
+        assert BackendConfig.capture() == backend
+        restored = connector.get_optic()
+        assert restored.surfaces[1].comment != "Edited"
+        assert restored.polarization.is_polarized
+        assert float(be.to_numpy(restored.polarization.phase_y)) == pytest.approx(
+            -be.pi / 2
+        )
+        assert isinstance(restored.polarization.phase_y, type(be.cast(0.0)))
+    finally:
+        connector.calculation_jobs.shutdown()
+        wait_for(qapp, lambda: connector.calculation_jobs._process is None)
+        connector.deleteLater()
