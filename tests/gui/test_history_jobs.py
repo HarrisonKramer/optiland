@@ -167,7 +167,9 @@ def history_connector(qapp, minimal_optic):
     connector.deleteLater()
 
 
-def test_real_worker_undo_redo_keeps_public_dictionary_history(qapp, history_connector):
+def test_real_worker_undo_redo_keeps_public_dictionary_history(
+    qapp, history_connector, monkeypatch
+):
     c = history_connector
     old = c.get_optic()
     statuses = []
@@ -177,6 +179,12 @@ def test_real_worker_undo_redo_keeps_public_dictionary_history(qapp, history_con
     assert c.get_optic() is old
     assert c._undo_redo_manager.can_undo()
     assert not c._undo_redo_manager.can_redo()
+
+    def reject_reconstruction(*args, **kwargs):
+        pytest.fail("History adoption reconstructed optics on the GUI thread")
+
+    monkeypatch.setattr(Optic, "from_dict", reject_reconstruction)
+    monkeypatch.setattr(c, "_initialize_optic_structure", reject_reconstruction)
     wait_for(qapp, lambda: not c.history.busy)
     assert statuses == ["succeeded"]
     assert c.get_optic() is not old
