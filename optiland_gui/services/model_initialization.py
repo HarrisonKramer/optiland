@@ -25,7 +25,7 @@ def ensure_valid_structure(optic, default_wavelength=0.550):
         )
     if optic.wavelengths.num_wavelengths == 0:
         optic.wavelengths.add(default_wavelength, is_primary=True, unit="um")
-    elif optic.wavelengths.primary_index is None:
+    elif not any(wavelength.is_primary for wavelength in optic.wavelengths):
         optic.wavelengths.wavelengths[0].is_primary = True
     if optic.aperture is None:
         optic.set_aperture("EPD", 10.0)

@@ -302,3 +302,48 @@ def test_final_worker_shutdown_disables_editing_until_close(qapp, owner):
     assert editor.text() == "preserved"
     assert connector.get_optic().surfaces[1].comment == original
     wait_for(qapp, lambda: not window.isVisible())
+
+
+def test_close_waits_for_all_registered_services(qapp, owner):
+    from optiland_gui.services.calculation_jobs import CalculationJobs
+
+    connector, operations, window, _, _, _ = owner
+    extra = CalculationJobs(connector.document_state, connector)
+    connector.register_calculation_service(extra)
+    extra._command = [
+        sys.executable,
+        "-u",
+        str(Path(__file__).with_name("calculation_worker_fixture.py")),
+    ]
+    extra.submit("other-panel", "unused", None, {"delay": 10})
+    wait_for(qapp, lambda: extra.active_request is not None)
+    window.show()
+    window.close()
+    window.close()  # Repeated intent must not start a second drain.
+    wait_for(qapp, lambda: not window.isVisible())
+    assert not window._stopping_services
+    assert all(service._process is None for service in connector.calculation_services)
+
+
+def test_close_after_export_can_be_declined_without_discarding_document(
+    qapp, tmp_path, owner, monkeypatch
+):
+    connector, operations, window, _, _, _ = owner
+    edit_comment(connector, "keep unsaved prescription")
+    prompts = []
+
+    def decline(*args):
+        prompts.append(args[2])
+        return QMessageBox.StandardButton.Cancel
+
+    monkeypatch.setattr(QMessageBox, "question", decline)
+    destination = tmp_path / "export.zmx"
+    operations.request_output(destination, "zemax")
+    window.show()
+    window.close()
+    wait_for(qapp, lambda: bool(prompts))
+    assert destination.exists()
+    assert window.isVisible() and window.isEnabled()
+    assert not operations._closing
+    assert connector.is_modified()
+    assert connector.get_optic().surfaces[1].comment == "keep unsaved prescription"

@@ -459,6 +459,7 @@ def test_shutdown_drains_accepted_publication_asynchronously(qapp, jobs):
         cancellable=False,
         cancel_on_document_change=False,
     )
+    wait_for(qapp, lambda: service.active_request is request)
     start = time.monotonic()
     service.shutdown()
     assert time.monotonic() - start < 0.1

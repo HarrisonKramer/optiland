@@ -7,6 +7,7 @@ from dataclasses import replace
 
 import pytest
 
+import optiland.backend as be
 from optiland.optic import Optic
 from optiland.rays import create_polarization
 from optiland_gui.services.file_service import SpecialFloatEncoder
@@ -18,7 +19,7 @@ from .test_file_operations import file_operations as file_operations
 
 
 def test_worker_load_never_reconstructs_materials_or_prescription_in_gui(
-    qapp, file_operations, tmp_path, monkeypatch
+    qapp, set_test_backend, file_operations, tmp_path, monkeypatch
 ):
     from optiland.materials.material import Material
 
@@ -39,6 +40,7 @@ def test_worker_load_never_reconstructs_materials_or_prescription_in_gui(
     assert restored is not original, notifications
     assert float(restored.surfaces[1].geometry.radius) == 50
     assert restored.polarization.to_dict() == original.polarization.to_dict()
+    assert isinstance(restored.polarization.phase_y, type(be.cast(0.0)))
     assert connector.get_current_filepath() == str(path)
     assert not connector.is_modified()
 
