@@ -141,6 +141,43 @@ class TestRefractive:
         assert optic.surfaces[2].aperture is None
 
 
+def _round_trip(optic, tmp_path):
+    """Write ``optic`` after setting its semi-apertures, then read it back.
+
+    ``update_paraxial`` fills ``semi_aperture`` so the writer emits DIAM for
+    every surface, the export path a round trip must get right.
+    """
+    optic.update_paraxial()
+    out = tmp_path / "round_trip.zmx"
+    save_zemax_file(optic, str(out))
+    return load_zemax_file(str(out))
+
+
+class TestRoundTrip:
+    def test_fixed_clip_survives(self, tmp_path, set_test_backend):
+        # The clip is carried by the surface aperture (written as CLAP), not
+        # by the DIAM value, so it reloads with the same radius and vignetting.
+        optic = load_zemax_file(_singlet(tmp_path, 'DIAM 5 1 0 0 1 ""'))
+        reloaded = _round_trip(optic, tmp_path)
+        aperture = reloaded.surfaces[2].aperture
+        assert type(aperture) is RadialAperture
+        assert_allclose(aperture.r_max, 5.0)
+        assert_allclose(aperture.r_min, 0.0)
+        assert _passes(reloaded, py=0.499)
+        assert not _passes(reloaded, py=0.501)
+
+    def test_automatic_semi_diameter_stays_unclipped(
+        self, tmp_path, set_test_backend
+    ):
+        # optiland's semi_aperture is recomputed from paraxial rays, so the
+        # writer must not export it as a fixed semi-diameter; that would add
+        # a clip on reload.
+        optic = load_zemax_file(_singlet(tmp_path, 'DIAM 5 0 0 0 1 ""'))
+        reloaded = _round_trip(optic, tmp_path)
+        assert reloaded.surfaces[2].aperture is None
+        assert _passes(reloaded, py=1.0)
+
+
 class TestFloatingStop:
     def test_stop_semi_diameter_is_doubled(self, tmp_path, set_test_backend):
         # The stop is the first surface, in air, so EPD = stop diameter.
