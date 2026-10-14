@@ -13,7 +13,7 @@ import pytest
 
 import optiland.backend as be
 from optiland.materials import AGFMaterial, BaseMaterial
-from optiland.materials.agf import evaluate_agf_formula, read_agf
+from optiland.materials.agf import evaluate_agf_formula, find_agf_catalog, read_agf
 from tests.utils import assert_allclose
 
 _WAVES = [0.45, 0.5875618, 0.9]
@@ -206,3 +206,25 @@ def test_cache_follows_coefficient_edits(set_test_backend, tmp_path):
     assert_allclose(
         material.n(0.5), _powers(material.coefficients[:6], [0, 2, -2, -4, -6, -8], 0.5)
     )
+
+
+def test_latin1_catalog_blank_lines_and_bad_numbers(tmp_path):
+    # Older catalogs may be Latin-1 (here a comment with "ü"), have blank
+    # lines, and carry placeholders that are not numbers; those read as 0.
+    entry = _entry("G1", 1, _SCHOTT).replace(
+        "GC written for the tests", "GC Glas für die Tests\n"
+    )
+    entry = entry.replace("LD 0.3 2.5", "LD 0.3 -")
+    path = tmp_path / "LATIN.AGF"
+    path.write_bytes(("CC catalog\n\n" + entry).encode("latin-1"))
+    glass = read_agf(str(path))["G1"]
+    assert glass.comment == "Glas für die Tests"
+    assert glass.wavelength_range == (0.3, 0.0)
+    assert glass.coefficients[:6] == _SCHOTT
+
+
+def test_missing_folders_are_skipped(tmp_path):
+    path = _write_catalog(tmp_path, [_entry("G1", 1, _SCHOTT)], name="CAT.AGF")
+    missing = str(tmp_path / "does-not-exist")
+    assert find_agf_catalog("cat", [missing, str(tmp_path)]) == path
+    assert find_agf_catalog("cat", [missing]) is None
