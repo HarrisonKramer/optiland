@@ -6,3 +6,5 @@ from .rectangular import RectangularAperture
 from .offset_radial import OffsetRadialAperture
 from .elliptical import EllipticalAperture
 from .polygon import PolygonAperture, FileAperture
+from .rotated import RotatedAperture
+from .unclipped import UnclippedAperture
