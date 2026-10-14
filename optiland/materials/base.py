@@ -27,14 +27,46 @@ except (ImportError, ModuleNotFoundError):
     torch = None
 
 
+_TYPE_STR_CACHE: dict = {}
+_TYPE_STR_CACHE_MAX = 256
+
+
+def _type_str(obj) -> str:
+    """Return ``str(obj)`` for a dtype or device, memoized on the object itself.
+
+    ``str(numpy.dtype)`` costs about 2 µs and the cache keys below build it on
+    every material lookup. Programs use only a handful of distinct dtypes and
+    devices, so the strings are memoized. The dict key is the object itself
+    (``numpy.dtype``, ``torch.dtype`` and ``torch.device`` are hashable), never
+    its ``id()``, which could be reused by a new object after the old one is
+    freed. The key also includes the type, because a ``numpy.dtype`` compares
+    equal to objects of other types (``np.dtype("float64") == None`` and
+    ``== "float"`` are both true). Equal objects of the same type have equal
+    strings, so a hit always returns the string the object would produce.
+    Unhashable objects fall back to ``str``.
+    """
+    key = (type(obj), obj)
+    try:
+        return _TYPE_STR_CACHE[key]
+    except KeyError:
+        pass
+    except TypeError:
+        return str(obj)
+    text = str(obj)
+    if len(_TYPE_STR_CACHE) >= _TYPE_STR_CACHE_MAX:
+        _TYPE_STR_CACHE.clear()
+    _TYPE_STR_CACHE[key] = text
+    return text
+
+
 def _array_content_key(value, digest: bytes) -> tuple:
     """Assemble a cache-key tuple from a content digest plus coarse metadata."""
     return (
         "array-content",
         digest,
         tuple(getattr(value, "shape", ())),
-        str(getattr(value, "dtype", type(value).__name__)),
-        str(getattr(value, "device", None)),
+        _type_str(getattr(value, "dtype", type(value).__name__)),
+        _type_str(getattr(value, "device", None)),
     )
 
 
@@ -44,8 +76,8 @@ def _array_uniform_key(value, scalar: float) -> tuple:
         "array-uniform",
         scalar,
         tuple(getattr(value, "shape", ())),
-        str(getattr(value, "dtype", type(value).__name__)),
-        str(getattr(value, "device", None)),
+        _type_str(getattr(value, "dtype", type(value).__name__)),
+        _type_str(getattr(value, "device", None)),
     )
 
 
@@ -190,8 +222,8 @@ class BaseMaterial(ABC):
                     "array-values",
                     tuple(np.ravel(be.to_numpy(wavelength))),
                     tuple(wavelength.shape),
-                    str(wavelength.dtype),
-                    str(getattr(wavelength, "device", None)),
+                    _type_str(wavelength.dtype),
+                    _type_str(getattr(wavelength, "device", None)),
                 )
             else:
                 wavelength_key = self._array_metadata_key(wavelength)
