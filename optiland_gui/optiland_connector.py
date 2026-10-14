@@ -452,6 +452,10 @@ class OptilandConnector(QObject):
         """
         return self._surface_service.get_surface_data(row, col_idx)
 
+    def get_surface_display_rows(self, rows=None, columns=None):
+        """Capture display cells with one shared positions calculation per refresh."""
+        return self._surface_service.get_display_rows(rows, columns)
+
     def set_surface_data(self, row: int, col_idx: int, value_str: str) -> None:
         """Write a value to a specific LDE cell.
 
