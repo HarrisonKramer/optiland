@@ -31,6 +31,11 @@ from optiland.fileio.zemax.writer.exporter import save_zemax_file
 def load_zemax_file(source: str):
     """Load a Zemax file and return an Optic object.
 
+    Glass names are looked up by exact name in the catalogs the file declares
+    with ``GCAT``; a glass in none of them becomes a model glass built from
+    the nd/vd on its ``GLAS`` line. See :doc:`/zemax_import` for the full
+    resolution order.
+
     Args:
         source: The path to a local .zmx file or a URL pointing to a .zmx file.
 
