@@ -135,7 +135,8 @@ class TestZemaxDataParser:
 
     def test_read_diameter(self):
         self.parser._read_diameter(["DIAM", "8.5", "1", "0", "0", "1", '""'])
-        assert self.parser._current_surf_data["diameter"] == 8.5
+        assert self.parser._current_surf_data["semi_diameter"] == 8.5
+        assert self.parser._current_surf_data["semi_diameter_fixed"] is True
 
     def test_read_obdc_after_clap(self):
         self.parser._read_surface(["SURF", "0"])
@@ -288,7 +289,8 @@ class TestEndToEnd:
         optic = load_zemax_file(filename)
         assert isinstance(optic, Optic)
         assert optic.aperture.ap_type == "float_by_stop_size"
-        assert optic.aperture.value == 8.5
+        # The stop's DIAM is a semi-diameter of 8.5.
+        assert optic.aperture.value == 17.0
 
     def test_load_flap_apertures(self, zemax_dir):
         filename = os.path.join(zemax_dir, "lens_thorlabs_iso_8859_1.zmx")
