@@ -10,7 +10,7 @@ from matplotlib.backend_bases import MouseButton, MouseEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtCore import QCoreApplication, QEvent, QPoint, Qt
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtGui import QColor, QIcon, QKeyEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
 
@@ -309,6 +309,36 @@ def test_3d_axes_keep_their_existing_navigation(plot):
     emit(plot, "button_press_event", pixel)
     assert plot.toolbar._pointer_pan is None
     emit(plot, "button_release_event", pixel)
+
+
+@pytest.mark.parametrize("foreground", ["#eeeeee", "#202020"])
+def test_rectangle_icon_follows_palette_and_has_accessible_name(plot, foreground):
+    original_icon = plot.toolbar._actions["zoom"].icon().cacheKey()
+    plot.toolbar.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+    assert plot.toolbar._actions["zoom"].icon().cacheKey() == original_icon
+    palette = plot.toolbar.palette()
+    palette.setColor(plot.toolbar.foregroundRole(), QColor(foreground))
+    plot.toolbar.setPalette(palette)
+    action = plot.toolbar._actions["zoom"]
+    assert action.text() == "Zoom to rectangle"
+    assert "left-drag a box" in action.toolTip()
+    assert plot.toolbar.widgetForAction(action).accessibleName() == action.text()
+    copied_icon = QIcon(action.icon())
+    copied_icon.setIsMask(True)
+    for size in (24, 48):
+        normal = action.icon().pixmap(size, size).toImage()
+        disabled = action.icon().pixmap(size, size, QIcon.Mode.Disabled).toImage()
+        # Inspect solid pixels; antialiased edges use premultiplied alpha.
+        opaque = [
+            normal.pixelColor(x, y)
+            for x in range(normal.width()) for y in range(normal.height())
+            if normal.pixelColor(x, y).alpha() == 255
+        ]
+        assert opaque and all(color.name() == foreground for color in opaque)
+        assert max(
+            disabled.pixelColor(x, y).alpha()
+            for x in range(disabled.width()) for y in range(disabled.height())
+        ) < 255  # Overlapping half-opacity strokes still remain translucent.
 
 
 @pytest.mark.parametrize(
