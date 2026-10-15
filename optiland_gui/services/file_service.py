@@ -265,6 +265,10 @@ class FileService:
             filepath: Destination path for the ``.zmx`` file.
         """
         try:
+            if self.operations.path_busy(filepath):
+                raise RuntimeError(
+                    "An asynchronous save to this path is still running."
+                )
             optic = self._connector._optic
             if optic is None:
                 self._toast("No optical system loaded to export.", "warning")
@@ -283,6 +287,10 @@ class FileService:
             filepath: Destination path for the ``.seq`` file.
         """
         try:
+            if self.operations.path_busy(filepath):
+                raise RuntimeError(
+                    "An asynchronous save to this path is still running."
+                )
             optic = self._connector._optic
             if optic is None:
                 self._toast("No optical system loaded to export.", "warning")
