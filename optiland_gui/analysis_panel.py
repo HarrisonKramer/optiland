@@ -27,7 +27,6 @@ from PySide6.QtCore import (
     QPropertyAnimation,
     QRegularExpression,
     Qt,
-    QTimer,
     Slot,
 )
 from PySide6.QtGui import QColor, QIcon, QPainter, QPalette, QRegularExpressionValidator
@@ -76,6 +75,7 @@ from optiland_gui.widgets.plot_navigation import PlotNavigationToolbar
 from . import gui_plot_utils
 from .services.analysis_plots import draw_analysis_plot
 from .services.job_records import BackendConfig
+from .widgets.retained_analysis_canvas import RetainedAnalysisCanvas
 
 if TYPE_CHECKING:
     from .optiland_connector import OptilandConnector
@@ -338,11 +338,6 @@ class AnalysisPanel(QWidget):
 
         main_content_layout = QHBoxLayout()
         main_content_layout.setSpacing(10)
-
-        self.resize_timer = QTimer(self)
-        self.resize_timer.setSingleShot(True)
-        self.resize_timer.setInterval(100)
-        self.resize_timer.timeout.connect(self.handle_resize_finished)
 
         self._setup_plot_display_frame(main_content_layout)
         self._setup_settings_panel(main_content_layout)
@@ -1093,13 +1088,13 @@ class AnalysisPanel(QWidget):
             self.display_plot_page(self.current_plot_page_index)
             self.logArea.append("Analysis removed.")
 
-    def resizeEvent(self, event):
-        """Restarts a timer every time the window is resized."""
-        super().resizeEvent(event)
-        self.resize_timer.start()
-
     def handle_resize_finished(self):
-        """Repaint retained plots after resizing without recalculation."""
+        """Request an explicit retained-plot repaint without recalculation.
+
+        Geometry changes already repaint through Matplotlib's canvas resize
+        handler. Scheduling a second panel-level redraw duplicates that work,
+        especially when a populated plot takes longer than a debounce interval.
+        """
         if self.active_mpl_canvas_widget:
             self.active_mpl_canvas_widget.draw_idle()
 
@@ -1243,7 +1238,7 @@ class AnalysisPanel(QWidget):
     def _create_new_plot_canvas(self, page_data):
         """Creates a new FigureCanvas and connects mouse interaction events."""
         fig = Figure(figsize=page_data.get("figsize", (7, 5)), dpi=100)
-        canvas = FigureCanvas(fig)
+        canvas = RetainedAnalysisCanvas(fig)
         canvas.setFocusPolicy(Qt.FocusPolicy.ClickFocus | Qt.FocusPolicy.StrongFocus)
 
         # Connect events and store their IDs for later disconnection
