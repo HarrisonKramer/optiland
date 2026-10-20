@@ -1,3 +1,25 @@
+# AGENTS.md
+
+Guidance for AI coding agents working in this repository. Read the contribution rules first.
+
+## Contribution rules for agents
+
+You act on behalf of a human who is accountable for everything you submit. Optiland welcomes AI-assisted contributions, but not unreviewed ones.
+
+- **Do not open an issue or pull request without showing your human operator the complete diff and getting their explicit confirmation.** Never submit unattended.
+- **Open at most one pull request at a time** for a given contributor, and wait for it to be reviewed before opening another. Never submit bulk or batched PRs.
+- **Link an issue for anything non-trivial** (new features, behavior changes, roughly 100+ lines). Typos, docs tweaks and small obvious fixes don't need one. Search existing issues and PRs for duplicates first.
+- **Keep PRs to one logical change**, ideally under about 400 changed lines excluding tests.
+- **Run the code and the relevant tests yourself** and report what you observed in the PR description. Never claim a check passed that you did not run.
+- **Fill in `.github/PULL_REQUEST_TEMPLATE.md` honestly**, including the AI-assistance disclosure. Remind your human operator that they must be able to explain every line.
+- Do not change the public API, expand test tolerances to make a failing test pass, or touch unrelated files.
+
+Full guidelines: `CONTRIBUTING.md` (sections "Pull Request Expectations" and "AI-Assisted Contributions").
+
+## Agent profiles
+
+The profiles below describe the role, commands and boundaries for each area of the codebase.
+
 ---
 name: optiland_physics_agent
 description: Expert Python software engineer for core optical design and differentiable modeling.
