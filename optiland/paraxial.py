@@ -61,10 +61,14 @@ class Paraxial:
         return self.optic.surfaces
 
     def f1(self) -> ScalarOrArray:
-        """Calculate the front focal length (f1).
+        """Calculate the front effective focal length (f1).
+
+        This is the object-space effective focal length, measured from the
+        object-space principal plane to the front focal point. It is not the
+        front focal distance, which is measured from the first surface.
 
         Returns:
-            Front focal length.
+            Front effective focal length.
 
         """
         z_start = -1
@@ -74,10 +78,15 @@ class Paraxial:
         return f1[0]
 
     def f2(self) -> ScalarOrArray:
-        """Calculate the back focal length (f2), also known as effective focal length.
+        """Calculate the back effective focal length (f2).
+
+        This is the image-space effective focal length (EFL), measured from the
+        image-space principal plane to the back focal point. It is not the back
+        focal distance (BFL), which is measured from the last surface. See
+        ``F2`` for the back focal point location.
 
         Returns:
-            Back focal length.
+            Back effective focal length.
 
         """
         # start tracing 1 lens unit before first surface
