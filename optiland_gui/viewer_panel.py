@@ -219,6 +219,7 @@ class SagViewer(QWidget):
 
     def update_theme(self, theme="dark"):
         self.current_theme = theme
+        self.toolbar.update_theme(theme)
         self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
         self.layout_job.redraw()
 
@@ -519,6 +520,7 @@ class MatplotlibViewer(QWidget):
             self.current_theme = theme
             gui_plot_utils.apply_gui_matplotlib_styles(theme=self.current_theme)
             self.layout_job.redraw()
+        self.toolbar.update_theme(theme)
         self.settings_toggle_btn.setIcon(QIcon(f":/icons/{theme}/settings.svg"))
 
     def set_interaction_state(self, state):
