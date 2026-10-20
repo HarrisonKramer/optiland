@@ -14,8 +14,11 @@ import operator
 from typing import TYPE_CHECKING, Any
 
 from optiland.physical_apertures import (
+    DifferenceAperture,
+    EllipticalAperture,
     OffsetRadialAperture,
     RadialAperture,
+    RectangularAperture,
     UnionAperture,
 )
 
@@ -92,6 +95,34 @@ def _obscuration(aperture: Any) -> tuple[float, float, tuple[float, float]] | No
             and _offset(inner) == _offset(outer)
         ):
             return float(inner.r_max), float(outer.r_min), _offset(outer)
+    return None
+
+
+def _shape(aperture: Any) -> tuple[str, float, float, tuple[float, float]] | None:
+    """The (keyword, x_half, y_half, offset) of a rectangle or ellipse.
+
+    SQAP and ELAP pass rays inside the shape; SQOB and ELOB, which the reader
+    builds as an unbounded aperture minus the shape, block them.
+    """
+    if type(aperture) is RectangularAperture:
+        x_min, x_max = float(aperture.x_min), float(aperture.x_max)
+        y_min, y_max = float(aperture.y_min), float(aperture.y_max)
+        offset = ((x_min + x_max) / 2, (y_min + y_max) / 2)
+        return "SQAP", (x_max - x_min) / 2, (y_max - y_min) / 2, offset
+    if type(aperture) is EllipticalAperture:
+        offset = (float(aperture.offset_x), float(aperture.offset_y))
+        return "ELAP", float(aperture.a), float(aperture.b), offset
+    if type(aperture) is DifferenceAperture:
+        unbounded, hole = aperture.a, aperture.b
+        if (
+            type(unbounded) is RadialAperture
+            and float(unbounded.r_min) == 0.0
+            and math.isinf(float(unbounded.r_max))
+        ):
+            shape = _shape(hole)
+            if shape is not None:
+                keyword, x_half, y_half, offset = shape
+                return keyword[:2] + "OB", x_half, y_half, offset
     return None
 
 
@@ -269,15 +300,18 @@ class ZemaxFileEncoder:
         if clap is None:
             return
         obscuration = _obscuration(clap)
-        if obscuration is not None:
+        shape = _shape(clap)
+        if shape is not None:
+            keyword, x_half, y_half, offset = shape
+            lines.append(f"  {keyword} {_fmt(x_half)} {_fmt(y_half)}")
+            _encode_offset(lines, offset)
+        elif obscuration is not None:
             r_min, r_max, offset = obscuration
             lines.append(f"  OBSC {_fmt(r_min)} {_fmt(r_max)}")
             _encode_offset(lines, offset)
         elif hasattr(clap, "r_min"):
             lines.append(f"  CLAP {_fmt(float(clap.r_min))} {_fmt(float(clap.r_max))}")
             _encode_offset(lines, _offset(clap))
-        elif hasattr(clap, "x_min"):
-            lines.append(f"  CLAP {_fmt(0.0)} {_fmt(float(clap.x_max))}")
 
     def _encode_parameters(self, lines: list[str], raw: dict[str, Any]) -> None:
         for i in range(1, 17):
