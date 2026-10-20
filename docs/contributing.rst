@@ -12,7 +12,7 @@ Thank you for your interest in contributing to **Optiland**! Contributions are w
 How to Contribute
 -----------------
 
-1. **Start with an issue.** Before beginning work, check whether there's already an open issue for the feature or bug you want to work on. If not, please open one first. This helps others know what's in progress and avoid duplicating effort.
+1. **Start with an issue for anything non-trivial.** For new features, behavior changes, or anything larger than roughly 100 lines, check whether there's already an open issue. If not, please open one first so scope can be agreed before you write code. This also helps others know what's in progress and avoids duplicating effort. Typo fixes, documentation tweaks, and small obvious bug fixes can go straight to a pull request.
 2. **Let others know you're working on it.** If you'd like to work on an issue, leave a comment to say so. You can also request to be assigned, but this is optional — the goal is just to keep communication open.
 3. **Fork** the repository on GitHub.
 4. **Clone** your forked repository locally.
@@ -20,6 +20,30 @@ How to Contribute
 6. **Commit** your changes with clear commit messages.
 7. **Push** your changes to your fork.
 8. **Open** a pull request with a detailed description of your changes.
+
+
+Pull Request Expectations
+-------------------------
+
+Maintainer review time is our scarcest resource, so please make your pull request easy to review:
+
+- **One logical change per PR, kept small.** Aim for under roughly 400 changed lines, not counting tests. Large changes are easier to review, and to revert, as a series of independently mergeable PRs.
+- **Agree scope first for larger work.** For new features or anything sizeable, describe your plan in an issue or discussion before opening PRs. If you have a large body of work, a tracking issue with a proposed split is the best way to get it reviewed.
+- **Avoid opening many PRs at once.** A few open PRs at a time is plenty. When many are open we review them oldest first, and may ask you to hold off on new ones until earlier ones land.
+- **Fill in the pull request template.** In particular, say in your own words what changed, why, and how you verified it.
+
+AI-Assisted Contributions
+-------------------------
+
+AI tools are welcome here. The standard is the same as for any contribution, and a human is accountable for every line:
+
+- **Read and understand every line** before you submit. You should be able to explain and defend any change during review.
+- **Run it yourself.** Passing CI is not verification. Tell us what you ran and what you observed.
+- **Write the description and answer review comments yourself,** in your own words. Please don't paste unedited model output.
+- **Disclose substantial AI assistance** using the checkbox in the pull request template. Disclosure is never held against you.
+- **Agents act for a person.** If an autonomous agent opens a PR, the human operator must have reviewed the whole diff first. Unattended bulk submissions will be closed.
+
+PRs that appear unreviewed (for example unrelated edits, invented APIs, tests that assert nothing, or a boilerplate description) may be closed without a detailed review. You're welcome to resubmit once these are addressed.
 
 
 Development Setup
