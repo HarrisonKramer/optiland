@@ -191,7 +191,8 @@ class RealRays(BaseRays):
         """
         # A missed later surface can supply NaN/inf attenuation. Zero incident
         # power remains zero; nonfinite factors on powered rays stay visible.
-        factor = be.where(self.i == 0, be.zeros_like(self.i), factor)
+        # Broadcast a scalar zero instead of allocating a full ray-sized array.
+        factor = be.where(self.i == 0, 0.0, factor)
         self.i = self.i * factor
 
     def clip(self, condition: BEArray):
