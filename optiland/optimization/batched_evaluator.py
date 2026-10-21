@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 import optiland.backend as be
 from optiland.optimization.operand.operand import operand_registry
+from optiland.optimization.operand.ray import _angle_of_incidence
 
 if TYPE_CHECKING:
     from optiland.optimization.problem import OptimizationProblem
@@ -250,15 +251,7 @@ def _extract_aoi(surface_group, input_data, ray_index):
     )
 
     nx, ny, nz = geometry.surface_normal(rays=rays_at_surface)
-    dot_product = be.abs(L_inc * nx + M_inc * ny + N_inc * nz)
-    dot_product_clip = be.minimum(dot_product, be.array(1.0))
-    angle_rad = be.arccos(dot_product_clip)
-    angle_deg = be.rad2deg(angle_rad)
-
-    if be.is_array_like(angle_deg):
-        angle_deg = angle_deg.item()
-
-    return angle_deg
+    return _angle_of_incidence(L_inc, M_inc, N_inc, nx, ny, nz)
 
 
 def _extract_rms_spot(surface_group, input_data):
