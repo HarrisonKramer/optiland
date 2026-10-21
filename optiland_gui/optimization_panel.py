@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QDoubleSpinBox,
     QFormLayout,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -882,21 +883,22 @@ class OptimizationPanel(QWidget):
     def _build_live_updates_widget(self) -> QGroupBox:
         """Build the Live Updates section."""
         group = QGroupBox("Live Updates")
-        layout = QHBoxLayout(group)
+        layout = QGridLayout(group)
         layout.setSpacing(12)
 
         self.chkLiveViz = QCheckBox("Visualization")
         self.chkLiveVars = QCheckBox("Variable Values")
-        layout.addWidget(self.chkLiveViz)
-        layout.addWidget(self.chkLiveVars)
+        layout.addWidget(self.chkLiveViz, 0, 0)
+        layout.addWidget(self.chkLiveVars, 0, 1)
 
-        layout.addWidget(QLabel("  Frequency:"))
+        frequency_label = QLabel("Frequency:")
         self.spnFrequency = QSpinBox()
         self.spnFrequency.setRange(1, 1000)
         self.spnFrequency.setValue(10)
         self.spnFrequency.setSuffix(" evals")
-        layout.addWidget(self.spnFrequency)
-        layout.addStretch()
+        frequency_label.setBuddy(self.spnFrequency)
+        layout.addWidget(frequency_label, 1, 0)
+        layout.addWidget(self.spnFrequency, 1, 1)
 
         return group
 
