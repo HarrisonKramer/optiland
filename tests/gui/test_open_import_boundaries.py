@@ -144,3 +144,55 @@ def test_failed_open_request_releases_ownership_and_late_retry_does_nothing(
     assert not operations.busy
     assert len(attempted) == 1
     assert any("could not start" in message for message, _ in notifications)
+
+
+@pytest.mark.parametrize("file_format", ["optiland", "zemax", "codev"])
+def test_owned_reader_parses_each_supported_format(
+    minimal_optic, tmp_path, file_format
+):
+    from optiland.fileio import save_codev_file
+
+    path = tmp_path / "lens.input"
+    if file_format == "optiland":
+        path.write_text(json.dumps(minimal_optic.to_dict(), cls=SpecialFloatEncoder))
+    elif file_format == "zemax":
+        save_zemax_file(minimal_optic, path)
+    else:
+        save_codev_file(minimal_optic, path)
+    prepared = load_file(
+        None,
+        {"path": str(path), "format": file_format, "backend": BackendConfig.capture()},
+        lambda *a: None,
+        threading.Event(),
+    )
+    candidate = prepared.restore()
+    assert candidate.surfaces.num_surfaces == minimal_optic.surfaces.num_surfaces
+    assert float(candidate.surfaces[1].geometry.radius) == 50
+
+
+def test_empty_document_receives_editable_defaults_and_unknown_format_is_rejected():
+    optic = Optic()
+    ensure_valid_structure(optic)
+    assert optic.surfaces.num_surfaces == 2
+    assert optic.wavelengths.primary_index == 0
+    assert optic.aperture.ap_type == "EPD"
+    with pytest.raises(ValueError, match="Unsupported file format"):
+        load_file(
+            None,
+            {"format": "invalid", "backend": BackendConfig.capture()},
+            lambda *a: None,
+            threading.Event(),
+        )
+
+
+def test_load_is_rejected_during_close_and_unknown_completion_is_ignored(
+    file_operations, monkeypatch, tmp_path
+):
+    connector, operations, _, _, _ = file_operations
+    monkeypatch.setattr(operations.jobs, "_dispatch", lambda: None)
+    request = operations.request_load(tmp_path / "input.json")
+    operations.cancel_pending()
+    operations._finished(JobResult(request, "succeeded", None, current=False))
+    operations._closing = True
+    assert operations.request_load(tmp_path / "input.json") is None
+    assert not operations.busy
