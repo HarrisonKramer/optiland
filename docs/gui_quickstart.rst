@@ -123,6 +123,14 @@ Optiland features a VS Code-style **Command Palette** that provides quick access
 
    All windows are dockable and can be rearranged to suit your workflow. You can also save your layout for future sessions. These can be loaded by pressing "1" or "2" in the top toolbar, corresponding to the slot used for saving your layout.
 
+Resizing analysis plots
+-----------------------
+
+Complex analysis plots can show a temporary scaled view while resizing,
+then redraw sharply at the new size. Plot navigation and image saving use
+the current figure. Resizing preserves results and zoom without running
+the analysis again.
+
 Notifications
 -------------
 
