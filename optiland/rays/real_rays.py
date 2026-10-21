@@ -178,7 +178,17 @@ class RealRays(BaseRays):
         )
 
     def attenuate(self, factor: ScalarOrArray) -> None:
-        """Apply scalar loss, keeping extinct rays dark for invalid later paths."""
+        """Multiply ray intensity by a polarization-independent factor.
+
+        Args:
+            factor: Scalar or per-ray array of shape (N,). This is an intensity
+                factor, not a field amplitude; 0.25 retains 25% of the power.
+                Loss models are responsible for supplying factors in [0, 1].
+
+        Zero-intensity rays remain dark for invalid later factors. Nonfinite
+        factors on powered rays remain visible. Polarized subclasses also
+        retain this loss for subsequent source-state and field evaluations.
+        """
         # A missed later surface can supply NaN/inf attenuation. Zero incident
         # power remains zero; nonfinite factors on powered rays stay visible.
         factor = be.where(self.i == 0, be.zeros_like(self.i), factor)

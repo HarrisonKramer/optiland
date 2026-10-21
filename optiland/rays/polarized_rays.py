@@ -34,7 +34,16 @@ class PolarizedRays(RealRays):
         i (ndarray): The intensity of the rays.
         w (ndarray): The wavelength of the rays.
         opd (ndarray): The optical path length of the rays.
-        p (be.ndarray): Array of polarization matrices of the rays.
+        p (be.ndarray): Shape (N, 3, 3) transport matrices mapping Cartesian
+            launch fields into the current output frame. Includes Jones
+            amplitude effects, but excludes launch power and scalar losses.
+
+    Note:
+        Private ``_i0`` is retained scalar power: launch intensity multiplied
+        by accumulated scalar attenuation, zeroed by clipping. It is not an
+        immutable launch-intensity snapshot. Use ``attenuate`` and ``clip``
+        rather than writing it or ``i`` to apply persistent loss. Evaluating
+        another polarization state updates ``i`` without modifying ``_i0``.
 
     Methods:
         get_output_field(E: be.ndarray) -> be.ndarray:
@@ -86,13 +95,17 @@ class PolarizedRays(RealRays):
         self._rotate_field_rows(0, 1, rz)
 
     def get_output_field(self, E: be.ndarray) -> be.ndarray:
-        """Compute the output electric field given the input electric field.
+        """Transport a Cartesian launch field into the current ray frame.
 
         Args:
-            E (be.ndarray): The input electric field as a numpy array.
+            E (be.ndarray): Input Cartesian fields, shape (N, 3), expressed in
+                the fixed launch frame, using the active backend.
 
         Returns:
-            be.ndarray: The output field, zero for rays with zero incident power.
+            be.ndarray: Shape (N, 3) fields including Jones effects but without
+            launch-intensity or scalar-attenuation scaling. Rays with zero
+            retained scalar power return zero. Use ``get_exit_fields`` for
+            power-scaled fields for a source polarization state.
 
         """
         # Mask operands before multiplication, not a NaN field afterwards. A
@@ -104,7 +117,17 @@ class PolarizedRays(RealRays):
         return be.mult_p_E(matrix, field)
 
     def attenuate(self, factor: ScalarOrArray) -> None:
-        """Retain scalar attenuation when evaluating another polarization state."""
+        """Apply scalar intensity loss to current and retained ray power.
+
+        Args:
+            factor: Scalar or shape (N,) intensity factor, as in
+                ``RealRays.attenuate``. Exit-field amplitudes subsequently
+                include its square root; the transport matrix is unchanged.
+
+        A state blocked by a polarizer can have zero current intensity while
+        retaining power for another state. This operation preserves that
+        distinction; only zero retained scalar power permanently stays dark.
+        """
         # Use the incident scalar power, not intensity for the last evaluated
         # polarization: changing the input state may legitimately transmit light.
         factor = be.where(self._i0 == 0, be.zeros_like(self._i0), factor)
@@ -112,7 +135,12 @@ class PolarizedRays(RealRays):
         self._i0 = self._i0 * factor
 
     def clip(self, condition: BEArray) -> None:
-        """Keep clipped rays dark in both intensity and exit-field evaluations."""
+        """Keep rejected rays dark for all later source-state evaluations.
+
+        Args:
+            condition: Scalar or shape (N,) mask; nonzero entries extinguish
+                both current intensity and retained scalar power.
+        """
         super().clip(condition)
         self._i0 = be.where(be.array(condition) != 0, be.zeros_like(self._i0), self._i0)
 
@@ -155,16 +183,21 @@ class PolarizedRays(RealRays):
             return [E1_x, E1_y]
 
     def get_exit_fields(self, state: PolarizationState | None) -> list[be.ndarray]:
-        """Compute the exit electric field(s) for the rays.
+        """Compute output fields including launch power and scalar losses.
 
         Args:
-            state (PolarizationState | None): The polarization state.
+            state (PolarizationState | None): Incident state in each ray's
+                transverse launch basis. None denotes unpolarized light.
 
         Returns:
-            list[be.ndarray]: A list of 3D electric field arrays. For polarized
+            list[be.ndarray]: A list of shape (N, 3) fields in the current
+            output frame. For polarized
             light, the list contains a single array. For unpolarized light, the
             list contains two orthogonal, incoherently superimposed arrays, each
-            scaled down by 1/sqrt(2).
+            scaled down by 1/sqrt(2). Launch intensity and all retained scalar
+            losses scale amplitudes by their square root. Sum the squared
+            field norms to obtain the intensity for this source state; do not
+            apply the scalar losses again. This method does not change ``i``.
         """
         fields = self._compute_unscaled_exit_fields(state)
         # Extinct fields are already zero. Avoid sqrt(0)'s infinite derivative
@@ -178,6 +211,10 @@ class PolarizedRays(RealRays):
 
         Args:
             state (PolarizationState): The polarization state of the ray.
+
+        Recomputes ``i`` from the transport matrix and retained scalar power.
+        Repeated calls do not compound loss. Assigning ``i`` directly changes
+        only the current evaluation and is overwritten by this method.
 
         """
         fields = self._compute_unscaled_exit_fields(state)
