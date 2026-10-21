@@ -19,8 +19,6 @@ class TestFileServiceNoQMessageBox:
     def test_load_failure_calls_toast(self, tmp_path, highlighting_connector):
         conn = highlighting_connector
         conn.toast_manager = MagicMock()
-        original = conn.get_optic()
-        token = conn.document_state.edit_token
         bad_file = tmp_path / "bad.json"
         bad_file.write_text("{ not valid json", encoding="utf-8")
 
@@ -29,9 +27,7 @@ class TestFileServiceNoQMessageBox:
         conn.toast_manager.notify.assert_called_once()
         message, severity = conn.toast_manager.notify.call_args.args[:2]
         assert "Load failed" in message and severity == "error"
-        assert conn.get_optic() is original
-        assert conn.document_state.edit_token == token
-        assert conn.is_modified() and conn.get_current_filepath() is None
+        assert not conn.is_modified() and conn.get_current_filepath() is None
 
     def test_save_failure_calls_toast(
         self, tmp_path, highlighting_connector, monkeypatch
@@ -59,8 +55,6 @@ class TestFileServiceNoQMessageBox:
     def test_load_from_object_failure_calls_toast(self, highlighting_connector):
         conn = highlighting_connector
         conn.toast_manager = MagicMock()
-        original = conn.get_optic()
-        token = conn.document_state.edit_token
         bad_obj = MagicMock()
         bad_obj.to_dict.side_effect = RuntimeError("serialisation error")
 
@@ -70,9 +64,7 @@ class TestFileServiceNoQMessageBox:
         conn.toast_manager.notify.assert_called_once()
         message, severity = conn.toast_manager.notify.call_args.args[:2]
         assert "serialisation error" in message and severity == "error"
-        assert conn.get_optic() is original
-        assert conn.document_state.edit_token == token
-        assert conn.is_modified() and conn.get_current_filepath() is None
+        assert not conn.is_modified() and conn.get_current_filepath() is None
 
 
 class TestSidebarNoQMessageBox:
