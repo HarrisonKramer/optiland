@@ -314,7 +314,9 @@ class RayOperand:
             surface_number: The number of the surface.
             Hx: The normalized x field coordinate.
             Hy: The normalized y field coordinate.
-            num_rays: The number of rays to trace.
+            num_rays: The sampling parameter passed to ``optic.trace``. For the
+                'hexapolar' distribution this is the number of rings N, so
+                ``1 + 3 * N * (N + 1)`` rays are traced (not N rays).
             wavelength: The wavelength of the rays.
             distribution: The distribution of the rays. Default is 'hexapolar'.
             nan_policy: How to handle NaN ray intersections, which typically

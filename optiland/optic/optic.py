@@ -796,7 +796,10 @@ class Optic:
             wavelength (float): The wavelength of the rays in microns.
             num_rays (int, optional): The sampling parameter that determines the
                 number of rays in the pupil. Its meaning depends on the value of
-                `distribution`. Defaults to 100.
+                `distribution` (see Notes). For 'hexapolar', the default, it is
+                the number of rings N, giving ``1 + 3 * N * (N + 1)`` rays per
+                field point, so the default of 100 traces 30301 rays.
+                Defaults to 100.
             distribution:
                 The distribution of rays. Can be a string identifier (e.g.,
                 'hexapolar', 'uniform') or a `BaseDistribution` object.
@@ -814,9 +817,20 @@ class Optic:
 
         Notes:
             The interpretation of the `num_rays` argument depends on the value of
-            `distribution`. For example, if `distribution` is `hexapolar`, `num_rays`
-            specifies the number of rings, whereas when `distribution` is `uniform`, it
-            specifies the total number of rays per axis.
+            `distribution`:
+
+            - 'hexapolar': the number of rings N; the pupil holds
+              ``1 + 3 * N * (N + 1)`` points (e.g. 8 -> 217, 16 -> 817,
+              32 -> 3169).
+            - 'uniform': the number of grid points per axis n; about
+              ``pi / 4 * n**2`` points remain after masking to the unit disk.
+            - 'cross': the number of points along each axis.
+            - 'random', 'sobol', 'ring', and the 'line' distributions: the
+              total number of points.
+
+            If a `BaseDistribution` object is passed, `num_rays` is ignored and
+            its existing points are used. The returned rays hold one ray per
+            pupil point for every field point; ``len(rays.x)`` gives the count.
 
         """
         return self.ray_tracer.trace(
