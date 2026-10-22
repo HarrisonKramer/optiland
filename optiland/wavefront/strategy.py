@@ -222,8 +222,9 @@ class ChiefRayStrategy(ReferenceStrategy):
         )
         geometry = self._create_reference_geometry(self._chief_ray)
 
-        # 2. Calculate reference OPD from the chief ray
-        opd_img_ref = geometry.path_length(self._chief_ray, self.n_image)
+        # 2. Use relative paths so a large common geometric term cancels
+        # before floating-point subtraction of chief and sample OPDs.
+        opd_img_ref = geometry._relative_path_length(self._chief_ray, self.n_image)
         opd_ref = self._chief_ray.opd - opd_img_ref
 
         # 3. Trace the full grid of rays for the field
@@ -238,7 +239,7 @@ class ChiefRayStrategy(ReferenceStrategy):
 
         # 4. Compute OPD for all rays
         opd_img = geometry.path_length(rays, self.n_image)
-        opd = rays.opd - opd_img
+        opd = rays.opd - geometry._relative_path_length(rays, self.n_image)
 
         opd = self._restore_launch_phase(rays, opd, wavelength, self._chief_ray)
         rays._launch_state = None
@@ -408,7 +409,7 @@ class CentroidStrategy(ReferenceStrategy):
 
         # 4. Compute OPD from image surface to reference geometry
         opd_img = geometry.path_length(rays, self.n_image)
-        opd = rays.opd - opd_img
+        opd = rays.opd - geometry._relative_path_length(rays, self.n_image)
 
         # 5. Remove piston by subtracting mean OPD
         valid_mask = rays.i > 0
