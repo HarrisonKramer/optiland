@@ -12,6 +12,7 @@ from optiland.optic import Optic
 from optiland.rays import RealRays
 from optiland.samples.objectives import DoubleGauss
 from optiland.wavefront import OPD
+from optiland.wavefront.reference_geometry import SphericalReference
 from optiland.wavefront.strategy import (
     BestFitSphereStrategy,
     CentroidReferenceSphereStrategy,
@@ -256,6 +257,9 @@ class TestChiefRayStrategy:
         chief_ray.x = be.array(0.0)
         chief_ray.y = be.array(0.0)
         chief_ray.z = be.array(10.0)
+        chief_ray.L = be.array(0.0)
+        chief_ray.M = be.array(0.0)
+        chief_ray.N = be.array(1.0)
         chief_ray.opd = be.array(0.0)
         optic.trace_generic.return_value = chief_ray
 
@@ -271,11 +275,7 @@ class TestChiefRayStrategy:
         rays.get_exit_fields = None
         optic.trace.return_value = rays
 
-        geometry = MagicMock(radius=10.0)
-        geometry.path_length.side_effect = [
-            be.array(0.0),
-            be.array([0.0, float("nan")]),
-        ]
+        geometry = SphericalReference((0.0, 0.0, 10.0), 10.0)
         strategy = ChiefRayStrategy(optic, MagicMock())
         strategy._create_reference_geometry = MagicMock(return_value=geometry)
 

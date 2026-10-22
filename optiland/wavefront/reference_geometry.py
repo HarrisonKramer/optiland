@@ -33,6 +33,16 @@ class ReferenceGeometry(ABC):
         """
         pass
 
+    def _relative_path_length(self, rays: RealRaysT, n_medium: float) -> BEArrayT:
+        """Return a stable path correction for relative wavefront calculations.
+
+        A geometry may remove a common optical-path constant, provided it uses
+        the same constant for every ray and every call on that geometry.
+        Chief referencing and piston removal both cancel this constant.
+        Use ``path_length`` instead for physical intersection coordinates.
+        """
+        return self.path_length(rays, n_medium)
+
     @property
     @abstractmethod
     def radius(self) -> float:
@@ -78,6 +88,38 @@ class SphericalReference(ReferenceGeometry):
         t = be.where(t1 < 0, t2, t1)
 
         return n_medium * t
+
+    def _relative_path_length(self, rays: RealRaysT, n_medium: float) -> BEArrayT:
+        """Return path length minus ``n_medium * radius`` without cancellation.
+
+        For a unit forward direction u and image displacement v from the
+        sphere center, the backward intersection distance is
+        h + sqrt(R**2 - q), where h = u.v and q = |u cross v|**2.
+        Rationalizing sqrt(R**2 - q) - R retains small path differences even
+        when the exit-pupil radius is many orders larger than the system.
+        Normalize the direction so roundoff in |u| cannot be amplified by R.
+        """
+        R = self._radius
+        if R == 0:
+            return self.path_length(rays, n_medium)
+
+        x, y, z = (
+            rays.x - self.center[0],
+            rays.y - self.center[1],
+            rays.z - self.center[2],
+        )
+        norm = be.sqrt(rays.L**2 + rays.M**2 + rays.N**2)
+        L, M, N = rays.L / norm, rays.M / norm, rays.N / norm
+        h = L * x + M * y + N * z
+        q_over_R = (
+            (M * z - N * y) ** 2 + (N * x - L * z) ** 2 + (L * y - M * x) ** 2
+        ) / R
+        root = be.sqrt(be.maximum(1 - q_over_R / R, 0))
+        # Retain path_length's clamped discriminant and first-forward-root
+        # convention for rays outside the reference sphere as well.
+        offset = -be.minimum(q_over_R, R) / (1 + root)
+        t_minus_R = be.where(h >= R * root, h - R * (1 + root), h + offset)
+        return n_medium * t_minus_R
 
     @property
     def radius(self) -> float:
