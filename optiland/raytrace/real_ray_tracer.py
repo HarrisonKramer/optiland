@@ -91,9 +91,20 @@ class RealRayTracer(BaseRayTracer):
 
         Notes:
             The interpretation of the `num_rays` argument depends on the value of
-            `distribution`. For example, if `distribution` is `hexapolar`, `num_rays`
-            specifies the number of rings, whereas when `distribution` is `uniform`, it
-            specifies the total number of rays per axis.
+            `distribution`:
+
+            - 'hexapolar': the number of rings N; the pupil holds
+              ``1 + 3 * N * (N + 1)`` points (e.g. 8 -> 217, 16 -> 817,
+              32 -> 3169).
+            - 'uniform': the number of grid points per axis n; about
+              ``pi / 4 * n**2`` points remain after masking to the unit disk.
+            - 'cross': the number of points along each axis.
+            - 'random', 'sobol', 'ring', and the 'line' distributions: the
+              total number of points.
+
+            If a `BaseDistribution` object is passed, `num_rays` is ignored and
+            its existing points are used. The returned rays hold one ray per
+            pupil point for every field point; ``len(rays.x)`` gives the count.
         """
         self._validate_normalized_coordinates(Hx, Hy, "field")
 
