@@ -94,7 +94,7 @@ def test_telecentric_wavefront_matches_high_precision_paths(set_test_backend, fi
     assert_allclose(data.opd, be.array(expected), atol=3e-9, rtol=1e-9)
 
 
-@pytest.mark.parametrize("radius", [10.0, 1e6, 1e18, 1e100])
+@pytest.mark.parametrize("radius", [10.0, -10.0, 1e6, -1e6, 1e18, -1e18, 1e100, -1e100])
 def test_sphere_offset_retains_small_paths(set_test_backend, radius):
     """An oblique unit ray has an analytically known longitudinal projection."""
     rays = SimpleNamespace(
@@ -108,7 +108,7 @@ def test_sphere_offset_retains_small_paths(set_test_backend, radius):
     sphere = SphericalReference((0, 0, 0), radius)
     with localcontext() as ctx:
         ctx.prec = 220
-        r = Decimal(radius)
+        r = Decimal(abs(radius))
         # h = .0022 and squared transverse displacement = .00000016.
         expected = Decimal("1.5") * (
             Decimal("0.0022") + (r * r - Decimal("0.00000016")).sqrt() - r
@@ -118,7 +118,7 @@ def test_sphere_offset_retains_small_paths(set_test_backend, radius):
     )
 
 
-@pytest.mark.parametrize("radius", [0.0, 1.0, 10.0])
+@pytest.mark.parametrize("radius", [0.0, 1.0, -1.0, 10.0, -10.0])
 def test_offset_preserves_intersection_root_convention(set_test_backend, radius):
     """Cover inside/outside, forward/backward, tangent and missed intersections."""
     rays = SimpleNamespace(
@@ -130,11 +130,44 @@ def test_offset_preserves_intersection_root_convention(set_test_backend, radius)
         N=be.ones(5),
     )
     sphere = SphericalReference((0, 0, 0), radius)
-    expected = sphere.path_length(rays, 1.5) - 1.5 * radius
+    expected = sphere.path_length(rays, 1.5) - 1.5 * abs(radius)
     assert_allclose(sphere._relative_path_length(rays, 1.5), expected, atol=1e-12)
 
 
-def test_sphere_offset_normalizes_roundoff_in_directions(set_test_backend):
+@pytest.mark.parametrize("radius", [0.0, 5.0, -5.0])
+def test_sphere_nonunit_direction_contract(set_test_backend, radius):
+    """Relative paths use distance; absolute paths retain the ray parameter."""
+    scales = be.array([0.25, 2.0, 3.0, 0.5, 4.0, 1.25])
+    rays = SimpleNamespace(
+        x=be.array([0.0, 1.2, 6.0, -6.0, 5.0, 6.0]),
+        y=be.zeros(6),
+        z=be.array([0.0, 1.6, 8.0, -8.0, 0.0, 2.0]),
+        L=be.array([0.6, 0.6, 0.6, 0.6, 0.0, 0.0]) * scales,
+        M=be.zeros(6),
+        N=be.array([0.8, 0.8, 0.8, 0.8, 1.0, 1.0]) * scales,
+    )
+    original_directions = [be.copy(getattr(rays, axis)) for axis in "LMN"]
+    sphere = SphericalReference((0, 0, 0), radius)
+    # The first four rays lie on a diameter. The last two are tangent/missed
+    # intersections at R=5; the existing discriminant clamp projects a miss.
+    distances = be.array(
+        [0.0, 2.0, 10.0, -10.0, 0.0, 2.0]
+        if radius == 0
+        else [5.0, 7.0, 5.0, -5.0, 0.0, 2.0]
+    )
+    assert_allclose(sphere.path_length(rays, 1.5), 1.5 * distances / scales, atol=1e-12)
+    assert_allclose(
+        sphere._relative_path_length(rays, 1.5),
+        1.5 * (distances - abs(radius)),
+        atol=1e-12,
+    )
+    assert sphere.radius == radius
+    for axis, original in zip("LMN", original_directions, strict=True):
+        assert_allclose(getattr(rays, axis), original, atol=0, rtol=0)
+
+
+@pytest.mark.parametrize("radius", [1e18, -1e18])
+def test_sphere_offset_normalizes_roundoff_in_directions(set_test_backend, radius):
     """A tiny norm error must not become R times that error in the OPD."""
     rays = SimpleNamespace(
         x=be.array([0.0]),
@@ -144,7 +177,7 @@ def test_sphere_offset_normalizes_roundoff_in_directions(set_test_backend):
         M=be.array([0.0]),
         N=be.array([1 + 2e-16]),
     )
-    sphere = SphericalReference((0, 0, 0), 1e18)
+    sphere = SphericalReference((0, 0, 0), radius)
     assert_allclose(sphere._relative_path_length(rays, 1.0), 0.001, atol=1e-16)
 
 

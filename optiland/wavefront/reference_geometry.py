@@ -39,6 +39,8 @@ class ReferenceGeometry(ABC):
         A geometry may remove a common optical-path constant, provided it uses
         the same constant for every ray and every call on that geometry.
         Chief referencing and piston removal both cancel this constant.
+        This relationship assumes unit direction cosines, as supplied by
+        wavefront tracing; implementations may normalize their input directions.
         Use ``path_length`` instead for physical intersection coordinates.
         """
         return self.path_length(rays, n_medium)
@@ -55,7 +57,15 @@ class SphericalReference(ReferenceGeometry):
 
     Args:
         center: (x, y, z) coordinates of the sphere center.
-        radius: Radius of the sphere.
+        radius: Finite sphere radius. Either sign describes the same sphere;
+            intersections use its magnitude. The stored value retains its sign.
+
+    Note:
+        Positions, center, refractive index and directions must be finite, and
+        direction vectors must have nonzero norms. Zero vectors and infinite
+        radii are unsupported. For physical optical distances, ``path_length``
+        requires unit direction cosines. ``_relative_path_length`` normalizes
+        directions internally without modifying the rays.
     """
 
     def __init__(self, center: tuple[float, float, float], radius: float):
@@ -63,6 +73,14 @@ class SphericalReference(ReferenceGeometry):
         self._radius = radius
 
     def path_length(self, rays: RealRaysT, n_medium: float) -> BEArrayT:
+        """Return ``n_medium * t`` for the backward ray ``position - t * direction``.
+
+        The supplied direction vector is used unchanged. Thus ``t`` is a
+        geometric distance only for unit directions; scaling a direction by a
+        positive factor divides ``t`` by that factor. Radius sign has no effect.
+        Choose the first nonnegative root, or the larger root if both are
+        negative. A negative discriminant is clamped to zero.
+        """
         xc, yc, zc = self.center
         xr, yr, zr = rays.x, rays.y, rays.z
         L, M, N = -rays.L, -rays.M, -rays.N
@@ -90,18 +108,22 @@ class SphericalReference(ReferenceGeometry):
         return n_medium * t
 
     def _relative_path_length(self, rays: RealRaysT, n_medium: float) -> BEArrayT:
-        """Return path length minus ``n_medium * radius`` without cancellation.
+        """Return normalized optical distance minus ``n_medium * abs(radius)``.
+
+        In exact arithmetic this equals ``path_length`` evaluated on unit
+        directions, minus the common optical radius. It is not generally
+        ``path_length(rays, n_medium) - n_medium * abs(radius)`` for non-unit
+        input directions: those are normalized here, including at zero radius.
 
         For a unit forward direction u and image displacement v from the
-        sphere center, the backward intersection distance is
-        h + sqrt(R**2 - q), where h = u.v and q = |u cross v|**2.
+        sphere center, the backward intersection roots are h +/- sqrt(R**2 - q),
+        where R = abs(radius), h = u.v and q = |u cross v|**2. Root selection
+        and discriminant clamping follow ``path_length``.
         Rationalizing sqrt(R**2 - q) - R retains small path differences even
         when the exit-pupil radius is many orders larger than the system.
         Normalize the direction so roundoff in |u| cannot be amplified by R.
         """
-        R = self._radius
-        if R == 0:
-            return self.path_length(rays, n_medium)
+        R = abs(self._radius)
 
         x, y, z = (
             rays.x - self.center[0],
@@ -111,6 +133,9 @@ class SphericalReference(ReferenceGeometry):
         norm = be.sqrt(rays.L**2 + rays.M**2 + rays.N**2)
         L, M, N = rays.L / norm, rays.M / norm, rays.N / norm
         h = L * x + M * y + N * z
+        if R == 0:
+            # Both roots coincide at h after clamping the discriminant -q.
+            return n_medium * h
         q_over_R = (
             (M * z - N * y) ** 2 + (N * x - L * z) ** 2 + (L * y - M * x) ** 2
         ) / R
