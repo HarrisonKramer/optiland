@@ -353,14 +353,26 @@ class TestLeastSquares:
             input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
-        optimizer.optimize(method_choice="lm", maxiter=5)
-        captured = capsys.readouterr()
-        expected_warning = (
-            "Warning: Method 'lm' (Levenberg-Marquardt) chosen, "
-            "but variable bounds are set. SciPy's 'lm' method does not "
-            "support bounds; bounds will be ignored."
+        with pytest.warns(UserWarning, match="bounds will be ignored") as record:
+            optimizer.optimize(method_choice="lm", maxiter=5)
+        assert any(w.filename == __file__ for w in record)
+        assert "bounds will be ignored" not in capsys.readouterr().out
+
+    def test_lm_too_few_residuals_warning(self, capsys):
+        lens = Microscope20x()
+        problem = optimization.OptimizationProblem()
+        problem.add_variable(lens, "radius", surface_number=1)
+        problem.add_variable(lens, "radius", surface_number=2)
+        problem.add_operand(
+            operand_type="f2",
+            target=90,
+            weight=1.0,
+            input_data={"optic": lens},
         )
-        assert expected_warning in captured.out
+        optimizer = optimization.LeastSquares(problem)
+        with pytest.warns(UserWarning, match="Switching to 'trf' method"):
+            optimizer.optimize(method_choice="lm", maxiter=5)
+        assert "Switching to 'trf'" not in capsys.readouterr().out
 
     def test_unknown_method_choice_warning(self, capsys):
         lens = Microscope20x()
@@ -374,13 +386,12 @@ class TestLeastSquares:
             input_data=input_data,
         )
         optimizer = optimization.LeastSquares(problem)
-        optimizer.optimize(method_choice="unknown_method", maxiter=5)
-        captured = capsys.readouterr()
-        expected_warning = (
-            "Warning: Unknown method_choice 'unknown_method'. Defaulting to "
-            "'trf' method."  # Updated expected warning
-        )
-        assert expected_warning in captured.out
+        with pytest.warns(
+            UserWarning,
+            match="Unknown method_choice 'unknown_method'. Defaulting to 'trf'",
+        ):
+            optimizer.optimize(method_choice="unknown_method", maxiter=5)
+        assert "Unknown method_choice" not in capsys.readouterr().out
 
     @pytest.mark.parametrize("x_scale", [None, "jac", 2.0, [2.0]])
     def test_x_scale_forwarding(self, monkeypatch, x_scale):
