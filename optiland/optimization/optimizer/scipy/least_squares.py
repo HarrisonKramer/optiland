@@ -121,27 +121,30 @@ class LeastSquares(OptimizerGeneric):
         # Validate and adjust method_choice
         if method_choice == "lm":
             if num_residuals < num_variables:
-                print(
-                    f"Warning: Method 'lm' (Levenberg-Marquardt) "
+                warnings.warn(
+                    f"Method 'lm' (Levenberg-Marquardt) "
                     f"chosen, but number of residuals ({num_residuals}) is less "
                     f"than number of variables ({num_variables}). "
-                    "This is not supported by 'lm'. Switching to 'trf' method."
+                    "This is not supported by 'lm'. Switching to 'trf' method.",
+                    stacklevel=2,
                 )
                 method_choice = "trf"
             elif be.any(lower_bounds_np != -be.inf) or be.any(
                 upper_bounds_np != be.inf
             ):
                 # This warning is for 'lm' when bounds are present but m >= n
-                print(
-                    "Warning: Method 'lm' (Levenberg-Marquardt) chosen, "
+                warnings.warn(
+                    "Method 'lm' (Levenberg-Marquardt) chosen, "
                     "but variable bounds are set. "
                     "SciPy's 'lm' method does not support bounds; bounds will "
-                    "be ignored."
+                    "be ignored.",
+                    stacklevel=2,
                 )
         elif method_choice not in ["trf", "dogbox"]:
-            print(
-                f"Warning: Unknown method_choice '{original_method_choice}'. "
-                "Defaulting to 'trf' method."
+            warnings.warn(
+                f"Unknown method_choice '{original_method_choice}'. "
+                "Defaulting to 'trf' method.",
+                stacklevel=2,
             )
             method_choice = "trf"
 
